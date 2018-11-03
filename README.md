@@ -11,7 +11,7 @@ Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作�
 * 提供一路USB CDC接口，最高波特率可达8M
 
 ## 性能
-截止20181102，已测试并完善SWO及CDC接口，JTAG部分稳定性欠佳。以下测试数据是在OpenOCD（Vllink协议）<==> Vllink Lite <==> STM32F411（SRAM区域）环境下获得的。
+截止20181102，已测试并完善SWD及CDC接口，JTAG部分稳定性欠佳。以下测试数据是在OpenOCD（Vllink协议）<==> Vllink Lite <==> STM32F411（SRAM区域）环境下获得的。
 
 | 时钟频率 | 读速度（KiB/s） | 写速度（KiB/s） |
 | --------| -----:  | -----:  |
