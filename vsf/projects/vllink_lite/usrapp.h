@@ -9,15 +9,21 @@ struct usrapp_t
 	{
 		struct vsfusbd_device_t device;
 		struct vsfusbd_config_t config[1];
-#ifndef PROJC_CFG_CDCSHELL_SUPPORT
-		struct vsfusbd_iface_t ifaces[3];
-#else
-		struct vsfusbd_iface_t ifaces[5];
+		struct vsfusbd_iface_t ifaces[USBD_INTERFACE_COUNT];
+
+#ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
+		struct vsfusbd_CMSIS_DAP_param_t cmsis_dap;
 #endif
 
-		struct vsfusbd_CMSIS_DAP_param_t cmsis_dap;
+#ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
+		// TODO
+		//struct vsfusbd_CMSIS_DAP_param_t cmsis_dap;
+#endif
 
+#ifdef PROJC_CFG_CDCEXT_SUPPORT
 		struct vsfusbd_CDCACM_param_t cdcacm_ext;		// -> usart ext
+#endif
+
 #ifdef PROJC_CFG_CDCSHELL_SUPPORT
 		struct vsfusbd_CDCACM_param_t cdcacm_shell;		// -> shell
 #endif

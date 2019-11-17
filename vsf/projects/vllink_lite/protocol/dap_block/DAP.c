@@ -1,7 +1,7 @@
 #include "vsf.h"
 #include "DAP.h"
 
-#define DAP_FW_VER      "1.10"  // Firmware Version
+#define DAP_FW_VER      "0254"  // Firmware Version
 
 #ifdef DAP_VENDOR
 const char DAP_Vendor[] = DAP_VENDOR;

@@ -15,25 +15,33 @@ struct usrapp_t usrapp =
 	.usbd.device.device_class_iface			= 0,
 	.usbd.config[0].num_of_ifaces			= dimof(usrapp.usbd.ifaces),
 	.usbd.config[0].iface					= usrapp.usbd.ifaces,
+#ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
 	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_HID_class,
 	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap,
-	.usbd.ifaces[1].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
-	.usbd.ifaces[1].protocol_param			= &usrapp.usbd.cdcacm_ext,
-	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
-	.usbd.ifaces[2].protocol_param			= &usrapp.usbd.cdcacm_ext,
-#ifdef PROJC_CFG_CDCSHELL_SUPPORT
-	.usbd.ifaces[3].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
-	.usbd.ifaces[3].protocol_param			= &usrapp.usbd.cdcacm_shell,
-	.usbd.ifaces[4].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
-	.usbd.ifaces[4].protocol_param			= &usrapp.usbd.cdcacm_shell,
 #endif
-	
-	// TODO: CMSIS-DAP V2 Upgrade
+#ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
+	.usbd.ifaces[1].class_protocol			= NULL,
+	.usbd.ifaces[1].protocol_param			= NULL,
+#endif
+#ifdef PROJC_CFG_CDCEXT_SUPPORT
+	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
+	.usbd.ifaces[2].protocol_param			= &usrapp.usbd.cdcacm_ext,
+	.usbd.ifaces[3].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
+	.usbd.ifaces[3].protocol_param			= &usrapp.usbd.cdcacm_ext,
+#endif
+#ifdef PROJC_CFG_CDCSHELL_SUPPORT
+	.usbd.ifaces[4].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
+	.usbd.ifaces[4].protocol_param			= &usrapp.usbd.cdcacm_shell,
+	.usbd.ifaces[5].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
+	.usbd.ifaces[5].protocol_param			= &usrapp.usbd.cdcacm_shell,
+#endif
+
 	.usbd.cmsis_dap.HID_param.ep_in					= 1,
 	.usbd.cmsis_dap.HID_param.ep_out				= 1,
 	.usbd.cmsis_dap.dap_param						= &usrapp.dap_param,
 	.usbd.cmsis_dap.dap_connected					= false,
 
+#ifdef PROJC_CFG_CDCEXT_SUPPORT
 	.usbd.cdcacm_ext.CDC.ep_in						= 3,
 	.usbd.cdcacm_ext.CDC.ep_out						= 3,
 	.usbd.cdcacm_ext.CDC.ep_notify					= 5,
@@ -44,6 +52,7 @@ struct usrapp_t usrapp =
 	.usbd.cdcacm_ext.line_coding.stopbittype		= 0,
 	.usbd.cdcacm_ext.line_coding.paritytype			= 0,
 	.usbd.cdcacm_ext.line_coding.datatype			= 8,
+#endif
 	
 #ifdef PROJC_CFG_CDCSHELL_SUPPORT
 	.usbd.cdcacm_shell.CDC.ep_in					= 4,
