@@ -20,7 +20,7 @@ static const uint8_t USB_DeviceDescriptor[] =
 	0x01		// number of configuration 
 };
 
-#ifndef PROJC_CFG_CDCSHELL_SUPPORT
+#ifdef PROJC_CFG_CDCSHELL_SUPPORT
 #	define USB_CONFIGDESC_LENGTH	(9 + 32 + 66 + 66)		// 9, CMSIS-DAP: 32, CDCEXT: 66, CDCSHELL: 66
 #else
 #	define USB_CONFIGDESC_LENGTH	(9 + 32 + 66)		// 9, CMSIS-DAP: 32, CDCEXT: 66
@@ -33,7 +33,7 @@ static const uint8_t USB_ConfigDescriptor[] =
 				// wTotalLength
 	(USB_CONFIGDESC_LENGTH >> 0) & 0xFF,
 	(USB_CONFIGDESC_LENGTH >> 8) & 0xFF,
-	0x05,		// bNumInterfaces
+	0x03,		// bNumInterfaces
 	0x01,		// bConfigurationValue: Configuration value
 	0x00,		// iConfiguration: Index of string descriptor describing the configuration
 	0x80,		// bmAttributes: bus powered

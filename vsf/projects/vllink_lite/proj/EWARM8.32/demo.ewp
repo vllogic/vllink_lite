@@ -224,7 +224,7 @@
                 </option>
                 <option>
                     <name>CCDefines</name>
-                    <state>FLASH_LOAD_OFFSET=0x0000</state>
+                    <state>FLASH_LOAD_OFFSET=0x08000000</state>
                     <state>BOARD_TYPE_VLLINK_LITE</state>
                 </option>
                 <option>
