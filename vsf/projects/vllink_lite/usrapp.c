@@ -9,12 +9,31 @@ vsf_err_t usrapp_update_ext_usart_param(struct usb_CDCACM_line_coding_t *line_co
 
 static vsf_err_t usrapp_usbd_verdor_request_prepare(struct vsfusbd_device_t *device);
 
+#define USBD_ENENT_RECORD_LENGTH		64
+struct usbd_event_record_t
+{
+	uint8_t record_len;
+	struct usb_ctrlrequest_t record[USBD_ENENT_RECORD_LENGTH];
+} static usbd_event_record = {.record_len = 0,};
+static void usbapp_usbd_on_event(struct vsfusbd_device_t *device,
+		enum vsfusbd_usr_evt_t evt, void *param)
+{
+	if (usbd_event_record.record_len >= USBD_ENENT_RECORD_LENGTH)
+		return;
+	else if (evt == VSFUSBD_USREVT_SETUP)
+	{
+		memcpy(&usbd_event_record.record[usbd_event_record.record_len], param, sizeof(struct usb_ctrlrequest_t));
+		usbd_event_record.record_len++;
+	}
+}
+
 struct usrapp_t usrapp =
 {
 	.usbd.device.num_of_configuration		= dimof(usrapp.usbd.config),
 	.usbd.device.config						= usrapp.usbd.config,
 	.usbd.device.desc_filter				= (struct vsfusbd_desc_filter_t *)USB_descriptors,
 	.usbd.device.device_class_iface			= 0,
+	.usbd.device.on_EVENT					= usbapp_usbd_on_event,
 	.usbd.config[0].num_of_ifaces			= dimof(usrapp.usbd.ifaces),
 	.usbd.config[0].iface					= usrapp.usbd.ifaces,
 	.usbd.config[0].vendor_prepare			= usrapp_usbd_verdor_request_prepare,
@@ -123,11 +142,13 @@ static vsf_err_t usrapp_usbd_verdor_request_prepare(struct vsfusbd_device_t *dev
 		{
 			buffer->buffer = (uint8_t *)WINUSB_Descriptor;
 			buffer->size = sizeof(WINUSB_Descriptor);
+			ctrl_handler->data_size = sizeof(WINUSB_Descriptor);
 			return VSFERR_NONE;
 		}
 	}
 	else if (request->bRequest == 0x21)	// USBD_WEBUSB_VENDOR_CODE
 	{
+		// TODO
 		__ASM("NOP");
 	}
 	return VSFERR_FAIL;
