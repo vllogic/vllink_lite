@@ -438,19 +438,18 @@ static const uint8_t USB_StringLangID[] =
 
 static const uint8_t USB_StringVendor[] =
 {
-	24,
+	8,
 	USB_DT_STRING,
-	'V', 0, 'l', 0, 'l', 0, 'o', 0, 'g', 0, 'i', 0, 'c', 0, '.', 0,
-	'c', 0, 'o', 0, 'm', 0,
+	'A', 0, 'R', 0, 'M', 0,
 };
 
 static const uint8_t USB_StringProduct[] =
 {
-	46,
+	36,
 	USB_DT_STRING,
-	'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, ' ', 0, 'L', 0,
-	'i', 0, 't', 0, 'e', 0, '(', 0, 'C', 0, 'M', 0, 'S', 0, 'I', 0,
-	'S', 0, '-', 0, 'D', 0, 'A', 0, 'P', 0, ')', 0,
+	'D', 0, 'A', 0, 'P', 0, 'L', 0, 'i', 0, 'n', 0, 'k', 0, ' ', 0,
+	'C', 0, 'M', 0, 'S', 0, 'I', 0,	'S', 0, '-', 0, 'D', 0, 'A', 0,
+	'P', 0,
 };
 
 static uint8_t USB_StringSerial[50] =
