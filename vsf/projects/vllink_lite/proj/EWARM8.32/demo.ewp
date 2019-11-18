@@ -2125,6 +2125,15 @@
                 </file>
             </group>
             <group>
+                <name>cmsis_dap_v2</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\protocol\cmsis_dap_v2\vsfusbd_cmsis_dap_v2.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\protocol\cmsis_dap_v2\vsfusbd_cmsis_dap_v2.h</name>
+                </file>
+            </group>
+            <group>
                 <name>dap_block</name>
                 <file>
                     <name>$PROJ_DIR$\..\..\protocol\dap_block\DAP.c</name>

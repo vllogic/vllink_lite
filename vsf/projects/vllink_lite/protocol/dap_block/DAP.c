@@ -452,9 +452,9 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 		else if (cmd_id == ID_DAP_Transfer)
 		{
 			uint8_t transfer_req;
-			bool do_abort = false;
 			bool post_read = false;
 			uint16_t transfer_retry, transfer_ack = 0;
+			param->do_abort = false;
 
 			if (param->port == DAP_PORT_SWD)
 			{
@@ -510,7 +510,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 								if (transfer_ack != DAP_TRANSFER_OK)
 									break;
 							} while (((data & param->transfer.match_mask) != GET_LE_U32(request + req_ptr)) &&
-									transfer_retry-- && !do_abort);
+									transfer_retry-- && !param->do_abort);
 							if ((data & param->transfer.match_mask) != GET_LE_U32(request + req_ptr))
 								transfer_ack |= DAP_TRANSFER_MISMATCH;
 							req_ptr += 4;
@@ -571,7 +571,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 						}
 					}
 
-					if (do_abort)
+					if (param->do_abort)
 						break;
 				}
 				
@@ -690,7 +690,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 								if (transfer_ack != DAP_TRANSFER_OK)
 									break;
 							} while (((data & param->transfer.match_mask) != GET_LE_U32(request + req_ptr)) &&
-									transfer_retry-- && !do_abort);
+									transfer_retry-- && !param->do_abort);
 							if ((data & param->transfer.match_mask) != GET_LE_U32(request + req_ptr))
 								transfer_ack |= DAP_TRANSFER_MISMATCH;
 							req_ptr += 4;
@@ -770,7 +770,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 					}
 
 					transfer_cnt++;				
-					if (do_abort)
+					if (param->do_abort)
 						break;
 				}
 
@@ -1221,7 +1221,12 @@ vsf_err_t DAP_init(struct dap_param_t *param)
 
 vsf_err_t DAP_recvive_request(struct dap_param_t *param, uint8_t *buf, uint16_t size)
 {
-	if (param->request_cnt < DAP_PACKET_COUNT)
+	if (!size)
+		return VSFERR_FAIL;
+	
+	if (buf[0] == ID_DAP_TransferAbort)
+		param->do_abort = true;
+	else if (param->request_cnt < DAP_PACKET_COUNT)
 	{
 		size = min(size, param->pkt_size);
 		if (size)

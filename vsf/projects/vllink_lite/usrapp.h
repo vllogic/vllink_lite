@@ -2,6 +2,7 @@
 #define __USRAPP_H__
 
 #include "protocol/cmsis_dap/vsfusbd_CMSIS_DAP.h"
+#include "protocol/cmsis_dap_v2/vsfusbd_cmsis_dap_v2.h"
 
 struct usrapp_t
 {
@@ -16,8 +17,7 @@ struct usrapp_t
 #endif
 
 #ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
-		// TODO
-		//struct vsfusbd_CMSIS_DAP_param_t cmsis_dap;
+		struct vsfusbd_cmsis_dap_v2_param_t cmsis_dap_v2;
 #endif
 
 #ifdef PROJC_CFG_CDCEXT_SUPPORT

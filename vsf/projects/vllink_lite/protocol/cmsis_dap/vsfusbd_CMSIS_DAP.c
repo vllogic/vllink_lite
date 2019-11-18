@@ -58,15 +58,17 @@ vsf_err_t vsfusbd_CMSIS_DAP_on_report_in(struct vsfusbd_HID_param_t *p,
 
 	if ((report->type == USB_HID_REPORT_OUTPUT_NO_ID) && (report->id == 0))
 	{
-		if (param->dap_connected)
-			DAP_recvive_request(param->dap_param, param->out, DAP_HID_PACKET_SIZE);
-		else if (DAP_register(param->dap_param, param, cmsis_dap_send_response, DAP_HID_PACKET_SIZE) == VSFERR_NONE)
+		if (!param->dap_connected)
 		{
-			param->dap_connected = true;
-			DAP_recvive_request(param->dap_param, param->out, DAP_HID_PACKET_SIZE);
+			if (DAP_register(param->dap_param, param, cmsis_dap_send_response, DAP_HID_PACKET_SIZE) == VSFERR_NONE)
+				param->dap_connected = true;
+			else
+				goto exit;
 		}
+		DAP_recvive_request(param->dap_param, param->out, DAP_HID_PACKET_SIZE);
 	}
 
+exit:
 	return VSFERR_NONE;
 }
 

@@ -15,13 +15,13 @@ struct usrapp_t usrapp =
 	.usbd.device.device_class_iface			= 0,
 	.usbd.config[0].num_of_ifaces			= dimof(usrapp.usbd.ifaces),
 	.usbd.config[0].iface					= usrapp.usbd.ifaces,
-#ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
-	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_HID_class,
-	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap,
-#endif
 #ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
-	.usbd.ifaces[1].class_protocol			= NULL,
-	.usbd.ifaces[1].protocol_param			= NULL,
+	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_cmsis_dap_v2_class,
+	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap_v2,
+#endif
+#ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
+	.usbd.ifaces[1].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_HID_class,
+	.usbd.ifaces[1].protocol_param			= &usrapp.usbd.cmsis_dap,
 #endif
 #ifdef PROJC_CFG_CDCEXT_SUPPORT
 	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
@@ -36,8 +36,13 @@ struct usrapp_t usrapp =
 	.usbd.ifaces[5].protocol_param			= &usrapp.usbd.cdcacm_shell,
 #endif
 
-	.usbd.cmsis_dap.HID_param.ep_in					= 1,
-	.usbd.cmsis_dap.HID_param.ep_out				= 1,
+	.usbd.cmsis_dap_v2.ep_in						= 1,
+	.usbd.cmsis_dap_v2.ep_out						= 1,
+	.usbd.cmsis_dap_v2.dap_param					= &usrapp.dap_param,
+	.usbd.cmsis_dap_v2.dap_connected				= false,
+
+	.usbd.cmsis_dap.HID_param.ep_in					= 2,
+	.usbd.cmsis_dap.HID_param.ep_out				= 2,
 	.usbd.cmsis_dap.dap_param						= &usrapp.dap_param,
 	.usbd.cmsis_dap.dap_connected					= false,
 
@@ -201,6 +206,26 @@ void usrapp_initial_init(struct usrapp_t *app)
 
 void usrapp_srt_init(struct usrapp_t *app)
 {
+	uint8_t i;
+	uint8_t uid[12];
+	uint8_t *serial = USB_StringSerial + 2;
+	vsfhal_uid_get((uint8_t *)uid, 12);
+	
+	for (i = 23; i > 0; i--)
+	{
+		uint8_t v = uid[i / 2];
+		if (i & 0x1)
+			v >>= 4;
+		else
+			v = v & 0xf;
+		if (v < 10)
+			*serial = '0' + v;
+		else
+			*serial = 'A' - 10 + v;
+		serial += 2;
+	}
+	
+	
 	vsfusbd_CMSIS_DAP_init(&app->usbd.cmsis_dap);
 	usart_stream_init(&usrapp.usart_ext.usart_stream);	
 	usart_stream_init(&usrapp.usart_trst_swo.usart_stream);

@@ -205,6 +205,8 @@ struct dap_param_t
 	uint8_t request_head;
 	uint8_t request_cnt;
 
+	bool do_abort;	
+	
 	uint8_t port;
 	uint16_t khz;
 	struct
