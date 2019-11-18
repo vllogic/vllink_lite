@@ -25,19 +25,8 @@ struct vsfhal_jtag_param_t
 	uint16_t retry;
 } static jtag_param;
 
-static void delay_jtag_125ns(uint16_t dummy)
-{
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-}
-
-static void delay_jtag_250ns(uint16_t dummy)
-{
-	dummy = 7;
-	while (--dummy);
-}
+extern void delay_jtag_125ns(uint16_t dummy);
+extern void delay_jtag_250ns(uint16_t dummy);
 
 static inline void jtag_set_spi_mode(void)
 {

@@ -2775,6 +2775,9 @@
                         <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_core.h</name>
                     </file>
                     <file>
+                        <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_delay.c</name>
+                    </file>
+                    <file>
                         <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_flash.c</name>
                     </file>
                     <file>
@@ -2782,12 +2785,24 @@
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_jtag.c</name>
+                        <configuration>
+                            <name>Vllink_Lite_Debug</name>
+                        </configuration>
+                        <configuration>
+                            <name>Vllink_Lite_Release</name>
+                        </configuration>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_jtag.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_swd.c</name>
+                        <configuration>
+                            <name>Vllink_Lite_Debug</name>
+                        </configuration>
+                        <configuration>
+                            <name>Vllink_Lite_Release</name>
+                        </configuration>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\..\hal\cpu\gd32f3x0\vsfhal_swd.h</name>

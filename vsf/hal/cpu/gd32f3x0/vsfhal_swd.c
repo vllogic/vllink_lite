@@ -35,26 +35,8 @@ struct vsfhal_swd_param_t
 	uint16_t retry;
 } static swd_param;
 
-void delay_swd_125ns(uint16_t dummy)
-{
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-}
-
-void delay_swd_250ns(uint16_t dummy)
-{
-	dummy = 9;
-	while (--dummy);
-}
+extern void delay_swd_125ns(uint16_t dummy);
+extern void delay_swd_250ns(uint16_t dummy);
 
 static uint32_t get_parity_32bit(uint32_t data)
 {
