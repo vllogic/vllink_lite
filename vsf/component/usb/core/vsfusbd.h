@@ -73,6 +73,8 @@ struct vsfusbd_ctrl_handler_t
 	{USB_DT_DEVICE, 0, (lanid), {(uint8_t*)(ptr), (size)}}
 #define VSFUSBD_DESC_CONFIG(lanid, idx, ptr, size)	\
 	{USB_DT_CONFIG, (idx), (lanid), {(uint8_t*)(ptr), (size)}}
+#define VSFUSBD_BOS_DESC(lanid, idx, ptr, size)	\
+	{USB_DT_BOS, (idx), (lanid), {(uint8_t*)(ptr), (size)}}
 #define VSFUSBD_DESC_STRING(lanid, idx, ptr, size)	\
 	{USB_DT_STRING, (idx), (lanid), {(uint8_t*)(ptr), (size)}}
 #define VSFUSBD_DESC_NULL									\
@@ -117,6 +119,7 @@ struct vsfusbd_config_t
 	// public
 	vsf_err_t (*init)(struct vsfusbd_device_t *device);
 	vsf_err_t (*fini)(struct vsfusbd_device_t *device);
+	vsf_err_t (*vendor_prepare)(struct vsfusbd_device_t *device);
 
 	uint8_t num_of_ifaces;
 	struct vsfusbd_iface_t *iface;

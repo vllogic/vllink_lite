@@ -7,6 +7,8 @@ uint16_t usrapp_get_serial(uint8_t *serial);
 vsf_err_t usrapp_update_swo_usart_param(uint8_t *mode, uint32_t *baudrate);
 vsf_err_t usrapp_update_ext_usart_param(struct usb_CDCACM_line_coding_t *line_coding);
 
+static vsf_err_t usrapp_usbd_verdor_request_prepare(struct vsfusbd_device_t *device);
+
 struct usrapp_t usrapp =
 {
 	.usbd.device.num_of_configuration		= dimof(usrapp.usbd.config),
@@ -15,25 +17,29 @@ struct usrapp_t usrapp =
 	.usbd.device.device_class_iface			= 0,
 	.usbd.config[0].num_of_ifaces			= dimof(usrapp.usbd.ifaces),
 	.usbd.config[0].iface					= usrapp.usbd.ifaces,
+	.usbd.config[0].vendor_prepare			= usrapp_usbd_verdor_request_prepare,
+
 #ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
 	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_cmsis_dap_v2_class,
 	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap_v2,
 #endif
+#ifdef PROJC_CFG_WEBUSB_SUPPORT
+#endif
 #ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
-	.usbd.ifaces[1].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_HID_class,
-	.usbd.ifaces[1].protocol_param			= &usrapp.usbd.cmsis_dap,
+	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_HID_class,
+	.usbd.ifaces[2].protocol_param			= &usrapp.usbd.cmsis_dap,
 #endif
 #ifdef PROJC_CFG_CDCEXT_SUPPORT
-	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
-	.usbd.ifaces[2].protocol_param			= &usrapp.usbd.cdcacm_ext,
-	.usbd.ifaces[3].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
+	.usbd.ifaces[3].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
 	.usbd.ifaces[3].protocol_param			= &usrapp.usbd.cdcacm_ext,
+	.usbd.ifaces[4].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
+	.usbd.ifaces[4].protocol_param			= &usrapp.usbd.cdcacm_ext,
 #endif
 #ifdef PROJC_CFG_CDCSHELL_SUPPORT
-	.usbd.ifaces[4].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
-	.usbd.ifaces[4].protocol_param			= &usrapp.usbd.cdcacm_shell,
-	.usbd.ifaces[5].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
+	.usbd.ifaces[5].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
 	.usbd.ifaces[5].protocol_param			= &usrapp.usbd.cdcacm_shell,
+	.usbd.ifaces[6].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
+	.usbd.ifaces[6].protocol_param			= &usrapp.usbd.cdcacm_shell,
 #endif
 
 	.usbd.cmsis_dap_v2.ep_in						= 1,
@@ -104,6 +110,28 @@ struct usrapp_t usrapp =
 	.usart_trst_swo.usart_stream.stream_rx			= &usrapp.usart_trst_swo.stream_rx.stream,
 };
 
+
+static vsf_err_t usrapp_usbd_verdor_request_prepare(struct vsfusbd_device_t *device)
+{
+	struct vsfusbd_ctrl_handler_t *ctrl_handler = &device->ctrl_handler;
+	struct usb_ctrlrequest_t *request = &ctrl_handler->request;
+	struct vsf_buffer_t *buffer = &ctrl_handler->bufstream.mem.buffer;
+	
+	if (request->bRequest == 0x20)	// USBD_WINUSB_VENDOR_CODE
+	{
+		if (request->wIndex == 0x07)	// WINUSB_REQUEST_GET_DESCRIPTOR_SET
+		{
+			buffer->buffer = (uint8_t *)WINUSB_Descriptor;
+			buffer->size = sizeof(WINUSB_Descriptor);
+			return VSFERR_NONE;
+		}
+	}
+	else if (request->bRequest == 0x21)	// USBD_WEBUSB_VENDOR_CODE
+	{
+		__ASM("NOP");
+	}
+	return VSFERR_FAIL;
+}
 
 uint16_t usrapp_get_serial(uint8_t *serial)
 {

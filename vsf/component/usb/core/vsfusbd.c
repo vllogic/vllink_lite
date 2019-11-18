@@ -693,7 +693,7 @@ static vsf_err_t vsfusbd_ctrl_prepare(struct vsfusbd_device_t *device)
 	{
 		err = vsfusbd_stdctrl_prepare(device);
 	}
-	else if ((USB_TYPE_CLASS == type) || (USB_TYPE_VENDOR == type))
+	else if (USB_TYPE_CLASS == type)
 	{
 		int8_t iface = -1;
 
@@ -711,6 +711,11 @@ static vsf_err_t vsfusbd_ctrl_prepare(struct vsfusbd_device_t *device)
 		{
 			err = config->iface[iface].class_protocol->request_prepare(device);
 		}
+	}
+	else if (USB_TYPE_VENDOR == type)
+	{
+		if (config->vendor_prepare != NULL)
+			err = config->vendor_prepare(device);
 	}
 	return err ? err : !ctrl_handler->data_size ? VSFERR_NONE :
 										stream_init(ctrl_handler->stream);

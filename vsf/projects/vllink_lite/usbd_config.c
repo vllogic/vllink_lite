@@ -9,11 +9,14 @@ static const uint8_t USB_DeviceDescriptor[] =
 	0x40,        // bMaxPacketSize0 64
 	(APPCFG_USBD_VID >> 0) & 0xFF,
 	(APPCFG_USBD_VID >> 8) & 0xFF,
-			// vendor
+				// vendor
 	(APPCFG_USBD_PID >> 0) & 0xFF,
 	(APPCFG_USBD_PID >> 8) & 0xFF,
-			// product
-	0x00, 0x10,	// bcdDevice
+				// product
+	(APPCFG_USBD_BCD >> 0) & 0xFF,
+	(APPCFG_USBD_BCD >> 8) & 0xFF,
+				// product
+				// bcdDevice
 	1,			// manu facturer
 	2,			// product
 	3,			// serial number
@@ -22,7 +25,6 @@ static const uint8_t USB_DeviceDescriptor[] =
 
 static const uint8_t USB_ConfigDescriptor[] =
 {
-	
 	USB_DT_CONFIG_SIZE,
 	USB_DT_CONFIG,
 				// wTotalLength
@@ -61,17 +63,30 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x00,        //   bInterval 0 (unit depends on device speed)
 #endif	// PROJC_CFG_CMSIS_DAP_V2_SUPPORT
 
+#ifdef PROJC_CFG_WEBUSB_SUPPORT
+	/* WEBUSB, Length: 9 */ 
+	0x09,        //   bLength
+	0x04,        //   bDescriptorType (Interface)
+	0x01,        //   bInterfaceNumber 1
+	0x00,        //   bAlternateSetting
+	0x00,        //   bNumEndpoints 0
+	0xFF,        //   bInterfaceClass
+	0x03,        //   bInterfaceSubClass
+	0x00,        //   bInterfaceProtocol
+	0x05,        //   iInterface (String Index)
+#endif	// PROJC_CFG_WEBUSB_SUPPORT
+
 #ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
 	/* CMSIS-DAP V1, Length: 32 */ 
 	0x09,        //   bLength
 	0x04,        //   bDescriptorType (Interface)
-	0x01,        //   bInterfaceNumber 1
+	0x02,        //   bInterfaceNumber 2
 	0x00,        //   bAlternateSetting
 	0x02,        //   bNumEndpoints 2
 	0x03,        //   bInterfaceClass
 	0x00,        //   bInterfaceSubClass
 	0x00,        //   bInterfaceProtocol
-	0x05,        //   iInterface (String Index)
+	0x06,        //   iInterface (String Index)
 	
 	0x09,        //   bLength
 	0x21,        //   bDescriptorType (HID)
@@ -102,18 +117,18 @@ static const uint8_t USB_ConfigDescriptor[] =
 	/* IAD CDC EXT, Length: 66 */ 
 	0x08,	// bLength: IAD Descriptor size
 	USB_DT_INTERFACE_ASSOCIATION,	// bDescriptorType: IAD
-	2,		// bFirstInterface
+	3,		// bFirstInterface
 	2,		// bInterfaceCount
 	0x02,	// bFunctionClass
 	0x02,	// bFunctionSubClass
 	0x01,	// bFunctionProtocol
-	0x06,	// iFunction
+	0x07,	// iFunction
 
 	// Data class interface descriptor
 	0x09,	// bLength: Endpoint Descriptor size
 	USB_DT_INTERFACE,
 			// bDescriptorType: Interface
-	0x02,	// bInterfaceNumber: Number of Interface
+	0x03,	// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x02,	// bNumEndpoints: Two endpoints used
 	0x0A,	// bInterfaceClass: CDC
@@ -145,7 +160,7 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x09,	// bLength: Interface Descriptor size
 	USB_DT_INTERFACE,
 			// bDescriptorType: Interface
-	0x03,	// bInterfaceNumber: Number of Interface
+	0x04,	// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x01,	// bNumEndpoints: One endpoints used
 	0x02,	// bInterfaceClass: Communication Interface Class
@@ -177,8 +192,8 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x05,	// bFunctionLength
 	0x24,	// bDescriptorType: CS_INTERFACE
 	0x06,	// bDescriptorSubtype: Union func desc
-	3,		// bMasterInterface: Communication class interface
-	2,		// bSlaveInterface0: Data Class Interface
+	0x03,	// bMasterInterface: Communication class interface
+	0x02,	// bSlaveInterface0: Data Class Interface
 	
 	// Endpoint Descriptor
 	0x07,	// bLength: Endpoint Descriptor size
@@ -195,18 +210,18 @@ static const uint8_t USB_ConfigDescriptor[] =
 	/* IAD CDC Shell, Length: 66 */ 
 	0x08,	// bLength: IAD Descriptor size
 	USB_DT_INTERFACE_ASSOCIATION,	// bDescriptorType: IAD
-	4,		// bFirstInterface
+	5,		// bFirstInterface
 	2,		// bInterfaceCount
 	0x02,	// bFunctionClass
 	0x02,	// bFunctionSubClass
 	0x01,	// bFunctionProtocol
-	0x07,	// iFunction
+	0x08,	// iFunction
 
 	// Data class interface descriptor
 	0x09,	// bLength: Endpoint Descriptor size
 	USB_DT_INTERFACE,
 			// bDescriptorType: Interface
-	0x04,	// bInterfaceNumber: Number of Interface
+	0x05,	// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x02,	// bNumEndpoints: Two endpoints used
 	0x0A,	// bInterfaceClass: CDC
@@ -238,7 +253,7 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x09,	// bLength: Interface Descriptor size
 	USB_DT_INTERFACE,
 			// bDescriptorType: Interface
-	0x05,	// bInterfaceNumber: Number of Interface
+	0x06,	// bInterfaceNumber: Number of Interface
 	0x00,	// bAlternateSetting: Alternate setting
 	0x01,	// bNumEndpoints: One endpoints used
 	0x02,	// bInterfaceClass: Communication Interface Class
@@ -270,8 +285,8 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x05,	// bFunctionLength
 	0x24,	// bDescriptorType: CS_INTERFACE
 	0x06,	// bDescriptorSubtype: Union func desc
-	3,		// bMasterInterface: Communication class interface
-	2,		// bSlaveInterface0: Data Class Interface
+	5,		// bMasterInterface: Communication class interface
+	4,		// bSlaveInterface0: Data Class Interface
 	
 	// Endpoint Descriptor
 	0x07,	// bLength: Endpoint Descriptor size
@@ -283,6 +298,132 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x00,
 	0xFF,	// bInterval:
 #endif	// PROJC_CFG_CDCSHELL_SUPPORT
+};
+
+#define FUNCTION_SUBSET_LEN			160
+#define WINUSB_DESC_LENGTH			(10 + FUNCTION_SUBSET_LEN + FUNCTION_SUBSET_LEN)
+static const uint8_t WINUSB_Descriptor[] =
+{
+	(10 >> 0) & 0xFF,
+	(10 >> 8) & 0xFF,
+	0x00, 0x00,
+	0x00, 0x00, 0x03, 0x06,
+	(WINUSB_DESC_LENGTH >> 0) & 0xFF,
+	(WINUSB_DESC_LENGTH >> 8) & 0xFF,
+
+	(8 >> 0) & 0xFF,
+	(8 >> 8) & 0xFF,
+	(2 >> 0) & 0xFF,
+	(2 >> 8) & 0xFF,
+	0x00, // cmsis-dap v2 interface
+	0x00,
+	(FUNCTION_SUBSET_LEN >> 0) & 0xFF,
+	(FUNCTION_SUBSET_LEN >> 8) & 0xFF,
+
+	(20 >> 0) & 0xFF,
+	(20 >> 8) & 0xFF,
+	(3 >> 0) & 0xFF,
+	(3 >> 8) & 0xFF,
+	'W', 'I', 'N', 'U', 'S', 'B', 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	(132 >> 0) & 0xFF,
+	(132 >> 8) & 0xFF,
+	(4 >> 0) & 0xFF,
+	(4 >> 8) & 0xFF,
+	(7 >> 0) & 0xFF,
+	(7 >> 8) & 0xFF,
+	(42 >> 0) & 0xFF,
+	(42 >> 8) & 0xFF,
+	'D',0,'e',0,'v',0,'i',0,'c',0,'e',0,
+	'I',0,'n',0,'t',0,'e',0,'r',0,'f',0,'a',0,'c',0,'e',0,
+	'G',0,'U',0,'I',0,'D',0,'s',0,0,0,
+	(80 >> 0) & 0xFF,
+	(80 >> 8) & 0xFF,
+	'{',0,
+	'C',0,'D',0,'B',0,'3',0,'B',0,'5',0,'A',0,'D',0,'-',0,
+	'2',0,'9',0,'3',0,'B',0,'-',0,
+	'4',0,'6',0,'6',0,'3',0,'-',0,
+	'A',0,'A',0,'3',0,'6',0,'-',
+	0,'1',0,'A',0,'A',0,'E',0,'4',0,'6',0,'4',0,'6',0,'3',0,'7',0,'7',0,'6',0,
+	'}',0,0,0,0,0,
+
+	(8 >> 0) & 0xFF,
+	(8 >> 8) & 0xFF,
+	(2 >> 0) & 0xFF,
+	(2 >> 8) & 0xFF,
+	0x01, // webusb interface
+	0x00,
+	(FUNCTION_SUBSET_LEN >> 0) & 0xFF,
+	(FUNCTION_SUBSET_LEN >> 8) & 0xFF,
+
+	(20 >> 0) & 0xFF,
+	(20 >> 8) & 0xFF,
+	(3 >> 0) & 0xFF,
+	(3 >> 8) & 0xFF,
+	'W', 'I', 'N', 'U', 'S', 'B', 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 
+	(132 >> 0) & 0xFF,
+	(132 >> 8) & 0xFF,
+	(4 >> 0) & 0xFF,
+	(4 >> 8) & 0xFF,
+	(7 >> 0) & 0xFF,
+	(7 >> 8) & 0xFF,
+	(42 >> 0) & 0xFF,
+	(42 >> 8) & 0xFF,
+	'D',0,'e',0,'v',0,'i',0,'c',0,'e',0,
+	'I',0,'n',0,'t',0,'e',0,'r',0,'f',0,'a',0,'c',0,'e',0,
+	'G',0,'U',0,'I',0,'D',0,'s',0,0,0,
+	(80 >> 0) & 0xFF,
+	(80 >> 8) & 0xFF,
+	'{',0,
+	'9',0,'2',0,'C',0,'E',0,'6',0,'4',0,'6',0,'2',0,'-',0,
+	'9',0,'C',0,'7',0,'7',0,'-',0,
+	'4',0,'6',0,'F',0,'E',0,'-',0,
+	'9',0,'3',0,'3',0,'B',0,'-',
+	0,'3',0,'1',0,'C',0,'B',0,'9',0,'C',0,'5',0,'A',0,'A',0,'3',0,'B',0,'9',0,
+	'}',0,0,0,0,0,
+};
+
+#define BOS_NUMBER			(CMSIS_DAP_V2_BOS_COUNT + WEBUSB_BOS_COUNT)
+#define BOS_DESC_LENGTH		(5 + CMSIS_DAP_V2_BOS_DESC_LENGTH + WEBUSB_BOS_DESC_LENGTH)
+static const uint8_t USB_BOSDescriptor[] =
+{
+	0x05,
+	0x0F,
+	(BOS_DESC_LENGTH >> 0) & 0xFF,
+	(BOS_DESC_LENGTH >> 8) & 0xFF,
+	BOS_NUMBER,
+
+#ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
+	CMSIS_DAP_V2_BOS_DESC_LENGTH,
+	0x10,
+	0x05,
+	0x00,
+	0xDF, 0x60, 0xDD, 0xD8,
+	0x89, 0x45, 0xC7, 0x4C,
+	0x9C, 0xD2, 0x65, 0x9D,
+	0x9E, 0x64, 0x8A, 0x9F,
+	0x00, 0x00, 0x03, 0x06,
+	(sizeof(WINUSB_Descriptor) >> 0) & 0xFF,
+	(sizeof(WINUSB_Descriptor) >> 8) & 0xFF,
+	0x20,
+	0x00,
+#endif
+
+#ifdef PROJC_CFG_WEBUSB_SUPPORT
+	WEBUSB_BOS_DESC_LENGTH,
+	0x10,
+	0x05,
+	0x00,
+	0x38, 0xB6, 0x08, 0x34,
+	0xA9, 0x09, 0xA0, 0x47,
+	0x8B, 0xFD, 0xA0, 0x76,
+	0x88, 0x15, 0xB6, 0x65,
+	(0x0100 >> 0) & 0xFF,
+	(0x0100 >> 8) & 0xFF,
+	0x21,
+	0x00,
+#endif
 };
 
 static const uint8_t USB_StringLangID[] =
@@ -323,14 +464,21 @@ static const uint8_t CMSIS_DAP_V1_StringFunc[] =
 {
 	26,
 	USB_DT_STRING,
-	'C', 0, 'M', 0, 'S', 0, 'I', 0, 'S', 0, '-', 0, 'D', 0, 'A', 0, 'P', 0, ' ', 0, 'V', 0, '1', 0,
+	'C', 0, 'M', 0, 'S', 0, 'I', 0, 'S', 0, '-', 0, 'D', 0, 'A', 0, 'P', 0, ' ', 0, 'v', 0, '1', 0,
 };
 
 static const uint8_t CMSIS_DAP_V2_StringFunc[] =
 {
 	26,
 	USB_DT_STRING,
-	'C', 0, 'M', 0, 'S', 0, 'I', 0, 'S', 0, '-', 0, 'D', 0, 'A', 0, 'P', 0, ' ', 0, 'V', 0, '2', 0,
+	'C', 0, 'M', 0, 'S', 0, 'I', 0, 'S', 0, '-', 0, 'D', 0, 'A', 0, 'P', 0, ' ', 0, 'v', 0, '2', 0,
+};
+
+static const uint8_t WEBUSB_StringFunc[] =
+{
+	36,
+	USB_DT_STRING,
+	'W', 0, 'e', 0, 'b', 0, 'U', 0, 'S', 0, 'B', 0, ':', 0,	' ', 0,	'C', 0, 'M', 0, 'S', 0, 'I', 0, 'S', 0, '-', 0, 'D', 0, 'A', 0, 'P', 0,
 };
 
 static const uint8_t CDCEXT_StringFunc[] =
@@ -339,6 +487,18 @@ static const uint8_t CDCEXT_StringFunc[] =
 	USB_DT_STRING,
 	'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0, 'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
 };
+static const uint8_t CDCEXT_DATA_StringFunc[] =
+{
+	28,
+	USB_DT_STRING,
+	'1', 0, '2', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0, 'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
+};
+static const uint8_t CDCEXT_CTRL_StringFunc[] =
+{
+	28,
+	USB_DT_STRING,
+	'1', 0, '3', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0, 'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
+};
 
 static const uint8_t CDCSHELL_StringFunc[] =
 {
@@ -346,19 +506,33 @@ static const uint8_t CDCSHELL_StringFunc[] =
 	USB_DT_STRING,
 	'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0, 'D', 0, 'C', 0, 'S', 0, 'h', 0, 'e', 0, 'l', 0, 'l', 0,
 };
+static const uint8_t CDCSHELL_DATA_StringFunc[] =
+{
+	28,
+	USB_DT_STRING,
+	'1', 0, '4', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0, 'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
+};
+static const uint8_t CDCSHELL_CTRL_StringFunc[] =
+{
+	28,
+	USB_DT_STRING,
+	'1', 0, '5', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0, 'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
+};
 
 static const struct vsfusbd_desc_filter_t USB_descriptors[] =
 {
 	VSFUSBD_DESC_DEVICE(0, USB_DeviceDescriptor, sizeof(USB_DeviceDescriptor)),
 	VSFUSBD_DESC_CONFIG(0, 0, USB_ConfigDescriptor, sizeof(USB_ConfigDescriptor)),
+	VSFUSBD_BOS_DESC(0, 0, USB_BOSDescriptor, sizeof(USB_BOSDescriptor)),
 	VSFUSBD_DESC_STRING(0, 0, USB_StringLangID, sizeof(USB_StringLangID)),
 	VSFUSBD_DESC_STRING(0x0409, 1, USB_StringVendor, sizeof(USB_StringVendor)),
 	VSFUSBD_DESC_STRING(0x0409, 2, USB_StringProduct, sizeof(USB_StringProduct)),
 	VSFUSBD_DESC_STRING(0x0409, 3, USB_StringSerial, sizeof(USB_StringSerial)),
 	VSFUSBD_DESC_STRING(0x0409, 4, CMSIS_DAP_V2_StringFunc, sizeof(CMSIS_DAP_V2_StringFunc)),
-	VSFUSBD_DESC_STRING(0x0409, 5, CMSIS_DAP_V1_StringFunc, sizeof(CMSIS_DAP_V1_StringFunc)),
-	VSFUSBD_DESC_STRING(0x0409, 6, CDCEXT_StringFunc, sizeof(CDCEXT_StringFunc)),
-	VSFUSBD_DESC_STRING(0x0409, 7, CDCSHELL_StringFunc, sizeof(CDCSHELL_StringFunc)),
+	VSFUSBD_DESC_STRING(0x0409, 5, WEBUSB_StringFunc, sizeof(WEBUSB_StringFunc)),
+	VSFUSBD_DESC_STRING(0x0409, 6, CMSIS_DAP_V1_StringFunc, sizeof(CMSIS_DAP_V1_StringFunc)),
+	VSFUSBD_DESC_STRING(0x0409, 7, CDCEXT_StringFunc, sizeof(CDCEXT_StringFunc)),
+	VSFUSBD_DESC_STRING(0x0409, 8, CDCSHELL_StringFunc, sizeof(CDCSHELL_StringFunc)),
 	VSFUSBD_DESC_NULL
 };
 
