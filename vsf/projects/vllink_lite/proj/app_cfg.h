@@ -29,6 +29,6 @@
 *******************************************************************************/
 #define APPCFG_USBD_VID					0x0D28
 #define APPCFG_USBD_PID					0x0204
-#define APPCFG_USBD_BCD					0x1000
+#define APPCFG_USBD_BCD					0x0100
 
 
