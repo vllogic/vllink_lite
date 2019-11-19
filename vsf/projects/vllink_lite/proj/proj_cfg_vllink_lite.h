@@ -32,7 +32,7 @@
 #define SWO_MANCHESTER				0
 #define SWO_BUFFER_SIZE				128
 
-#define DAP_VENDOR					"Vllogic.com"
-#define DAP_PRODUCT					"Vllogic Lite"
+//#define DAP_VENDOR					"Vllogic.com"
+//#define DAP_PRODUCT					"Vllogic Lite"
 
 #endif // __PROJ_CFG_LVL2_H__
