@@ -1822,7 +1822,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$\GD32F350x8_booted.icf</state>
+                    <state>$PROJ_DIR$\GD32F350x8.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
