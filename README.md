@@ -1,18 +1,22 @@
 # Vllink Lite
 ## 简介
-Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作，最小封装为QFN28，最小RAM/ROM占用仅为6/32KB，无需外部晶振。
+Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作，最小封装为QFN28，标准版本使用GD32F350G8U6（8K RAM / 64K ROM），亦可精简缓冲，使用GD32F350G8U6（6K RAM / 32K ROM），无需外部晶振。
 
 ## 成本
-最小方案的Vllink Lite硬件设计中，除了阻容及接口器件外，仅需一颗LDO和一颗GD32F350G6U6，此芯片在淘宝GD32旗舰店有售，当前零售价为5.75￥。
+标准版本的Vllink Lite硬件设计中，除了阻容及接口器件外，仅需一颗LDO和一颗GD32F350G8U6，此芯片在淘宝GD32旗舰店有售，当前零售价为6.00￥。
 
 ## 功能
-* 提供一路CMSIS-DAP协议免驱接口，支持SWD，JTAG，SWO接口，支持主流IDE
-* 提供一路Vlink协议接口，支持SWD，JTAG接口，目前需配合OpenOCD使用
+* 提供一路CMSIS-DAP V2协议免驱接口，支持SWD，JTAG，SWO接口，支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29）
 * 提供一路USB CDC接口，最高波特率可达8M
 
 ## 性能
-截止20181102，已测试并完善SWD及CDC接口，JTAG部分稳定性欠佳。以下测试数据是在OpenOCD（Vllink协议）<==> Vllink Lite <==> STM32F411（SRAM区域）环境下获得的。
+当前DAPLINK 0254固件使用CMSIS-DAP V2协议，通过SWD接口对SRAM区域的读写速度大致在110kB/S左右（默认配置，不指定时钟速率）。
 
+Vllink Lite优化了底层传输协议，尽量使用SPI通讯，同样的测试环境下，读写速度提升到230kB/S左右。
+
+同时SPI通讯能支持更高的时钟速率，最高可达32M，不过当时钟速率超过16M时，读写速度提升有限。更多细节可参考源码。
+
+下表是2018年时使用专用协议的测试数据，可供参考
 | 时钟频率 | 读速度（KiB/s） | 写速度（KiB/s） |
 | --------| -----:  | -----:  |
 | 2000    | 128.672 | 131.903 |
@@ -21,57 +25,15 @@ Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作�
 | 16000   | 402.034 | 425.731 |
 | 32000   | 438.233 | 456.286 |
 
-测试记录：
-```
-Open On-Chip Debugger
-> adapter_khz 2000
-adapter speed: 2000 kHz
-> dump_image 128kB_ram.bin 0x20000000 0x20000
-dumped 131072 bytes in 0.994774s (128.672 KiB/s)
-> load_image 128kB_ram.bin 0x20000000
-131072 bytes written at address 0x20000000
-downloaded 131072 bytes in 0.970408s (131.903 KiB/s)
-> adapter_khz 4000
-adapter speed: 4000 kHz
-> dump_image 128kB_ram.bin 0x20000000 0x20000
-dumped 131072 bytes in 0.599675s (213.449 KiB/s)
-> load_image 128kB_ram.bin 0x20000000
-131072 bytes written at address 0x20000000
-downloaded 131072 bytes in 0.572540s (223.565 KiB/s)
-> adapter_khz 8000
-adapter speed: 8000 kHz
-> dump_image 128kB_ram.bin 0x20000000 0x20000
-dumped 131072 bytes in 0.395956s (323.268 KiB/s)
-> load_image 128kB_ram.bin 0x20000000
-131072 bytes written at address 0x20000000
-downloaded 131072 bytes in 0.368262s (347.579 KiB/s)
-> adapter_khz 16000
-adapter speed: 16000 kHz
-> dump_image 128kB_ram.bin 0x20000000 0x20000
-dumped 131072 bytes in 0.318381s (402.034 KiB/s)
-> load_image 128kB_ram.bin 0x20000000
-131072 bytes written at address 0x20000000
-downloaded 131072 bytes in 0.300659s (425.731 KiB/s)
-> adapter_khz 32000
-adapter speed: 32000 kHz
-> dump_image 128kB_ram.bin 0x20000000 0x20000
-dumped 131072 bytes in 0.292082s (438.233 KiB/s)
-> load_image 128kB_ram.bin 0x20000000
-131072 bytes written at address 0x20000000
-downloaded 131072 bytes in 0.280526s (456.286 KiB/s)
-```
-
-## 制作
+## 硬件制作
 `./hardware/`路径下有相关演示板的原理图及PCBA制作资料。
-`./firmware/`路径下有相关演示板的运行固件。
 
-## Openocd
-Vllink驱动遵循OpenOCD GPL协议，可编译运行：[OpenOCD-Source](https://github.com/vllogic/openocd-vllink)。
-
-或直接下载预编译的可执行文件：[OpenOCD-Releases](https://github.com/vllogic/openocd-vllink/releases)。
+## 固件构建
+* IAR for ARM 8.32.3
+* GD32F3x0 AddOn 获取地址：http://gd32mcu.21ic.com/documents
 
 ## 授权
-Vllink Lite的硬件设计图纸及固件可自由使用及分发，也可以在保证固件完整性的情况下进行商业使用及销售。
+GPLv3，随便玩
 
 ## 交流
 欢迎加入QQ群：512256420
