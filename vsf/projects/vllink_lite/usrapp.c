@@ -24,22 +24,19 @@ struct usrapp_t usrapp =
 	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap_v2,
 #endif
 #ifdef PROJC_CFG_WEBUSB_SUPPORT
-#endif
-#ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
-	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_HID_class,
-	.usbd.ifaces[2].protocol_param			= &usrapp.usbd.cmsis_dap,
+	// TODO
 #endif
 #ifdef PROJC_CFG_CDCEXT_SUPPORT
-	.usbd.ifaces[3].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
+	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
+	.usbd.ifaces[2].protocol_param			= &usrapp.usbd.cdcacm_ext,
+	.usbd.ifaces[3].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
 	.usbd.ifaces[3].protocol_param			= &usrapp.usbd.cdcacm_ext,
-	.usbd.ifaces[4].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
-	.usbd.ifaces[4].protocol_param			= &usrapp.usbd.cdcacm_ext,
 #endif
 #ifdef PROJC_CFG_CDCSHELL_SUPPORT
-	.usbd.ifaces[5].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
+	.usbd.ifaces[4].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
+	.usbd.ifaces[4].protocol_param			= &usrapp.usbd.cdcacm_shell,
+	.usbd.ifaces[5].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
 	.usbd.ifaces[5].protocol_param			= &usrapp.usbd.cdcacm_shell,
-	.usbd.ifaces[6].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMControl_class,
-	.usbd.ifaces[6].protocol_param			= &usrapp.usbd.cdcacm_shell,
 #endif
 
 	.usbd.cmsis_dap_v2.ep_in						= 1,
@@ -47,15 +44,10 @@ struct usrapp_t usrapp =
 	.usbd.cmsis_dap_v2.dap_param					= &usrapp.dap_param,
 	.usbd.cmsis_dap_v2.dap_connected				= false,
 
-	.usbd.cmsis_dap.HID_param.ep_in					= 2,
-	.usbd.cmsis_dap.HID_param.ep_out				= 2,
-	.usbd.cmsis_dap.dap_param						= &usrapp.dap_param,
-	.usbd.cmsis_dap.dap_connected					= false,
-
 #ifdef PROJC_CFG_CDCEXT_SUPPORT
-	.usbd.cdcacm_ext.CDC.ep_in						= 3,
-	.usbd.cdcacm_ext.CDC.ep_out						= 3,
-	.usbd.cdcacm_ext.CDC.ep_notify					= 5,
+	.usbd.cdcacm_ext.CDC.ep_in						= 2,
+	.usbd.cdcacm_ext.CDC.ep_out						= 2,
+	.usbd.cdcacm_ext.CDC.ep_notify					= 4,
 	.usbd.cdcacm_ext.CDC.stream_tx					= (struct vsf_stream_t *)&usrapp.usart_ext.stream_rx,
 	.usbd.cdcacm_ext.CDC.stream_rx					= (struct vsf_stream_t *)&usrapp.usart_ext.stream_tx,
 	.usbd.cdcacm_ext.callback.set_line_coding		= usrapp_update_ext_usart_param,
@@ -66,9 +58,9 @@ struct usrapp_t usrapp =
 #endif
 	
 #ifdef PROJC_CFG_CDCSHELL_SUPPORT
-	.usbd.cdcacm_shell.CDC.ep_in					= 4,
-	.usbd.cdcacm_shell.CDC.ep_out					= 4,
-	.usbd.cdcacm_shell.CDC.ep_notify				= 6,
+	.usbd.cdcacm_shell.CDC.ep_in					= 3,
+	.usbd.cdcacm_shell.CDC.ep_out					= 3,
+	.usbd.cdcacm_shell.CDC.ep_notify				= 5,
 	.usbd.cdcacm_shell.CDC.stream_tx				= (struct vsf_stream_t *)&usrapp.usart_trst_swo.stream_rx,
 	.usbd.cdcacm_shell.CDC.stream_rx				= (struct vsf_stream_t *)&usrapp.usart_trst_swo.stream_tx,
 	.usbd.cdcacm_shell.callback.set_line_coding		= usrapp_update_ext_usart_param,
@@ -255,8 +247,6 @@ void usrapp_srt_init(struct usrapp_t *app)
 		serial += 2;
 	}
 	
-	
-	vsfusbd_CMSIS_DAP_init(&app->usbd.cmsis_dap);
 	usart_stream_init(&usrapp.usart_ext.usart_stream);	
 	usart_stream_init(&usrapp.usart_trst_swo.usart_stream);
 

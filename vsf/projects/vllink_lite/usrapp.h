@@ -12,10 +12,6 @@ struct usrapp_t
 		struct vsfusbd_config_t config[1];
 		struct vsfusbd_iface_t ifaces[USBD_INTERFACE_COUNT];
 
-#ifdef PROJC_CFG_CMSIS_DAP_V1_SUPPORT
-		struct vsfusbd_CMSIS_DAP_param_t cmsis_dap;
-#endif
-
 #ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
 		struct vsfusbd_cmsis_dap_v2_param_t cmsis_dap_v2;
 #endif
