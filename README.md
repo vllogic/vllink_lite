@@ -27,11 +27,13 @@ Vllink Lite优化了底层传输协议，尽量使用SPI通讯，同样的测试
 | 32000   | 438.233 | 456.286 |
 
 ## 硬件制作
-`./hardware/`路径下有相关演示板的原理图及PCBA制作资料。
+[原理图及PCBA制作资料](https://github.com/vllogic/vllink_lite/tree/master/hardware)
+
+[固件](https://github.com/vllogic/vllink_lite/releases)
 
 ## 固件构建
 * IAR for ARM 8.32.3
-* GD32F3x0 AddOn 获取地址：http://gd32mcu.21ic.com/documents
+* GD32F3x0 AddOn [获取地址](http://gd32mcu.21ic.com/documents)
 
 ## 授权
 GPLv3，随便玩
