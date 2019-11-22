@@ -83,7 +83,7 @@
 
 // KEY
 #define PERIPHERAL_KEY_PORT					0
-#define PERIPHERAL_KEY_PIN					0
+#define PERIPHERAL_KEY_PIN					4		// vllink lite r3
 #define PERIPHERAL_KEY_VALID_LEVEL			1
 
 // LED

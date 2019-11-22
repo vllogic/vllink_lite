@@ -6,7 +6,7 @@ Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作�
 标准版本的Vllink Lite硬件设计中，除了阻容及接口器件外，仅需一颗LDO和一颗GD32F350G8U6，此芯片在淘宝GD32旗舰店有售，当前零售价为6.00￥。
 
 ## 功能
-* 提供一路CMSIS-DAP V2协议免驱接口，支持SWD，JTAG，SWO接口，支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29）
+* 提供一路CMSIS-DAP V2协议免驱接口，支持SWD，JTAG，SWO接口，支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29）、PyOCD（需安装libusb，详情请看pyocd安装说明）
 * 提供一路USB CDC接口，最高波特率可达8M
 
 ## 性能
