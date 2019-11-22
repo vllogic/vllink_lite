@@ -1,3 +1,12 @@
+# TODO List
+## 近期目标
+### 1. 通过WebUSB实现轻量级Bootloader
+### 2. review DAPLink中新增加命令，酌情支持
+### 3. 在CMSIS-DAP V2协议中，增加双串口嗅探功能
+## 远期目标
+### 1. 利用R3版本中的外扩SPI Flash，探索自动DAP序列执行功能的实现方案
+
+------------------------------------
 # Vllink Lite
 ## 简介
 Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作，最小封装为QFN28，标准版本使用GD32F350G8U6（8K RAM / 64K ROM），亦可精简缓冲，使用GD32F350G6U6（6K RAM / 32K ROM），无需外部晶振。
