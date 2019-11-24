@@ -27,8 +27,15 @@
 /*******************************************************************************
 	Bootloader Paramter Config
 *******************************************************************************/
-#define APPCFG_USBD_VID					0x0D28
-#define APPCFG_USBD_PID					0x0204
-#define APPCFG_USBD_BCD					0x0100
-
+#if defined(BOARD_TYPE_VLLINK_LITE)
+#	define APPCFG_USBD_VID					0x0D28
+#	define APPCFG_USBD_PID					0x0204
+#	define APPCFG_USBD_BCD					0x0100
+#elif defined(BOARD_TYPE_VLLINK_LITE_BOOTLOADER)
+#	define APPCFG_USBD_VID					0x1209
+#	define APPCFG_USBD_PID					0x6666
+#	define APPCFG_USBD_BCD					0x0001
+#else
+#	error "UNKNOWN PRODUCT"
+#endif
 

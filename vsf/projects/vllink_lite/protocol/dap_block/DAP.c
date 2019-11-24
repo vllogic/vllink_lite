@@ -17,6 +17,7 @@ const char DAP_FW_Ver[] = DAP_FW_VER;
 #define VSFSM_EVT_ON_REVICE				(VSFSM_EVT_USER_LOCAL + 4)
 #define VSFSM_EVT_ON_SEND_DONE			(VSFSM_EVT_USER_LOCAL + 5)
 
+#if PROJ_CFG_DAP_STANDARD_ENABLE
 static uint8_t get_dap_info(struct dap_param_t *param, uint8_t id, uint8_t *info)
 {
 	uint8_t length = 0U;
@@ -33,17 +34,15 @@ static uint8_t get_dap_info(struct dap_param_t *param, uint8_t id, uint8_t *info
 	case DAP_ID_PRODUCT:
 #ifdef DAP_PRODUCT
 		if (info)
-		memcpy(info, DAP_Product, sizeof(DAP_Product));
+			memcpy(info, DAP_Product, sizeof(DAP_Product));
 		length = (uint8_t)sizeof(DAP_Product);
 #endif
 		break;
 	case DAP_ID_SER_NUM:
-#ifdef DAP_SER_NUM
-		if (info && param->get_serial)
+		if (param->get_serial)
 			length = param->get_serial(info);
 		else
 			length = 0;
-#endif
 		break;
 	case DAP_ID_FW_VER:
 		if (info)
@@ -129,13 +128,17 @@ static vsf_err_t port_fini(uint8_t port)
 	}
 	return VSFERR_NONE;
 }
+#endif	// PROJ_CFG_DAP_STANDARD_ENABLE
 
 static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t *response)
 {
 	uint8_t cmd_id, cmd_num;
-	uint16_t req_ptr, resp_ptr, transfer_cnt, transfer_num;
+	uint16_t req_ptr, resp_ptr;
+#if PROJ_CFG_DAP_STANDARD_ENABLE
+	uint16_t transfer_cnt, transfer_num;
 	uint32_t data;
 	uint64_t buf_tms, buf_tdi, buf_tdo;
+#endif
 
 	req_ptr = 0;
 	resp_ptr = 0;
@@ -152,6 +155,99 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			cmd_num = request[req_ptr++];
 			response[resp_ptr++] = cmd_num;
 		}
+		else if ((cmd_id >= ID_DAP_Vendor0) && (cmd_id <= ID_DAP_Vendor31))
+		{
+			switch (cmd_id)
+			{
+			case ID_DAP_Vendor0:
+				if (param->get_serial && (resp_ptr <= (param->pkt_size - 1 - param->get_serial(NULL))))
+				{
+					uint8_t num = param->get_serial(&response[resp_ptr + 1]);
+					response[resp_ptr] = num;
+					resp_ptr += num + 1;
+				}
+				else
+					response[resp_ptr++] = 0;
+				break;
+#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+			case ID_DAP_Vendor1:
+				/*
+					Get uart line coding CMD:
+					Request:
+					CMD [1 byte]
+					ID_DAP_Vendor1
+					Response:
+					CMD [1 byte]		uart (default 0) line coding [7 byte]
+					ID_DAP_Vendor1		struct usb_CDCACM_line_coding_t
+				*/
+				break;
+			case ID_DAP_Vendor2:
+				/*
+					Set uart line coding CMD:
+					Request:
+					CMD [1 byte]		uart (default 0) line coding [7 byte]
+					ID_DAP_Vendor2		struct usb_CDCACM_line_coding_t
+					Response:
+					CMD [1 byte]		const [1 byte]
+					ID_DAP_Vendor2		1
+				*/
+				break;
+			case ID_DAP_Vendor3:
+				/*
+					uart read:
+					Request:
+					CMD [1 byte]
+					ID_DAP_Vendor3
+					Response:
+					CMD [1 byte]		length [1 byte]			read data
+					ID_DAP_Vendor3		[0, 0xff]				.. .. ..
+				*/
+				break;
+			case ID_DAP_Vendor4:
+				/*
+					uart write:
+					Request:
+					CMD [1 byte]		length [1 byte]			write data
+					ID_DAP_Vendor4		[0, 0xff]				.. .. ..
+					Response:
+					CMD [1 byte]		const
+					ID_DAP_Vendor4		1
+				*/
+				break;
+			case ID_DAP_Vendor5:
+				/*
+					Select uart
+					Request:
+					CMD [1 byte]		uart num [1 byte]
+					ID_DAP_Vendor5		[0, 0xff]
+					Response:
+					CMD [1 byte]		uart num [1 byte]
+					ID_DAP_Vendor5		[0, 0xff]
+				*/
+				break;
+#endif	// PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+#if PROJ_CFG_DAP_VERDOR_BOOTLOADER
+			case ID_DAP_Vendor30:
+			case ID_DAP_Vendor31:
+				if (param->vendor_handler)
+				{
+					uint16_t req_size = GET_LE_U16(request) + 5;
+					uint16_t resp_size = param->vendor_handler(cmd_id, request, response, GET_LE_U16(request) + 5, param->pkt_size - resp_ptr);
+					
+					if (resp_size)
+					{
+						req_ptr += req_size;
+						resp_ptr += resp_size;
+					}
+				}
+				goto fault;
+				break;
+#endif	// PROJ_CFG_DAP_VERDOR_BOOTLOADER
+			default:
+				goto fault;
+			}
+		}
+#if PROJ_CFG_DAP_STANDARD_ENABLE
 		else if (cmd_id == ID_DAP_Info)
 		{
 			data = request[req_ptr++];
@@ -1126,6 +1222,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			}
 		}
 	#endif
+#endif // PROJ_CFG_DAP_STANDARD_ENABLE
 		else
 		{
 			goto fault;
@@ -1149,8 +1246,12 @@ static vsf_err_t dap_thread(struct vsfsm_pt_t *pt, vsfsm_evt_t evt)
 	while (1)
 	{
 		if (vsfsm_sem_pend(&param->request_sem, pt->sm))
+		{
+			param->busy = false;
 			vsfsm_pt_wfe(pt, param->request_sem.evt);
+		}
 
+		param->busy = true;
 		param->response_size = cmd_handler(param, param->request[param->request_head], param->response);
 
 		param->request_head++;
@@ -1191,6 +1292,7 @@ static struct vsfsm_state_t *sem_evt_handler(struct vsfsm_t *sm, vsfsm_evt_t evt
 
 vsf_err_t DAP_init(struct dap_param_t *param)
 {
+#if PROJ_CFG_DAP_STANDARD_ENABLE
 	param->port = DAP_PORT_DISABLED;
 	param->khz = DAP_DEFAULT_SWJ_CLOCK / 1000;
 	param->transfer.idle_cycles = 0;
@@ -1206,6 +1308,7 @@ vsf_err_t DAP_init(struct dap_param_t *param)
 	param->swo_rx.mem.buffer.buffer = (uint8_t *)param->swo_buff;
 	param->swo_rx.mem.buffer.size = sizeof(param->swo_buff);
 #endif
+#endif	// PROJ_CFG_DAP_STANDARD_ENABLE
 	
 	param->sem_sm.init_state.evt_handler = sem_evt_handler;
 	param->sem_sm.user_data = param;
@@ -1225,7 +1328,10 @@ vsf_err_t DAP_recvive_request(struct dap_param_t *param, uint8_t *buf, uint16_t 
 		return VSFERR_FAIL;
 	
 	if (buf[0] == ID_DAP_TransferAbort)
+	{
 		param->do_abort = true;
+		return VSFERR_NONE;
+	}
 	else if (param->request_cnt < DAP_PACKET_COUNT)
 	{
 		size = min(size, param->pkt_size);
@@ -1247,25 +1353,15 @@ vsf_err_t DAP_recvive_request(struct dap_param_t *param, uint8_t *buf, uint16_t 
 vsf_err_t DAP_register(struct dap_param_t *param, void *cb_param,
 		void (*cb_response)(void *, uint8_t *, uint16_t), uint16_t pkt_size)
 {
-	if (!param->cb_response)
-	{
-		param->cb_param = cb_param;
-		param->cb_response = cb_response;
-		param->pkt_size = pkt_size;
-		return VSFERR_NONE;
-	}
-	else
+	if (param->busy)
 		return VSFERR_FAIL;
-}
 
-void DAP_unregister(struct dap_param_t *param, void *cb_param,
-		void (*cb_response)(void *, uint8_t *, uint16_t))
-{
-	if (param->cb_response == cb_response)
-	{
-		param->cb_param = NULL;
-		param->cb_response = NULL;
-	}
+	if (param->cb_response)
+		param->cb_response(param->cb_param, NULL, 0);
+	param->cb_param = cb_param;
+	param->cb_response = cb_response;
+	param->pkt_size = pkt_size;
+	return VSFERR_NONE;
 }
 
 void DAP_send_response_done(struct dap_param_t *param)
@@ -1275,6 +1371,7 @@ void DAP_send_response_done(struct dap_param_t *param)
 
 void DAP_test(struct dap_param_t *param)
 {
+#if PROJ_CFG_DAP_STANDARD_ENABLE
 	param->port = DAP_PORT_JTAG;
 	param->khz = 1000;
 	param->transfer.retry_count = 100;
@@ -1293,5 +1390,6 @@ void DAP_test(struct dap_param_t *param)
 	port_init(param, DAP_PORT_JTAG);
 	while (1)
 		cmd_handler(param, param->request[param->request_head], param->response);
+#endif	// PROJ_CFG_DAP_STANDARD_ENABLE
 }
 

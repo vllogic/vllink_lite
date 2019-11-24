@@ -25,6 +25,10 @@
 #	define SOC_TYPE_GD32F350
 #	define DAP_BLOCK_TRANSFER
 #	include "vsfhal_cfg_vllink_lite.h"
+#elif defined(BOARD_TYPE_VLLINK_LITE_BOOTLOADER)
+#	define SOC_TYPE_GD32F350
+#	define DAP_BLOCK_TRANSFER
+#	include "vsfhal_cfg_vllink_lite_bootloader.h"
 #else
 #	error "UNKNOWN PRODUCT"
 #endif

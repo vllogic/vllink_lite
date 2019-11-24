@@ -43,11 +43,16 @@ static void cmsis_dap_send_response(void *p, uint8_t *buf, uint16_t size)
 {
 	struct vsfusbd_CMSIS_DAP_param_t *param = p;
 	
-	size = min(size, DAP_HID_PACKET_SIZE);
-	if (size)
+	if (!buf && !size)	// unregister
+		param->dap_connected = false;
+	else
 	{
-		memcpy(param->in, buf, DAP_HID_PACKET_SIZE);
-		vsfusbd_HID_IN_report_changed(&param->HID_param, &param->reports[0]);
+		size = min(size, DAP_HID_PACKET_SIZE);
+		if (size)
+		{
+			memcpy(param->in, buf, DAP_HID_PACKET_SIZE);
+			vsfusbd_HID_IN_report_changed(&param->HID_param, &param->reports[0]);
+		}
 	}
 }
 

@@ -175,11 +175,17 @@ extern "C" {
 struct dap_param_t
 {
 	uint16_t (*get_serial)(uint8_t *serial);
+#if PROJ_CFG_DAP_VERDOR_UART_ENABLE
 	vsf_err_t (*update_swo_usart_param)(uint8_t *mode, uint32_t *baudrate);
-	
+#endif
+#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+	uint16_t (*vendor_handler)(uint8_t cmd, uint8_t *req, uint8_t *resp, uint16_t req_data_size, uint16_t resp_free_size);
+#endif
+
+	bool busy;
+	uint16_t pkt_size;
 	void *cb_param;
 	void (*cb_response)(void *p, uint8_t *buf, uint16_t size);
-	uint16_t pkt_size;
 
 	struct vsfsm_t sm;
 	struct vsfsm_pt_t pt;
@@ -188,25 +194,26 @@ struct dap_param_t
 	struct vsfsm_sem_t request_sem;
 	struct vsfsm_sem_t response_sem;
 
-#if SWO_UART || SWO_MANCHESTER
-#if SWO_UART
-	struct vsf_fifostream_t swo_rx;
-	uint8_t swo_buff[SWO_BUFFER_SIZE];
-#endif
-	uint8_t transport;
-	
-	uint8_t trace_status;
-	uint8_t trace_mode;
-#endif
-	
 	uint8_t request[DAP_PACKET_COUNT][DAP_PACKET_SIZE];
 	uint8_t response[DAP_PACKET_SIZE];
 	uint16_t response_size;
 	uint8_t request_head;
 	uint8_t request_cnt;
-
-	bool do_abort;	
 	
+	bool do_abort;
+	
+#if PROJ_CFG_DAP_STANDARD_ENABLE
+#if SWO_UART || SWO_MANCHESTER
+#if SWO_UART
+	struct vsf_fifostream_t swo_rx;
+	uint8_t swo_buff[SWO_BUFFER_SIZE];
+#endif	// SWO_UART
+	uint8_t transport;
+	
+	uint8_t trace_status;
+	uint8_t trace_mode;
+#endif	// SWO_UART || SWO_MANCHESTER
+
 	uint8_t port;
 	uint16_t khz;
 	struct
@@ -237,13 +244,12 @@ struct dap_param_t
 		uint64_t buf_tdo;
 	} jtag_dev;
 #endif
+#endif	// PROJ_CFG_DAP_STANDARD_ENABLE
 };
 
 vsf_err_t DAP_init(struct dap_param_t *param);
 vsf_err_t DAP_register(struct dap_param_t *param, void *cb_param,
 		void (*cb_response)(void *, uint8_t *, uint16_t), uint16_t pkt_size);
-void DAP_unregister(struct dap_param_t *param, void *cb_param,
-		void (*cb_response)(void *, uint8_t *, uint16_t));
 vsf_err_t DAP_recvive_request(struct dap_param_t *param, uint8_t *buf, uint16_t size);
 void DAP_send_response_done(struct dap_param_t *param);
 

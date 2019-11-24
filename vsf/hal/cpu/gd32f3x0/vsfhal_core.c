@@ -89,6 +89,45 @@ void vsfhal_core_sleep(uint32_t mode)
 	__WFI();
 }
 
+#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+vsf_err_t vsfhal_core_init(void *p)
+{
+	// select irc8m
+	RCU_CTL0 |= RCU_CTL0_IRC8MEN;
+	while(!(RCU_CTL0 & RCU_CTL0_IRC8MSTB));
+	RCU_CFG0 &= ~RCU_CFG0_SCS;
+
+	RCU_ADDCTL |= RCU_ADDCTL_IRC48MEN;
+	while(!(RCU_ADDCTL & RCU_ADDCTL_IRC48MSTB));
+
+	RCU_CTL0 &= ~RCU_CTL0_PLLEN;
+
+	RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
+	RCU_CFG1 |= RCU_CFG1_PLLPRESEL | 11;
+	RCU_CFG0 |= RCU_CFG0_PLLSEL;
+
+	RCU_CFG0 &= ~RCU_CFG0_PLLMF;
+	RCU_CFG1 &= ~RCU_CFG1_PLLMF5;
+	RCU_CFG0 |= ((31 & 0xf) << 18) | ((31 & 0x10) << 23);
+	RCU_CFG1 |= ((31 & 0x20) << 26);
+
+	RCU_CTL0 |= RCU_CTL0_PLLEN;
+	while(!(RCU_CTL0 & RCU_CTL0_PLLSTB));
+	
+	// config ahb apb1 apb2
+	RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
+	RCU_CFG0 |= BIT(10);
+	RCU_CFG0 |= BIT(13);
+	RCU_CFG0 |= RCU_AHB_CKSYS_DIV1;
+
+	RCU_CFG0 |= RCU_CKSYSSRC_PLL;
+	while((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
+
+	SCB->VTOR = CORE_VECTOR_TABLE;
+	SCB->AIRCR = 0x05FA0000;
+	return VSFERR_NONE;
+}
+#else
 vsf_err_t vsfhal_core_init(void *p)
 {
 	uint32_t tmp32;
@@ -173,7 +212,7 @@ vsf_err_t vsfhal_core_init(void *p)
 		tmp32 = vsfhal_info.pll_freq_hz;
 	else
 		tmp32 = vsfhal_info.hsi8m_freq_hz;
-	tmp32 = vsfhal_info.ahb_freq_hz / tmp32;
+	tmp32 = tmp32 / vsfhal_info.ahb_freq_hz;
 	if (tmp32 == 1)
 		RCU_CFG0 |= RCU_AHB_CKSYS_DIV1;
 	else if (tmp32 == 2)
@@ -216,6 +255,7 @@ vsf_err_t vsfhal_core_init(void *p)
 	SCB->AIRCR = 0x05FA0000 | vsfhal_info.priority_group;
 	return VSFERR_NONE;
 }
+#endif
 
 uint32_t vsfhal_uid_get(uint8_t *buffer, uint32_t size)
 {

@@ -179,7 +179,7 @@ vsf_err_t vsfhal_flash_write(uint8_t index, uint32_t addr, uint8_t *buff)
 			return VSFERR_NOT_READY;
 		
 		FMC_CTL |= FMC_CTL_PG | FMC_CTL_ENDIE;
-		*(uint32_t *)GD32F3X0_FLASH_ADDR(addr) =  *(uint32_t *)buff;
+		*(uint32_t *)GD32F3X0_FLASH_ADDR(addr) =  GET_LE_U32(buff);
 		break;
 	default:
 		return VSFERR_NOT_SUPPORT;

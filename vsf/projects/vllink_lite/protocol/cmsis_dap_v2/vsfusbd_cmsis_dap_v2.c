@@ -37,18 +37,24 @@ static void cmsis_dap_v2_send_response(void *p, uint8_t *buf, uint16_t size)
 {
 	struct vsf_buffer_t buffer;
 	struct vsfusbd_cmsis_dap_v2_param_t *param = p;
-	struct vsf_bufstream_t *bufstream_tx = &param->bufstream_tx;
-
-	if (size && (size <= sizeof(param->txbuff)))
+	
+	if (!buf && !size)	// unregister
+		param->dap_connected = false;
+	else
 	{
-		memcpy(param->txbuff, buf, size);
-		if ((size < sizeof(param->txbuff)) && !(size % 64))
-			size += 1;
-		buffer.buffer = param->txbuff;
-		buffer.size = size;
-		STREAM_WRITE(bufstream_tx, &buffer);
-		
-		//vsfusbd_cmsis_dap_v2_on_in(param);
+		struct vsf_bufstream_t *bufstream_tx = &param->bufstream_tx;
+
+		if (size && (size <= sizeof(param->txbuff)))
+		{
+			memcpy(param->txbuff, buf, size);
+			if ((size < sizeof(param->txbuff)) && !(size % 64))
+				size += 1;
+			buffer.buffer = param->txbuff;
+			buffer.size = size;
+			STREAM_WRITE(bufstream_tx, &buffer);
+			
+			//vsfusbd_cmsis_dap_v2_on_in(param);
+		}
 	}
 }
 

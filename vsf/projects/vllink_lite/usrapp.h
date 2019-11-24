@@ -1,8 +1,12 @@
 #ifndef __USRAPP_H__
 #define __USRAPP_H__
 
-#include "protocol/cmsis_dap/vsfusbd_CMSIS_DAP.h"
-#include "protocol/cmsis_dap_v2/vsfusbd_cmsis_dap_v2.h"
+#ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
+#	include "protocol/cmsis_dap_v2/vsfusbd_cmsis_dap_v2.h"
+#endif
+#ifdef PROJ_CFG_WEBUSB_SUPPORT
+#	include "protocol/webusb/vsfusbd_webusb.h"
+#endif
 
 struct usrapp_t
 {
@@ -12,21 +16,26 @@ struct usrapp_t
 		struct vsfusbd_config_t config[1];
 		struct vsfusbd_iface_t ifaces[USBD_INTERFACE_COUNT];
 
-#ifdef PROJC_CFG_CMSIS_DAP_V2_SUPPORT
+#ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
 		struct vsfusbd_cmsis_dap_v2_param_t cmsis_dap_v2;
 #endif
 
-#ifdef PROJC_CFG_CDCEXT_SUPPORT
+#ifdef PROJ_CFG_WEBUSB_SUPPORT
+		struct vsfusbd_webusb_param_t webusb;
+#endif
+
+#ifdef PROJ_CFG_CDCEXT_SUPPORT
 		struct vsfusbd_CDCACM_param_t cdcacm_ext;		// -> usart ext
 #endif
 
-#ifdef PROJC_CFG_CDCSHELL_SUPPORT
+#ifdef PROJ_CFG_CDCSHELL_SUPPORT
 		struct vsfusbd_CDCACM_param_t cdcacm_shell;		// -> shell
 #endif
 	} usbd;
 
 	struct dap_param_t dap_param;
 
+#if PROJ_CFG_USART_EXT_ENABLE
 	struct
 	{
 		struct usart_stream_info_t usart_stream;
@@ -35,7 +44,9 @@ struct usrapp_t
 		uint8_t txbuff[128 + 4];
 		uint8_t rxbuff[128 + 4];
 	} usart_ext;
+#endif
 
+#if PROJ_CFG_USART_TRST_SWO_ENABLE
 	struct
 	{
 		struct usart_stream_info_t usart_stream;
@@ -44,6 +55,7 @@ struct usrapp_t
 		uint8_t txbuff[128 + 4];
 		uint8_t rxbuff[128 + 4];
 	} usart_trst_swo;
+#endif
 };
 
 extern struct usrapp_t usrapp;
