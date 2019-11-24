@@ -1,7 +1,7 @@
 #include "vsf.h"
 
 #define GD32F3X0_FLASH_BASEADDR				0x08000000
-#define GD32F3X0_FLASH_ADDR(addr)			(GD32F3X0_FLASH_BASEADDR + (addr))
+#define GD32F3X0_FLASH_ADDR(addr)			(addr)
 #define GD32F3X0_FLASH_SIZE_KB				(*(uint16_t *)0x1FFFF7E0)
 
 #define VSFHAL_FLASH_NUM					1

@@ -149,12 +149,12 @@ uint16_t usrapp_get_serial(uint8_t *serial)
 	if (serial)
 	{
 		uint16_t i;
-		for (i = 0; i < (sizeof(USB_StringSerial) - 2 / 2); i++)
+		for (i = 0; i < ((sizeof(USB_StringSerial) - 2) / 2); i++)
 			serial[i] = USB_StringSerial[i * 2 + 2];
 		return i;
 	}
 	else
-		return sizeof(USB_StringSerial) - 2 / 2;
+		return (sizeof(USB_StringSerial) - 2) / 2;
 }
 
 vsf_err_t usrapp_update_swo_usart_param(uint8_t *mode, uint32_t *baudrate)
@@ -248,7 +248,6 @@ static void usrapp_reset_do(void *p)
 
 void usrapp_reset(uint32_t delay_ms)
 {
-	vsfusbd_device_fini(&usrapp.usbd.device);
 	vsftimer_create_cb(delay_ms, 1, usrapp_reset_do, NULL);
 }
 
@@ -335,6 +334,7 @@ static void flash_read(uint8_t *buf, uint32_t addr, uint32_t size)
 
 static uint16_t usrapp_vendor_handler(uint8_t cmd, uint8_t *req, uint8_t *resp, uint16_t req_data_size, uint16_t resp_free_size)
 {
+	uint16_t ret = 0;
 	switch (cmd)
 	{
 	case ID_DAP_Vendor30:
@@ -381,6 +381,7 @@ static uint16_t usrapp_vendor_handler(uint8_t cmd, uint8_t *req, uint8_t *resp, 
 					goto error;
 			}
 			memcpy(resp, req, 5);
+			ret += 5;
 		}
 		break;
 	case ID_DAP_Vendor31:
@@ -413,8 +414,9 @@ static uint16_t usrapp_vendor_handler(uint8_t cmd, uint8_t *req, uint8_t *resp, 
 					uint32_t erase_op = vsfhal_flash_blocksize(0, FIRMWARE_AREA_ADDR, 0, 0);
 					uint32_t write_op = vsfhal_flash_blocksize(0, FIRMWARE_AREA_ADDR, 0, 2);
 					SET_LE_U32(resp + 5, app_size);
-					SET_LE_U32(resp + 5, erase_op);
-					SET_LE_U32(resp + 5, write_op);
+					SET_LE_U32(resp + 9, erase_op);
+					SET_LE_U32(resp + 13, write_op);
+					ret += 12;
 				}
 				else
 					goto error;
@@ -423,14 +425,19 @@ static uint16_t usrapp_vendor_handler(uint8_t cmd, uint8_t *req, uint8_t *resp, 
 			{
 				uint32_t addr = GET_LE_U24(req + 2);
 				if (((addr + size) < FIRMWARE_AREA_SIZE_MAX) && ((size + 5) <= resp_free_size))
+				{
 					flash_read(resp + 5, FIRMWARE_AREA_ADDR + addr, size);
+					ret += size;
+				}
 				else
 					goto error;
 			}
 			memcpy(resp, req, 5);
+			ret += 5;
 		}
 		break;
 	}
+	return ret;
 error:
 	return 0;
 }
