@@ -3792,7 +3792,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>demo.bin</state>
+                    <state>vllink_lite_bootloader_12KB.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
