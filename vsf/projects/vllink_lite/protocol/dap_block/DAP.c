@@ -169,7 +169,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 				else
 					response[resp_ptr++] = 0;
 				break;
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+#if PROJ_CFG_DAP_VERDOR_UART_ENABLE
 			case ID_DAP_Vendor1:
 				/*
 					Get uart line coding CMD:
@@ -225,7 +225,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 					ID_DAP_Vendor5		[0, 0xff]
 				*/
 				break;
-#endif	// PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+#endif	// PROJ_CFG_DAP_VERDOR_UART_ENABLE
 #if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
 			case ID_DAP_Vendor30:
 			case ID_DAP_Vendor31:

@@ -1,46 +1,37 @@
 # TODO List
 ## 近期目标
-### 1. 通过WebUSB实现轻量级Bootloader
-### 2. review DAPLink中新增加命令，酌情支持
-### 3. 在CMSIS-DAP V2协议中，增加双串口嗅探功能
+1. 编写通过WebUSB对Vllink Lite进行固件更新的网页
+2. 编写 ID_DAP_Vendor1 - ID_DAP_Vendor5 串口命令，支持多路串口同时收发
 ## 远期目标
-### 1. 利用R3版本中的外扩SPI Flash，探索自动DAP序列执行功能的实现方案
+1. 利用板上SPI Flash，研究自动化较高的离线编程器方案
+2. 解决Bootloader中必须包含CMSIS-DAP v2接口才能被Win10免驱识别的问题，并完成控制端点接口
+3. SWO功能测试
+-----------------------------------
 
-------------------------------------
 # Vllink Lite
 ## 简介
-Vllink Lite是一款超低成本高性能调试器。硬件基于GD32F350制作，最小封装为QFN28，标准版本使用GD32F350G8U6（8K RAM / 64K ROM），亦可精简缓冲，使用GD32F350G6U6（6K RAM / 32K ROM），无需外部晶振。
+Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350制作，最小封装为QFN28，标准版本使用GD32F350G8U6（8K RAM / 64K ROM），亦可在精简缓冲后换用GD32F350G6U6（6K RAM / 32K ROM）。
 
-## 成本
-标准版本的Vllink Lite硬件设计中，除了阻容及接口器件外，仅需一颗LDO和一颗GD32F350G8U6，此芯片在淘宝GD32旗舰店有售，当前零售价为6.00￥。
+## 硬件
+当前最新版本为：[Vllink Lite.R3](https://github.com/vllogic/vllink_lite/tree/000b3bc6477d7fd816e0debf9087d155adbe143d/hardware/vllink_lite.r3)，板上SPI Flash可选。
+![3D](./hardware/vllink_lite.r3/vllink_lite.r3.top_rotate.png)
 
 ## 功能
-* 提供一路CMSIS-DAP V2协议免驱接口，支持SWD，JTAG，SWO接口，支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29）、PyOCD（需安装libusb，详情请看pyocd安装说明）
-* 提供一路USB CDC接口，最高波特率可达8M
+* 支持固件更新，按住按键连接Win10电脑，再使用Chrome浏览器打开更新页面即可（网页制作中...）
+* 提供一路CMSIS-DAP V2协议免驱接口，提供SWD及JTAG接口，已支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29）、[PyOCD](https://github.com/vllogic/pyOCD)
+* 提供一路USB CDC接口
 
-## 性能
-目前DAPLink 0254固件使用CMSIS-DAP V2协议，通过SWD接口对SRAM区域的读写速度大致在110kB/S左右（默认配置，不指定时钟速率）。
-
-Vllink Lite优化了底层传输协议，尽量使用SPI通讯，同样的测试环境下，读写速度提升到230kB/S左右。
-
-同时SPI通讯能支持更高的时钟速率，最高可达32M，不过当时钟速率超过16M时，读写速度提升有限。更多细节可参看源码。
-
-下表是2018年时使用专用协议的测试数据，可供参考
-
-| 时钟频率 | 读速度（KiB/s） | 写速度（KiB/s） |
-| --------| -----:  | -----:  |
-| 2000    | 128.672 | 131.903 |
-| 4000    | 213.449 | 223.565 |
-| 8000    | 323.268 | 347.579 |
-| 16000   | 402.034 | 425.731 |
-| 32000   | 438.233 | 456.286 |
+## 特点
+* 低成本，软硬件全部开源
+* 优化了底层传输协议，尽量使用SPI通讯，主流IDE默认速率下对SRAM的读写速度可达240KB/S(SWD)或200KB/S(JTAG)，相比DAPLink，大约提升一倍。如果使用优化版的OpenOCD，读写速度可达400KB/s以上。
 
 ## 硬件制作
 [原理图及PCBA制作资料](https://github.com/vllogic/vllink_lite/tree/master/hardware)
 
 [固件](https://github.com/vllogic/vllink_lite/releases)
 
-## 固件构建
+## 开发平台
+* KiCAD
 * IAR for ARM 8.32.3
 * GD32F3x0 AddOn [获取地址](http://gd32mcu.21ic.com/documents)
 
