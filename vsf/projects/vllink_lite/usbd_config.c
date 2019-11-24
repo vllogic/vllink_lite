@@ -42,30 +42,17 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x80,		// bmAttributes: bus powered
 	0xfa,	// MaxPower 500 mA
 
-#ifdef PROJ_CFG_WEBUSB_SUPPORT
-	/* WEBUSB, Length: 9 */ 
-	0x09,        //   bLength
-	0x04,        //   bDescriptorType (Interface)
-	0x00,        //   bInterfaceNumber 0
-	0x00,        //   bAlternateSetting
-	0x00,        //   bNumEndpoints 0
-	0xFF,        //   bInterfaceClass
-	0x03,        //   bInterfaceSubClass
-	0x00,        //   bInterfaceProtocol
-	0x04,        //   iInterface (String Index)
-#endif	// PROJ_CFG_WEBUSB_SUPPORT
-
 #ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
 	/* CMSIS-DAP V2, Length: 23 */ 
 	0x09,        //   bLength
 	0x04,        //   bDescriptorType (Interface)
-	0x01,        //   bInterfaceNumber 1
+	0x00,        //   bInterfaceNumber 0
 	0x00,        //   bAlternateSetting
 	0x02,        //   bNumEndpoints 2
 	0xFF,        //   bInterfaceClass
 	0x00,        //   bInterfaceSubClass
 	0x00,        //   bInterfaceProtocol
-	0x05,        //   iInterface (String Index)
+	0x04,        //   iInterface (String Index)
 
 	0x07,        //   bLength
 	0x05,        //   bDescriptorType (Endpoint)
@@ -81,6 +68,19 @@ static const uint8_t USB_ConfigDescriptor[] =
 	0x40, 0x00,  //   wMaxPacketSize 64
 	0x00,        //   bInterval 0 (unit depends on device speed)
 #endif	// PROJ_CFG_CMSIS_DAP_V2_SUPPORT
+
+#ifdef PROJ_CFG_WEBUSB_SUPPORT
+	/* WEBUSB, Length: 9 */ 
+	0x09,        //   bLength
+	0x04,        //   bDescriptorType (Interface)
+	0x01,        //   bInterfaceNumber 1
+	0x00,        //   bAlternateSetting
+	0x00,        //   bNumEndpoints 0
+	0xFF,        //   bInterfaceClass
+	0x03,        //   bInterfaceSubClass
+	0x00,        //   bInterfaceProtocol
+	0x05,        //   iInterface (String Index)
+#endif	// PROJ_CFG_WEBUSB_SUPPORT
 
 #ifdef PROJ_CFG_CDCEXT_SUPPORT
 	/* IAD CDC EXT, Length: 66 */ 
@@ -294,7 +294,7 @@ static const uint8_t WINUSB_Descriptor[] =
 	(8 >> 8) & 0xFF,
 	(2 >> 0) & 0xFF,
 	(2 >> 8) & 0xFF,
-	0x00, // webusb interface
+	0x01, // webusb interface
 	0x00,
 	(FUNCTION_WEBUSB_SUBSET_LEN >> 0) & 0xFF,
 	(FUNCTION_WEBUSB_SUBSET_LEN >> 8) & 0xFF,
@@ -332,7 +332,7 @@ static const uint8_t WINUSB_Descriptor[] =
 	(8 >> 8) & 0xFF,
 	(2 >> 0) & 0xFF,
 	(2 >> 8) & 0xFF,
-	0x01, // cmsis-dap v2 interface
+	0x00, // cmsis-dap v2 interface
 	0x00,
 	(FUNCTION_CMSIS_DAP_V2_SUBSET_LEN >> 0) & 0xFF,
 	(FUNCTION_CMSIS_DAP_V2_SUBSET_LEN >> 8) & 0xFF,
@@ -509,12 +509,12 @@ static const struct vsfusbd_desc_filter_t USB_descriptors[] =
 	VSFUSBD_DESC_STRING(0x0409, 1, USB_StringVendor, sizeof(USB_StringVendor)),
 	VSFUSBD_DESC_STRING(0x0409, 2, USB_StringProduct, sizeof(USB_StringProduct)),
 	VSFUSBD_DESC_STRING(0x0409, 3, USB_StringSerial, sizeof(USB_StringSerial)),
-#ifdef PROJ_CFG_WEBUSB_SUPPORT
-	VSFUSBD_DESC_STRING(0x0409, 4, WEBUSB_StringFunc, sizeof(WEBUSB_StringFunc)),
-#endif
 #ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
-	VSFUSBD_DESC_STRING(0x0000, 5, CMSIS_DAP_V2_StringFunc, sizeof(CMSIS_DAP_V2_StringFunc)),
-	VSFUSBD_DESC_STRING(0x0409, 5, CMSIS_DAP_V2_StringFunc, sizeof(CMSIS_DAP_V2_StringFunc)),
+	VSFUSBD_DESC_STRING(0x0000, 4, CMSIS_DAP_V2_StringFunc, sizeof(CMSIS_DAP_V2_StringFunc)),
+	VSFUSBD_DESC_STRING(0x0409, 4, CMSIS_DAP_V2_StringFunc, sizeof(CMSIS_DAP_V2_StringFunc)),
+#endif
+#ifdef PROJ_CFG_WEBUSB_SUPPORT
+	VSFUSBD_DESC_STRING(0x0409, 5, WEBUSB_StringFunc, sizeof(WEBUSB_StringFunc)),
 #endif
 #ifdef PROJ_CFG_CDCEXT_SUPPORT
 	VSFUSBD_DESC_STRING(0x0409, 6, CDCEXT_StringFunc, sizeof(CDCEXT_StringFunc)),

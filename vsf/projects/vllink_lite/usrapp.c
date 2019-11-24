@@ -20,13 +20,13 @@ struct usrapp_t usrapp =
 	.usbd.config[0].iface					= usrapp.usbd.ifaces,
 	.usbd.config[0].vendor_prepare			= usrapp_usbd_vendor_request_prepare,
 
-#ifdef PROJ_CFG_WEBUSB_SUPPORT
-	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_webusb_class,
-	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.webusb,
-#endif
 #ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
-	.usbd.ifaces[1].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_cmsis_dap_v2_class,
-	.usbd.ifaces[1].protocol_param			= &usrapp.usbd.cmsis_dap_v2,
+	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_cmsis_dap_v2_class,
+	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap_v2,
+#endif
+#ifdef PROJ_CFG_WEBUSB_SUPPORT
+	.usbd.ifaces[1].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_webusb_class,
+	.usbd.ifaces[1].protocol_param			= &usrapp.usbd.webusb,
 #endif
 #ifdef PROJ_CFG_CDCEXT_SUPPORT
 	.usbd.ifaces[2].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_CDCACMData_class,
