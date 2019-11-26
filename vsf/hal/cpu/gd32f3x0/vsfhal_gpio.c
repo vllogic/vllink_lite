@@ -1,18 +1,20 @@
-/**************************************************************************
- *  Copyright (C) 2008 - 2010 by Simon Qian                               *
- *  SimonQian@SimonQian.com                                               *
- *                                                                        *
- *  Project:    Versaloon                                                 *
- *  File:       GPIO.h                                                    *
- *  Author:     SimonQian                                                 *
- *  Versaion:   See changelog                                             *
- *  Purpose:    GPIO interface header file                                *
- *  License:    See license                                               *
- *------------------------------------------------------------------------*
- *  Change Log:                                                           *
- *      YYYY-MM-DD:     What(by Who)                                      *
- *      2008-11-07:     created(by SimonQian)                             *
- **************************************************************************/
+/***************************************************************************
+ *   Copyright (C) 2018 - 2019 by Chen Le <talpachen@gmail.com>            *
+ *                                                                         *
+ *   This program is free software: you can redistribute it and/or modify  *
+ *   it under the terms of the GNU General Public License as published by  *
+ *   the Free Software Foundation, either version 3 of the License, or     *
+ *   (at your option) any later version.                                   *
+ *                                                                         *
+ *   This program is distributed in the hope that it will be useful,       *
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+ *   GNU General Public License for more details.                          *
+ *                                                                         *
+ *   You should have received a copy of the GNU General Public License     *
+ *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
+ ***************************************************************************/
+
 #include "vsf.h"
 
 #define VSFHAL_GPIO_NUM					6
