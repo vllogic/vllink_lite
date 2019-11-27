@@ -51,7 +51,7 @@
 #else
 #	define DAP_PACKET_SIZE			DAP_HID_PACKET_SIZE
 #endif
-#define DAP_PACKET_COUNT			2
+#define DAP_PACKET_COUNT			4
 #define SWO_UART					1
 #define SWO_UART_MAX_BAUDRATE		3200000
 #define SWO_UART_MIN_BAUDRATE		16000
