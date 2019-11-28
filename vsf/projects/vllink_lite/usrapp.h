@@ -18,11 +18,15 @@
 #ifndef __USRAPP_H__
 #define __USRAPP_H__
 
+#ifdef PROJ_CFG_BOOTLOADER_DFU_MODE
+#	include "protocol/dfu/vsfusbd_dfu.h"
+#else
 #ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
 #	include "protocol/cmsis_dap_v2/vsfusbd_cmsis_dap_v2.h"
 #endif
 #ifdef PROJ_CFG_WEBUSB_SUPPORT
 #	include "protocol/webusb/vsfusbd_webusb.h"
+#endif
 #endif
 
 struct usrapp_t
@@ -33,6 +37,9 @@ struct usrapp_t
 		struct vsfusbd_config_t config[1];
 		struct vsfusbd_iface_t ifaces[USBD_INTERFACE_COUNT];
 
+#ifdef PROJ_CFG_BOOTLOADER_DFU_MODE
+		struct vsfusbd_dfu_param_t dfu;
+#else
 #ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
 		struct vsfusbd_cmsis_dap_v2_param_t cmsis_dap_v2;
 #endif
@@ -48,8 +55,10 @@ struct usrapp_t
 #ifdef PROJ_CFG_CDCSHELL_SUPPORT
 		struct vsfusbd_CDCACM_param_t cdcacm_shell;		// -> shell
 #endif
+#endif
 	} usbd;
 
+#ifndef PROJ_CFG_BOOTLOADER_DFU_MODE
 	struct dap_param_t dap_param;
 
 #if PROJ_CFG_USART_EXT_ENABLE
@@ -73,6 +82,7 @@ struct usrapp_t
 		uint8_t rxbuff[128 + 4];
 	} usart_trst_swo;
 #endif
+#endif	// PROJ_CFG_BOOTLOADER_DFU_MODE
 };
 
 extern struct usrapp_t usrapp;

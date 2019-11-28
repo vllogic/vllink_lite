@@ -106,7 +106,7 @@ void vsfhal_core_sleep(uint32_t mode)
 	__WFI();
 }
 
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+#ifdef PROJ_CFG_BOOTLOADER_DFU_MODE
 vsf_err_t vsfhal_core_init(void *p)
 {
 	// select irc8m

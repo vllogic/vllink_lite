@@ -4816,6 +4816,15 @@
                 </file>
             </group>
             <group>
+                <name>dfu</name>
+                <file>
+                    <name>$PROJ_DIR$\..\..\protocol\dfu\vsfusbd_dfu.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\protocol\dfu\vsfusbd_dfu.h</name>
+                </file>
+            </group>
+            <group>
                 <name>webusb</name>
                 <file>
                     <name>$PROJ_DIR$\..\..\protocol\webusb\vsfusbd_webusb.c</name>
@@ -4830,6 +4839,9 @@
         </group>
         <file>
             <name>$PROJ_DIR$\..\..\usbd_config.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\usbd_config_bootloader.c</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\usrapp.c</name>

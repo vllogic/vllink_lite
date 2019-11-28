@@ -195,9 +195,6 @@ struct dap_param_t
 #if PROJ_CFG_DAP_VERDOR_UART_ENABLE
 	vsf_err_t (*update_swo_usart_param)(uint8_t *mode, uint32_t *baudrate);
 #endif
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
-	uint16_t (*vendor_handler)(uint8_t cmd, uint8_t *req, uint8_t *resp, uint16_t req_data_size, uint16_t resp_free_size);
-#endif
 
 	bool busy;
 	uint16_t pkt_size;

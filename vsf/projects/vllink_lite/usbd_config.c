@@ -20,15 +20,9 @@ static const uint8_t USB_DeviceDescriptor[] =
 	0x12,        // bLength
 	0x01,        // bDescriptorType (Device)
 	0x10, 0x02,  // bcdUSB 2.10
-#ifdef PROJ_CFG_COMPOSITE_DEVICE
 	0xEF,        // bDeviceClass 
 	0x02,        // bDeviceSubClass 
 	0x01,        // bDeviceProtocol 
-#else
-	0x00,        // bDeviceClass 
-	0x00,        // bDeviceSubClass 
-	0x00,        // bDeviceProtocol 
-#endif
 	0x40,        // bMaxPacketSize0 64
 	(APPCFG_USBD_VID >> 0) & 0xFF,
 	(APPCFG_USBD_VID >> 8) & 0xFF,

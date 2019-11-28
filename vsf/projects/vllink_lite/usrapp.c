@@ -18,14 +18,17 @@
 #include "vsf.h"
 #include "usrapp.h"
 
-#include "usbd_config.c"
+#ifndef PROJ_CFG_BOOTLOADER_DFU_MODE
+#	include "usbd_config.c"
+#else
+#	include "usbd_config_bootloader.c"
+#endif
 
 uint16_t usrapp_get_serial(uint8_t *serial);
 vsf_err_t usrapp_update_swo_usart_param(uint8_t *mode, uint32_t *baudrate);
 vsf_err_t usrapp_update_ext_usart_param(struct usb_CDCACM_line_coding_t *line_coding);
 
 static vsf_err_t usrapp_usbd_vendor_request_prepare(struct vsfusbd_device_t *device);
-static uint16_t usrapp_vendor_handler(uint8_t cmd, uint8_t *req, uint8_t *resp, uint16_t req_data_size, uint16_t resp_free_size);
 
 struct usrapp_t usrapp =
 {
@@ -37,6 +40,10 @@ struct usrapp_t usrapp =
 	.usbd.config[0].iface					= usrapp.usbd.ifaces,
 	.usbd.config[0].vendor_prepare			= usrapp_usbd_vendor_request_prepare,
 
+#ifdef PROJ_CFG_BOOTLOADER_DFU_MODE
+	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_dfu_class,
+	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.dfu,
+#else
 #ifdef PROJ_CFG_CMSIS_DAP_V2_SUPPORT
 	.usbd.ifaces[0].class_protocol			= (struct vsfusbd_class_protocol_t *)&vsfusbd_cmsis_dap_v2_class,
 	.usbd.ifaces[0].protocol_param			= &usrapp.usbd.cmsis_dap_v2,
@@ -113,9 +120,6 @@ struct usrapp_t usrapp =
 #if PROJ_CFG_DAP_VERDOR_UART_ENABLE
 	.dap_param.update_swo_usart_param				= usrapp_update_swo_usart_param,
 #endif
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
-	.dap_param.vendor_handler						= usrapp_vendor_handler,
-#endif
 
 #if PROJ_CFG_USART_EXT_ENABLE
 	.usart_ext.usart_stream.index					= PERIPHERAL_UART_EXT_INDEX,
@@ -134,6 +138,7 @@ struct usrapp_t usrapp =
 	.usart_trst_swo.usart_stream.stream_tx			= &usrapp.usart_trst_swo.stream_tx.stream,
 	.usart_trst_swo.usart_stream.stream_rx			= &usrapp.usart_trst_swo.stream_rx.stream,
 #endif
+#endif
 };
 
 
@@ -143,6 +148,7 @@ static vsf_err_t usrapp_usbd_vendor_request_prepare(struct vsfusbd_device_t *dev
 	struct usb_ctrlrequest_t *request = &ctrl_handler->request;
 	struct vsf_buffer_t *buffer = &ctrl_handler->bufstream.mem.buffer;
 	
+#ifndef PROJ_CFG_BOOTLOADER_DFU_MODE
 	if (request->bRequest == 0x20)	// USBD_WINUSB_VENDOR_CODE
 	{
 		if (request->wIndex == 0x07)	// WINUSB_REQUEST_GET_DESCRIPTOR_SET
@@ -153,11 +159,25 @@ static vsf_err_t usrapp_usbd_vendor_request_prepare(struct vsfusbd_device_t *dev
 			return VSFERR_NONE;
 		}
 	}
-	else if (request->bRequest == 0x21)	// USBD_WEBUSB_VENDOR_CODE
+#else
+	if (request->bRequest == 0x21)
 	{
-		// TODO
-		__ASM("NOP");
+		if (request->wIndex == 0x02)
+		{
+			buffer->buffer = (uint8_t *)webusb_url_descriptor;
+			buffer->size = sizeof(webusb_url_descriptor);
+			ctrl_handler->data_size = sizeof(webusb_url_descriptor);
+			return VSFERR_NONE;
+		}
+		else if (request->wIndex == 0x04)
+		{
+			buffer->buffer = (uint8_t *)WINUSB_Descriptor;
+			buffer->size = sizeof(WINUSB_Descriptor);
+			ctrl_handler->data_size = sizeof(WINUSB_Descriptor);
+			return VSFERR_NONE;
+		}
 	}
+#endif
 	return VSFERR_FAIL;
 }
 
@@ -265,12 +285,13 @@ static void usrapp_reset_do(void *p)
 
 void usrapp_reset(uint32_t delay_ms)
 {
+	vsfhal_usbd_disconnect();
 	vsftimer_create_cb(delay_ms, 1, usrapp_reset_do, NULL);
 }
 
 void usrapp_initial_init(struct usrapp_t *app)
 {
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+#ifdef PROJ_CFG_BOOTLOADER_DFU_MODE
 #	ifdef PERIPHERAL_KEY_PORT
 	vsfhal_gpio_init(PERIPHERAL_KEY_PORT);
 #	endif
@@ -329,156 +350,23 @@ void usrapp_srt_init(struct usrapp_t *app)
 	vsftimer_create_cb(200, 1, usrapp_usbd_conn, app);
 }
 
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
-static void flash_erase_write(uint8_t *buf, uint32_t addr, uint32_t size)
-{
-	// write op == 4
-	uint32_t i;
-	uint32_t erase_op = vsfhal_flash_blocksize(0, addr, 0, 0);
-	
-	for (i = 0; i < size; i += 4)
-	{
-		if (!(addr % erase_op))
-			vsfhal_flash_erase(0, addr);
-		vsfhal_flash_write(0, addr, buf + i);
-	}
-}
-
-static void flash_read(uint8_t *buf, uint32_t addr, uint32_t size)
-{
-	memcpy(buf, (void *)addr, size);
-}
-
-static uint16_t usrapp_vendor_handler(uint8_t cmd, uint8_t *req, uint8_t *resp, uint16_t req_data_size, uint16_t resp_free_size)
-{
-	uint16_t ret = 0;
-	switch (cmd)
-	{
-	case ID_DAP_Vendor30:
-		/*
-			APP Firmware Write CMD:
-
-			Request chip reset:
-			CMD [1 byte]		Size [2 byte]		cmd [3 byte]		
-			ID_DAP_Vendor30		0x0					0	
-			Response:
-			CMD [1 byte]		Size [2 byte]		cmd [3 byte]		
-			ID_DAP_Vendor30		0x0					0
-
-			Request firmware rite:
-			CMD [1 byte]		Size [2 byte]		Addr [3 byte]		DATA [{Size} byte]
-			ID_DAP_Vendor30		[0x1, 0xffff]		[0x0, 0xffffff]			.. .. ..
-			Response:
-			CMD [1 byte]		Size [2 byte]		Addr [3 byte]		
-			ID_DAP_Vendor30		[0x1, 0xffff]		[0x0, 0xffffff]		
-		*/
-		if (resp_free_size >= 5)
-		{
-			uint16_t size = GET_LE_U16(req);
-			if (size == 0)	// subcmd mode
-			{
-				uint32_t subcmd = GET_LE_U24(req + 2);
-				if (subcmd == 0)	// reset
-				{
-					uint32_t tick = GET_LE_U32(req + 5);
-					if (!tick)
-						tick = 100;
-					usrapp_reset(tick);
-				}
-				else
-					goto error;
-			}
-			else	// write mode
-			{
-				uint32_t addr = GET_LE_U24(req + 2);
-				uint32_t write_op = vsfhal_flash_blocksize(0, FIRMWARE_AREA_ADDR, 0, 2);
-				if (((addr + size) < FIRMWARE_AREA_SIZE_MAX) && !(addr % write_op) && !(size % write_op))
-					flash_erase_write(req + 5, FIRMWARE_AREA_ADDR + addr, size);
-				else
-					goto error;
-			}
-			memcpy(resp, req, 5);
-			ret += 5;
-		}
-		break;
-	case ID_DAP_Vendor31:
-		/*
-			APP Firmware Read CMD:
-
-			Request:
-			CMD [1 byte]		Size [2 byte]		cmd [3 byte]		
-			ID_DAP_Vendor31		0x0					0x0
-			Response:
-			CMD [1 byte]		Size [2 byte]		cmd [3 byte]		app_max_size[4 byte]		erase_block_size[4 byte]		write_block_size[4 byte]
-			ID_DAP_Vendor31		0x0					0x0					[0x0, 0xffff]				[0x0, 0xffff]					[0x0, 0xffff]
-
-			Request:
-			CMD [1 byte]		Size [2 byte]		Addr [3 byte]		
-			ID_DAP_Vendor31		[0x1, 0xffffff]		[0x0, 0xffff]
-			Response:
-			CMD [1 byte]		Size [2 byte]		Addr [3 byte]		DATA [{Size} byte]
-			ID_DAP_Vendor31		[0x1, 0xffffff]		[0x0, 0xffff]			.. .. ..
-		*/
-		if (resp_free_size >= 5)
-		{
-			uint16_t size = GET_LE_U16(req);
-			if (size == 0)	// subcmd mode
-			{
-				uint32_t subcmd = GET_LE_U24(req + 2);
-				if (subcmd == 0)	// get flash op info
-				{
-					uint32_t app_size = FIRMWARE_AREA_SIZE_MAX;
-					uint32_t erase_op = vsfhal_flash_blocksize(0, FIRMWARE_AREA_ADDR, 0, 0);
-					uint32_t write_op = vsfhal_flash_blocksize(0, FIRMWARE_AREA_ADDR, 0, 2);
-					SET_LE_U32(resp + 5, app_size);
-					SET_LE_U32(resp + 9, erase_op);
-					SET_LE_U32(resp + 13, write_op);
-					ret += 12;
-				}
-				else
-					goto error;
-			}
-			else	// read mode
-			{
-				uint32_t addr = GET_LE_U24(req + 2);
-				if (((addr + size) < FIRMWARE_AREA_SIZE_MAX) && ((size + 5) <= resp_free_size))
-				{
-					flash_read(resp + 5, FIRMWARE_AREA_ADDR + addr, size);
-					ret += size;
-				}
-				else
-					goto error;
-			}
-			memcpy(resp, req, 5);
-			ret += 5;
-		}
-		break;
-	}
-	return ret;
-error:
-	return 0;
-}
-#endif
-
 void usrapp_nrt_init(struct usrapp_t *app)
 {
 	PERIPHERAL_LED_RED_INIT();
 	PERIPHERAL_LED_GREEN_INIT();
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
+#ifdef PROJ_CFG_BOOTLOADER_DFU_MODE
 	PERIPHERAL_LED_RED_ON();
 	PERIPHERAL_LED_GREEN_ON();
-	
-	vsfhal_flash_init(0);
 #else
 	PERIPHERAL_LED_RED_OFF();
 	PERIPHERAL_LED_GREEN_OFF();
-#endif
 
 	DAP_init(&app->dap_param);
 
 #if 0
 	extern void DAP_test(struct dap_param_t *param);
 	DAP_test(&app->dap_param);
+#endif
 #endif
 }
 

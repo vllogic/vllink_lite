@@ -243,26 +243,6 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 				*/
 				break;
 #endif	// PROJ_CFG_DAP_VERDOR_UART_ENABLE
-#if PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
-			case ID_DAP_Vendor30:
-			case ID_DAP_Vendor31:
-				if (param->vendor_handler)
-				{
-					uint16_t req_size = 5;
-					if (cmd_id == ID_DAP_Vendor30)
-						req_size += GET_LE_U16(request + req_ptr);
-					uint16_t resp_size = param->vendor_handler(cmd_id, request + req_ptr, response + resp_ptr, req_size, param->pkt_size - resp_ptr);
-					
-					if (resp_size)
-					{
-						req_ptr += req_size;
-						resp_ptr += resp_size;
-						break;
-					}
-				}
-				goto fault;
-				break;
-#endif	// PROJ_CFG_DAP_VERDOR_BOOTLOADER_ENABLE
 			default:
 				goto fault;
 			}

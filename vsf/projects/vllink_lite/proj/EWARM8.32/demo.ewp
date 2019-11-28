@@ -4250,6 +4250,19 @@
                 </file>
             </group>
             <group>
+                <name>dfu</name>
+                <excluded>
+                    <configuration>Vllink_Lite_Debug</configuration>
+                    <configuration>Vllink_Lite_Release</configuration>
+                </excluded>
+                <file>
+                    <name>$PROJ_DIR$\..\..\protocol\dfu\vsfusbd_dfu.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\protocol\dfu\vsfusbd_dfu.h</name>
+                </file>
+            </group>
+            <group>
                 <name>webusb</name>
                 <file>
                     <name>$PROJ_DIR$\..\..\protocol\webusb\vsfusbd_webusb.c</name>
@@ -4523,6 +4536,15 @@
         </group>
         <file>
             <name>$PROJ_DIR$\..\..\usbd_config.c</name>
+            <excluded>
+                <configuration>Vllink_Lite_Debug</configuration>
+                <configuration>Vllink_Lite_Release</configuration>
+                <configuration>Vllink_Lite_Bootloader_Debug</configuration>
+                <configuration>Vllink_Lite_Bootloader_Release</configuration>
+            </excluded>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\..\usbd_config_bootloader.c</name>
             <excluded>
                 <configuration>Vllink_Lite_Debug</configuration>
                 <configuration>Vllink_Lite_Release</configuration>
