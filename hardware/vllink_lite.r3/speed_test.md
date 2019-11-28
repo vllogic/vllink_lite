@@ -1,3 +1,21 @@
+
+# v0.2 20191128 增加命令缓冲
+|测试环境|调试器|目标芯片|协议|目标区域|速率|操作|速率
+|--------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
+|IAR8.32.3|VllinkLite|STM32F411|SWD|SRAM|Autodetect|写入|271.9KB/s|
+|IAR8.32.3|VllinkLite|STM32F411|SWD|SRAM|最佳16M|写入|330.1KB/s|
+|IAR8.32.3|VllinkLite|STM32F411|JTAG|SRAM|Autodetect|写入|202.0KB/s|
+|IAR8.32.3|VllinkLite|STM32F411|JTAG|SRAM|最佳16M|写入|224.9KB/s|
+|IAR8.32.3|DAPLink 0254|MKL25Z|SWD|SRAM|Autodetect|写入|120.5KB/s|
+|IAR8.32.3|DAPLink 0254|MKL25Z|SWD|SRAM|最佳30M|写入|177.9KB/s|
+|IAR8.32.3|ST-LinkV2|STM32F411|SWD|SRAM|Default|写入|84.1KB/s|
+|IAR8.32.3|ST-LinkV2|STM32F411|SWD|SRAM|最佳4M|写入|125.3KB/s|
+|IAR8.32.3|J-LinkV8|STM32F411|SWD|SRAM|Auto|写入|88.7KB/s|
+|IAR8.32.3|J-LinkV8|STM32F411|SWD|SRAM|最佳4M|写入|146.2KB/s|
+|IAR8.32.3|J-LinkV8|STM32F411|JTAG|SRAM|Auto|写入|255.1KB/s|
+|IAR8.32.3|J-LinkV8|STM32F411|JTAG|SRAM|最佳4M|写入|263.2KB/s|
+
+# 20191114
 |测试环境|调试器|目标芯片|协议|目标区域|速率|操作|速率
 |--------|-----:|-----:|-----:|-----:|-----:|-----:|-----:|
 |IAR8.32.3|VllinkLite|STM32F411|SWD|SRAM|Autodetect|写入|242.1KB/s|
