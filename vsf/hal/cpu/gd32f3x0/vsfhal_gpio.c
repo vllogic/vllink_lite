@@ -51,7 +51,7 @@ vsf_err_t vsfhal_gpio_config(uint8_t index, uint8_t pin_idx, uint32_t mode)
 	
 	GPIO_CTL(gpiox) = (GPIO_CTL(gpiox) & ~(0x3 << bit2_idx)) | ((mode & 0x3) << bit2_idx);
 	GPIO_OMODE(gpiox) = (GPIO_OMODE(gpiox) & ~(GPIO_OMODE_OM0 << pin_idx)) | (((mode >> 2) & 0x1) << pin_idx);
-	GPIO_PUD(gpiox) = (GPIO_PUD(gpiox) & ~(GPIO_PUD_PUD0 << bit2_idx)) | (((mode >> 3) & 0x1) << bit2_idx);
+	GPIO_PUD(gpiox) = (GPIO_PUD(gpiox) & ~(GPIO_PUD_PUD0 << bit2_idx)) | (((mode >> 3) & 0x3) << bit2_idx);
 	
 	return VSFERR_NONE;
 }

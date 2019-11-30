@@ -84,7 +84,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>STLINK_ID</state>
+                    <state>CMSISDAP_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
@@ -333,7 +333,7 @@
                 <option>
                     <name>CMSISDAPJtagSpeedList</name>
                     <version>0</version>
-                    <state>6</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CMSISDAPBreakpointRadio</name>
@@ -1565,7 +1565,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>STLINK_ID</state>
+                    <state>CMSISDAP_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
@@ -3046,7 +3046,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>STLINK_ID</state>
+                    <state>CMSISDAP_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
@@ -3295,7 +3295,7 @@
                 <option>
                     <name>CMSISDAPJtagSpeedList</name>
                     <version>0</version>
-                    <state>6</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>CMSISDAPBreakpointRadio</name>
@@ -4527,7 +4527,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>STLINK_ID</state>
+                    <state>CMSISDAP_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
