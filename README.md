@@ -4,8 +4,7 @@
 2. 编写 ID_DAP_Vendor1 - ID_DAP_Vendor5 串口命令，支持多路串口同时收发
 ## 远期目标
 1. 利用板上SPI Flash，研究自动化较高的离线编程器方案
-2. 解决Bootloader中必须包含CMSIS-DAP v2接口才能被Win10免驱识别的问题，并完成控制端点接口
-3. SWO功能测试
+2. SWO功能测试
 -----------------------------------
 
 # Vllink Lite
@@ -15,6 +14,8 @@ Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350制作，�
 ## 硬件
 当前最新版本为：[Vllink Lite.R3](https://github.com/vllogic/vllink_lite/tree/000b3bc6477d7fd816e0debf9087d155adbe143d/hardware/vllink_lite.r3)，板上SPI Flash可选。
 ![3D](./hardware/vllink_lite.r3/vllink_lite.r3.top_rotate.png)
+
+![PCBA](./hardware/vllink_lite.r3/vllink_lite.r3.pcba.png)
 
 ## 功能
 * 支持固件更新，按住按键连接Win10电脑，再使用Chrome浏览器打开更新页面即可（网页制作中...）
