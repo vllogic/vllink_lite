@@ -172,8 +172,7 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 		DMA_CH1CTL = 0;
 		DMA_CH2CTL = 0;
 		USART_CTL0(usartx) = 0;
-		USART_CTL0(usartx) = USART_CTL0_RTIE | USART_CTL0_OVSMOD |
-				(mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
+		USART_CTL0(usartx) = USART_CTL0_RTIE | (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
 		USART_CTL1(usartx) = USART_CTL1_RTEN | ((mode >> 16) & 0x3000);
 		USART_CTL2(usartx) = USART_CTL2_DENR | USART_CTL2_DENT;
 		USART_RT(usartx) = 30;
@@ -194,8 +193,7 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 		DMA_CH3CTL = 0;
 		DMA_CH4CTL = 0;
 		USART_CTL0(usartx) = 0;
-		USART_CTL0(usartx) = USART_CTL0_OVSMOD |
-				(mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
+		USART_CTL0(usartx) = (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
 		USART_CTL1(usartx) = (mode >> 16) & 0x3000;
 		USART_CTL2(usartx) = USART_CTL2_DENR | USART_CTL2_DENT;
 		
@@ -210,7 +208,7 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 		DMA_CH4CNT = DMA_BUFF_SIZE;
 		DMA_CH4CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_CHEN;
 	}
-	USART_BAUD(usartx) = (temp / baudrate) << 1;	// ovsmod = 1
+	USART_BAUD(usartx) = temp / baudrate;
 	USART_CMD(usartx) = 0x1f;
 	USART_RFCS(usartx) |= USART_RFCS_RFEN;
 	USART_CTL0(usartx) |= USART_CTL0_UEN;

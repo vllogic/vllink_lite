@@ -236,8 +236,7 @@ struct usb_CDCACM_line_coding_t
 #if PROJ_CFG_USART_TRST_SWO_ENABLE
 	uint32_t mode;
 	uint32_t bitrate = line_coding->bitrate;
-	
-#if 0	// TODO baud table
+
 	if (bitrate >= 8000000)
 		bitrate = 8000000;		// 64M div 8
 	else if (bitrate > 4000000)
@@ -246,7 +245,6 @@ struct usb_CDCACM_line_coding_t
 		bitrate = 3200000;		// 64M div 20/20+ 
 	else if (bitrate < 2000)
 		bitrate = 2000;			// 64M div 32000/32000-
-#endif
 
 	if (line_coding->stopbittype == 1)
 		mode = PERIPHERAL_UART_STOPBITS_1P5;
