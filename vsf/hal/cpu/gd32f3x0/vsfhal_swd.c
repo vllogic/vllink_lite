@@ -477,16 +477,13 @@ vsf_err_t vsfhal_swd_config(uint16_t kHz, uint8_t idle, uint8_t trn,
 	}
 	swd_param.cpu_clk_div_half_spi_clk = info->cpu_freq_hz / (kHz * 2000);
 
-#if 0
 	if (kHz >= 8000)
 	{
 		swd_param.swd_read = swd_read_quick;
 		swd_param.swd_write = swd_write_quick;
 		swd_param.swd_delay = NULL;
 	}
-	else 
-#endif
-	if (kHz >= 4000)
+	else if (kHz >= 4000)
 	{
 		swd_param.swd_read = swd_read_slow;
 		swd_param.swd_write = swd_write_slow;
