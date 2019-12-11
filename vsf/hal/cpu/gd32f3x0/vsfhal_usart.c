@@ -34,6 +34,11 @@ static void (*vsfhal_usart_ontx[VSFHAL_USART_NUM])(void *);
 static void (*vsfhal_usart_onrx[VSFHAL_USART_NUM])(void *);
 static void *vsfhal_usart_callback_param[VSFHAL_USART_NUM];
 
+#define CONFIG_USART_GPIO(port, pin_idx)		do {	\
+GPIO_PUD(port) = (GPIO_PUD(port) & ~(GPIO_PUD_PUD0 << (pin_idx * 2))) | (0x1ul << (pin_idx * 2));	\
+} while(0)
+//#define CONFIG_USART_GPIO(port, pin_idx)
+
 vsf_err_t vsfhal_usart_init(vsfhal_usart_t index)
 {
 	if (index >= VSFHAL_USART_NUM)
@@ -50,6 +55,7 @@ vsf_err_t vsfhal_usart_init(vsfhal_usart_t index)
 #endif
 #if VSFHAL_USART0_RXD_PA10_EN
 		RCU_AHBEN |= RCU_AHBEN_PAEN;
+		CONFIG_USART_GPIO(GPIOA, 10);
 		IO_AF_SELECT(0, 10, 1);
 		IO_CFG_AF(0, 10);
 #endif
@@ -60,6 +66,7 @@ vsf_err_t vsfhal_usart_init(vsfhal_usart_t index)
 #endif
 #if VSFHAL_USART0_RXD_PB7_EN
 		RCU_AHBEN |= RCU_AHBEN_PBEN;
+		CONFIG_USART_GPIO(GPIOB, 7);
 		IO_AF_SELECT(1, 7, 0);
 		IO_CFG_AF(1, 7);
 #endif
@@ -76,6 +83,7 @@ vsf_err_t vsfhal_usart_init(vsfhal_usart_t index)
 #endif
 #if VSFHAL_USART1_RXD_PA3_EN
 		RCU_AHBEN |= RCU_AHBEN_PAEN;
+		CONFIG_USART_GPIO(GPIOA, 3);
 		IO_AF_SELECT(0, 3, 1);
 		IO_CFG_AF(0, 3);
 #endif
@@ -86,6 +94,7 @@ vsf_err_t vsfhal_usart_init(vsfhal_usart_t index)
 #endif
 #if VSFHAL_USART1_RXD_PB0_EN
 		RCU_AHBEN |= RCU_AHBEN_PBEN;
+		CONFIG_USART_GPIO(GPIOB, 0);
 		IO_AF_SELECT(1, 0, 4);
 		IO_CFG_AF(1, 0);
 #endif
@@ -96,6 +105,7 @@ vsf_err_t vsfhal_usart_init(vsfhal_usart_t index)
 #endif
 #if VSFHAL_USART1_RXD_PA15_EN
 		RCU_AHBEN |= RCU_AHBEN_PAEN;
+		CONFIG_USART_GPIO(GPIOA, 15);
 		IO_AF_SELECT(0, 15, 1);
 		IO_CFG_AF(0, 15);
 #endif
