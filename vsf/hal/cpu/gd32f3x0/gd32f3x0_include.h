@@ -56,6 +56,7 @@
 #define IO_SET(port, pin)			(GPIO_OCTL(GPIOA + 0x400 * port) |= 0x1 << pin)
 #define IO_CLEAR(port, pin)			(GPIO_BC(GPIOA + 0x400 * port) = 0x1 << pin)
 #define IO_GET(port, pin)			((GPIO_ISTAT(GPIOA + 0x400 * port) >> pin) & 0x1)
+#define IO_CFG_HIGHSPEED(port, pin)	(GPIO_OSPD0(GPIOA + 0x400 * port) |= 0x3 << (pin * 2))
 												
 #ifdef cplusplus
 }
