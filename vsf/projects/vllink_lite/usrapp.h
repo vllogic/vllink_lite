@@ -78,7 +78,7 @@ struct usrapp_t
 		struct usart_stream_info_t usart_stream;
 		//struct vsf_fifostream_t stream_tx;
 		struct vsf_fifostream_t stream_rx;
-		uint8_t txbuff[128 + 4];
+		//uint8_t txbuff[128 + 4];
 		uint8_t rxbuff[SWO_BUFFER_SIZE + 4];
 	} usart_trst_swo;
 #endif

@@ -97,10 +97,8 @@ static uint8_t get_dap_info(struct dap_param_t *param, uint8_t id, uint8_t *info
 		break;
 	case DAP_ID_TIMESTAMP_CLOCK:
 #if (TIMESTAMP_CLOCK != 0U)
-		info[0] = (uint8_t)(TIMESTAMP_CLOCK >>  0);
-		info[1] = (uint8_t)(TIMESTAMP_CLOCK >>  8);
-		info[2] = (uint8_t)(TIMESTAMP_CLOCK >> 16);
-		info[3] = (uint8_t)(TIMESTAMP_CLOCK >> 24);
+		if (info)
+			SET_LE_U32(info, TIMESTAMP_CLOCK);
 		length = 4U;
 #endif
 		break;
@@ -354,10 +352,10 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			if (select & (1U << DAP_SWJ_SWCLK_TCK))
 			{
 				if (value & (0x1 << DAP_SWJ_SWCLK_TCK))
-					PERIPHERAL_GPIO_TDI_SET();
+					PERIPHERAL_GPIO_TCK_SET();
 				else
-					PERIPHERAL_GPIO_TDI_CLEAR();
-				PERIPHERAL_GPIO_TDI_SET_OUTPUT();
+					PERIPHERAL_GPIO_TCK_CLEAR();
+				PERIPHERAL_GPIO_TCK_SET_OUTPUT();
 			}
 			if (select & (1U << DAP_SWJ_SWDIO_TMS))
 			{

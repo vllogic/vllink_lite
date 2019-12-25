@@ -347,22 +347,18 @@ int vsfhal_swd_read(uint8_t request, uint32_t *r_data)
 		if (ack == SWD_ACK_OK)
 		{
 			swd_param.swd_read((uint8_t *)&ret, 32 + 1 + swd_param.trn + swd_param.idle);
+			#if TIMESTAMP_CLOCK
+			if (request & SWD_TRANS_TIMESTAMP)
+				dap_timestamp = vsfhal_tickclk_get_us();
+			#endif
 			if ((ret[1] & 0x1) == get_parity_32bit(ret[0]))
 			{
 				*r_data = ret[0];
-				#if TIMESTAMP_CLOCK
-				if (request & SWD_TRANS_TIMESTAMP)
-					dap_timestamp = vsfhal_tickclk_get_us();
-				#endif
 				return SWD_ACK_OK | SWD_SUCCESS;
 			}
 			else
 			{
 				*r_data = ret[0];
-				#if TIMESTAMP_CLOCK
-				if (request & SWD_TRANS_TIMESTAMP)
-					dap_timestamp = vsfhal_tickclk_get_us();
-				#endif
 				return SWD_ACK_OK | SWD_PARITY_ERROR;
 			}
 		}
