@@ -27,8 +27,14 @@ Reference Document:
 #ifdef DAP_BLOCK_TRANSFER
 
 #define DAP_TRANSFER_RnW                (1U<<1)
+#define DAP_TRANSFER_TIMESTAMP			(1U<<7)
+
 #define DAP_TRANSFER_OK                 (1U<<0)
 #define DAP_TRANSFER_WAIT               (1U<<1)
+
+#if TIMESTAMP_CLOCK
+extern uint32_t dap_timestamp;
+#endif
 
 struct vsfhal_jtag_param_t
 {
@@ -376,6 +382,11 @@ uint8_t vsfhal_jtag_dr(uint8_t request, uint32_t dr, uint16_t dr_before, uint16_
 	bitlen += 1 + jtag_param.idle;
 	buf_tdi |= (uint64_t)0x1 << bitlen;	// keep tdi high
 	bitlen++;
+
+	#if TIMESTAMP_CLOCK
+	if (request & DAP_TRANSFER_TIMESTAMP)
+		dap_timestamp = vsfhal_tickclk_get_us();
+	#endif
 
 	do
 	{

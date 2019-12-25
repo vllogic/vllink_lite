@@ -58,6 +58,7 @@ extern "C" {
 #define ID_DAP_SWJ_Clock                0x11U
 #define ID_DAP_SWJ_Sequence             0x12U
 #define ID_DAP_SWD_Configure            0x13U
+#define ID_DAP_SWD_Sequence             0x1DU
 #define ID_DAP_JTAG_Sequence            0x14U
 #define ID_DAP_JTAG_Configure           0x15U
 #define ID_DAP_JTAG_IDCODE              0x16U
@@ -66,6 +67,7 @@ extern "C" {
 #define ID_DAP_SWO_Baudrate             0x19U
 #define ID_DAP_SWO_Control              0x1AU
 #define ID_DAP_SWO_Status               0x1BU
+#define ID_DAP_SWO_ExtendedStatus       0x1EU
 #define ID_DAP_SWO_Data                 0x1CU
 
 #define ID_DAP_QueueCommands            0x7EU
@@ -119,6 +121,7 @@ extern "C" {
 #define DAP_ID_DEVICE_VENDOR            5U
 #define DAP_ID_DEVICE_NAME              6U
 #define DAP_ID_CAPABILITIES             0xF0U
+#define DAP_ID_TIMESTAMP_CLOCK          0xF1U
 #define DAP_ID_SWO_BUFFER_SIZE          0xFDU
 #define DAP_ID_PACKET_COUNT             0xFEU
 #define DAP_ID_PACKET_SIZE              0xFFU
@@ -148,6 +151,7 @@ extern "C" {
 #define DAP_TRANSFER_A3                 (1U<<3)
 #define DAP_TRANSFER_MATCH_VALUE        (1U<<4)
 #define DAP_TRANSFER_MATCH_MASK         (1U<<5)
+#define DAP_TRANSFER_TIMESTAMP          (1U<<7)
 
 // DAP Transfer Response
 #define DAP_TRANSFER_OK                 (1U<<0)
@@ -189,11 +193,19 @@ extern "C" {
 #define JTAG_SEQUENCE_TMS               0x40U   // TMS value
 #define JTAG_SEQUENCE_TDO               0x80U   // TDO capture
 
+// SWD Sequence Info
+#define SWD_SEQUENCE_CLK                0x3FU   // SWCLK count
+#define SWD_SEQUENCE_DIN                0x80U   // SWDIO capture
+
+
 struct dap_param_t
 {
 	uint16_t (*get_serial)(uint8_t *serial);
 #if PROJ_CFG_DAP_VERDOR_UART_ENABLE
 	vsf_err_t (*update_swo_usart_param)(uint8_t *mode, uint32_t *baudrate);
+#if SWO_UART || SWO_MANCHESTER
+	struct vsf_fifostream_t *swo_rx;
+#endif
 #endif
 
 	bool busy;
@@ -219,8 +231,10 @@ struct dap_param_t
 #if PROJ_CFG_DAP_STANDARD_ENABLE
 #if SWO_UART || SWO_MANCHESTER
 #if SWO_UART
-	struct vsf_fifostream_t swo_rx;
-	uint8_t swo_buff[SWO_BUFFER_SIZE];
+	uint32_t trace_o;	// Outgoing Trace Index
+#if TIMESTAMP_CLOCK
+	uint32_t trace_timestamp;
+#endif
 #endif	// SWO_UART
 	uint8_t transport;
 	

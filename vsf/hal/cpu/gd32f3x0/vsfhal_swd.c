@@ -37,6 +37,11 @@ Reference Document:
 #define SWD_ACK_FAULT			0x04
 
 #define SWD_TRANS_RnW			(1 << 2)
+#define SWD_TRANS_TIMESTAMP		(1 << 7)
+
+#if TIMESTAMP_CLOCK
+extern uint32_t dap_timestamp;
+#endif
 
 struct vsfhal_swd_param_t
 {
@@ -345,11 +350,19 @@ int vsfhal_swd_read(uint8_t request, uint32_t *r_data)
 			if ((ret[1] & 0x1) == get_parity_32bit(ret[0]))
 			{
 				*r_data = ret[0];
+				#if TIMESTAMP_CLOCK
+				if (request & SWD_TRANS_TIMESTAMP)
+					dap_timestamp = vsfhal_tickclk_get_us();
+				#endif
 				return SWD_ACK_OK | SWD_SUCCESS;
 			}
 			else
 			{
 				*r_data = ret[0];
+				#if TIMESTAMP_CLOCK
+				if (request & SWD_TRANS_TIMESTAMP)
+					dap_timestamp = vsfhal_tickclk_get_us();
+				#endif
 				return SWD_ACK_OK | SWD_PARITY_ERROR;
 			}
 		}
@@ -392,6 +405,10 @@ int vsfhal_swd_write(uint8_t request, uint32_t w_data)
 			ret[0] = w_data;
 			ret[1] = 0xfffffffe | get_parity_32bit(w_data);
 			swd_param.swd_write((uint8_t *)&ret, 32 + 1 + swd_param.idle);
+			#if TIMESTAMP_CLOCK
+			if (request & SWD_TRANS_TIMESTAMP)
+				dap_timestamp = vsfhal_tickclk_get_us();
+			#endif
 			return SWD_ACK_OK | SWD_SUCCESS;
 		}
 		else if ((ack == SWD_ACK_WAIT) || (ack == SWD_ACK_FAULT))

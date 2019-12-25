@@ -305,10 +305,15 @@ uint32_t vsfhal_tickclk_get_ms(void)
 
 uint32_t vsfhal_tickclk_get_us(void)
 {
-	uint32_t val, load;
-	load = SysTick->LOAD;
+	uint32_t val, load = SysTick->LOAD;
+	istate_t gint = GET_GLOBAL_INTERRUPT_STATE();
+
+	DISABLE_GLOBAL_INTERRUPT();
 	val = (load - SysTick->VAL) * 1000;
-	return tickcnt * 1000 + val / load;
+	val = tickcnt * 1000 + val / load;
+	SET_GLOBAL_INTERRUPT_STATE(gint);
+
+	return val;
 }
 
 void vsfhal_tickclk_delay(uint16_t delay_tick)

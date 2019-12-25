@@ -76,10 +76,10 @@ struct usrapp_t
 	struct
 	{
 		struct usart_stream_info_t usart_stream;
-		struct vsf_fifostream_t stream_tx;
+		//struct vsf_fifostream_t stream_tx;
 		struct vsf_fifostream_t stream_rx;
 		uint8_t txbuff[128 + 4];
-		uint8_t rxbuff[128 + 4];
+		uint8_t rxbuff[SWO_BUFFER_SIZE + 4];
 	} usart_trst_swo;
 #endif
 #endif	// PROJ_CFG_BOOTLOADER_DFU_MODE

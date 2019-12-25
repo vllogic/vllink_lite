@@ -13,7 +13,7 @@
  *                                                                         *
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
- ***************************************************************************/
+ *********************************** ****************************************/
 
 #include "vsf.h"
 #include "DAP.h"
@@ -27,6 +27,10 @@ const char DAP_Vendor[] = DAP_VENDOR;
 const char DAP_Product[] = DAP_PRODUCT;
 #endif
 const char DAP_FW_Ver[] = DAP_FW_VER;
+
+#if (TIMESTAMP_CLOCK != 0U)
+uint32_t dap_timestamp;
+#endif
 
 //#define VSFSM_EVT_IO_DONE				(VSFSM_EVT_USER_LOCAL + 1)
 #define VSFSM_EVT_DAP_REQUEST			(VSFSM_EVT_USER_LOCAL + 2)
@@ -86,8 +90,19 @@ static uint8_t get_dap_info(struct dap_param_t *param, uint8_t id, uint8_t *info
 					(DAP_JTAG ? (1U << 1) : 0U) |
 					(SWO_UART ? (1U << 2) : 0U) |
 					(SWO_MANCHESTER ? (1U << 3) : 0U) |
-					/* Atomic Commands  */ (1U << 4);
+					/* Atomic Commands  */ (1U << 4) |
+					(TIMESTAMP_CLOCK ? (1U << 5) : 0U) |
+					(SWO_STREAM ? (1U << 6) : 0U);
 		length = 1U;
+		break;
+	case DAP_ID_TIMESTAMP_CLOCK:
+#if (TIMESTAMP_CLOCK != 0U)
+		info[0] = (uint8_t)(TIMESTAMP_CLOCK >>  0);
+		info[1] = (uint8_t)(TIMESTAMP_CLOCK >>  8);
+		info[2] = (uint8_t)(TIMESTAMP_CLOCK >> 16);
+		info[3] = (uint8_t)(TIMESTAMP_CLOCK >> 24);
+		length = 4U;
+#endif
 		break;
 	case DAP_ID_SWO_BUFFER_SIZE:
 #if ((SWO_UART != 0) || (SWO_MANCHESTER != 0))
@@ -336,6 +351,22 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			select = request[req_ptr + 1];
 			delay = GET_LE_U32(request + req_ptr + 2);
 
+			if (select & (1U << DAP_SWJ_SWCLK_TCK))
+			{
+				if (value & (0x1 << DAP_SWJ_SWCLK_TCK))
+					PERIPHERAL_GPIO_TDI_SET();
+				else
+					PERIPHERAL_GPIO_TDI_CLEAR();
+				PERIPHERAL_GPIO_TDI_SET_OUTPUT();
+			}
+			if (select & (1U << DAP_SWJ_SWDIO_TMS))
+			{
+				if (value & (0x1 << DAP_SWJ_SWDIO_TMS))
+					PERIPHERAL_GPIO_TMS_SET();
+				else
+					PERIPHERAL_GPIO_TMS_CLEAR();
+				PERIPHERAL_GPIO_TMS_SET_OUTPUT();
+			}
 			if (select & (0x1 << DAP_SWJ_nRESET))
 			{
 				if (value & (0x1 << DAP_SWJ_nRESET))
@@ -346,6 +377,14 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			}
 			if (param->port == DAP_PORT_JTAG)
 			{
+				if (select & (0x1 << DAP_SWJ_TDI))
+				{
+					if (value & (0x1 << DAP_SWJ_TDI))
+						PERIPHERAL_GPIO_TDI_SET();
+					else
+						PERIPHERAL_GPIO_TDI_CLEAR();
+					PERIPHERAL_GPIO_TDI_SET_OUTPUT();
+				}
 				if (select & (0x1 << DAP_SWJ_nTRST))
 				{
 					if (value & (0x1 << DAP_SWJ_nTRST))
@@ -356,12 +395,40 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 				}
 			}
 
-			if (delay)
+			if (delay)	// us
 			{
 				if (delay > 3000000)
 					delay = 3000000;
-				delay = (delay + 999) / 1000 + vsfhal_tickclk_get_ms();
-				while (delay > vsfhal_tickclk_get_ms());
+				delay += vsfhal_tickclk_get_us();
+				do
+				{
+					if (select & (1U << DAP_SWJ_SWCLK_TCK))
+					{
+						if (((value >> DAP_SWJ_SWCLK_TCK) & 0x1) ^ PERIPHERAL_GPIO_TDI_GET())
+							continue;
+					}
+					if (select & (1U << DAP_SWJ_SWDIO_TMS))
+					{
+						if (((value >> DAP_SWJ_SWDIO_TMS) & 0x1) ^ PERIPHERAL_GPIO_TMS_GET())
+							continue;
+					}
+					if (select & (1U << DAP_SWJ_TDI))
+					{
+						if (((value >> DAP_SWJ_TDI) & 0x1) ^ PERIPHERAL_GPIO_TCK_GET())
+							continue;
+					}
+					if (select & (1U << DAP_SWJ_nTRST))
+					{
+						if (((value >> DAP_SWJ_nTRST) & 0x1) ^ PERIPHERAL_GPIO_TRST_GET())
+							continue;
+					}
+					if (select & (1U << DAP_SWJ_nRESET))
+					{
+						if (((value >> DAP_SWJ_nRESET) & 0x1) ^ PERIPHERAL_GPIO_SRST_GET())
+							continue;
+					}
+					break;
+				} while (delay > vsfhal_tickclk_get_us());
 			}
 
 			response[resp_ptr++] = 
@@ -430,6 +497,40 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 					param->swd_conf.turnaround, param->swd_conf.data_phase,
 					param->transfer.retry_count);
 			response[resp_ptr++] = DAP_OK;
+		}
+		else if (cmd_id == ID_DAP_SWD_Sequence)
+		{
+			if (param->port == DAP_PORT_SWD)
+			{
+				response[resp_ptr++] = DAP_OK;
+				
+				transfer_cnt = 0;
+				transfer_num = request[req_ptr++];
+
+				while (transfer_cnt < transfer_num)
+				{
+					uint8_t info, bitlen, bytes;
+					
+					info = request[req_ptr++];
+					bitlen = info & SWD_SEQUENCE_CLK;
+					if (!bitlen) bitlen = 64;
+					bytes = (bitlen + 7) >> 3;
+					if (info & SWD_SEQUENCE_DIN)
+					{
+						vsfhal_swd_seqin(response + resp_ptr, bitlen);
+						resp_ptr += bytes;
+					}
+					else
+					{
+						vsfhal_swd_seqout(request + req_ptr, bitlen);
+						req_ptr += bytes;
+					}
+					transfer_cnt++;
+				}
+			}
+			else
+				response[resp_ptr++] = DAP_ERROR;
+			
 		}
 		else if (cmd_id == ID_DAP_JTAG_Sequence)
 		{
@@ -586,6 +687,18 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 								break;
 							SET_LE_U32(response + resp_ptr, data);
 							resp_ptr += 4;
+
+							#if (TIMESTAMP_CLOCK != 0U)
+							if (post_read) 
+							{
+								// Store Timestamp of next AP read
+								if (transfer_req & DAP_TRANSFER_TIMESTAMP)
+								{
+									SET_LE_U32(response + resp_ptr, dap_timestamp);
+									resp_ptr += 4;
+								}
+							}
+							#endif
 						}
 						
 						if (transfer_req & DAP_TRANSFER_MATCH_VALUE)
@@ -622,6 +735,14 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 									transfer_ack = vsfhal_swd_read(transfer_req, &data);
 									if (transfer_ack != DAP_TRANSFER_OK)
 										break;
+									#if (TIMESTAMP_CLOCK != 0U)
+									// Store Timestamp
+									if (transfer_req & DAP_TRANSFER_TIMESTAMP)
+									{
+										SET_LE_U32(response + resp_ptr, dap_timestamp);
+										resp_ptr += 4;
+									}
+									#endif
 									post_read = true;
 								}
 							}
@@ -630,6 +751,14 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 								transfer_ack = vsfhal_swd_read(transfer_req, &data);
 								if (transfer_ack != DAP_TRANSFER_OK)
 									break;
+								#if (TIMESTAMP_CLOCK != 0U)
+								// Store Timestamp
+								if (transfer_req & DAP_TRANSFER_TIMESTAMP)
+								{
+									SET_LE_U32(response + resp_ptr, dap_timestamp);
+									resp_ptr += 4;
+								}
+								#endif
 								SET_LE_U32(response + resp_ptr, data);
 								resp_ptr += 4;
 							}
@@ -663,6 +792,14 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 							transfer_ack = vsfhal_swd_write(transfer_req, data);
 							if (transfer_ack != DAP_TRANSFER_OK)
 								break;
+							#if (TIMESTAMP_CLOCK != 0U)
+							// Store Timestamp
+							if (transfer_req & DAP_TRANSFER_TIMESTAMP)
+							{
+								SET_LE_U32(response + resp_ptr, dap_timestamp);
+								resp_ptr += 4;
+							}
+							#endif
 							check_write = true;
 						}
 					}
@@ -760,6 +897,17 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 							}
 							SET_LE_U32(response + resp_ptr, data);
 							resp_ptr += 4;
+
+							#if (TIMESTAMP_CLOCK != 0U)
+							if (post_read)	// Store Timestamp of next AP read
+							{
+								if (transfer_req & DAP_TRANSFER_TIMESTAMP)
+								{
+									SET_LE_U32(response + resp_ptr, dap_timestamp);
+									resp_ptr += 4;
+								}
+							}
+							#endif
 						}
 						if (transfer_req & DAP_TRANSFER_MATCH_VALUE)
 						{
@@ -811,6 +959,13 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 										param->jtag_dev.count - param->jtag_dev.index - 1, &data);
 								if (transfer_ack != DAP_TRANSFER_OK)
 									break;
+								#if (TIMESTAMP_CLOCK != 0U)
+								if (transfer_req & DAP_TRANSFER_TIMESTAMP)	// Store Timestamp
+								{
+									SET_LE_U32(response + resp_ptr, dap_timestamp);
+									resp_ptr += 4;
+								}
+								#endif
 								post_read = 1;
 							}
 						}
@@ -862,6 +1017,13 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 							req_ptr += 4;
 							if (transfer_ack != DAP_TRANSFER_OK)
 								break;
+							#if (TIMESTAMP_CLOCK != 0U)
+							if (transfer_req & DAP_TRANSFER_TIMESTAMP)	// Store Timestamp
+							{
+								SET_LE_U32(response + resp_ptr, dap_timestamp);
+								resp_ptr += 4;
+							}
+							#endif
 						}
 					}
 
@@ -1133,14 +1295,18 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 				response[resp_ptr++] = DAP_ERROR;
 			}
 		}
-	#if ((SWO_UART != 0) || (SWO_MANCHESTER != 0))
+		#if ((SWO_UART != 0) || (SWO_MANCHESTER != 0))
 		else if (cmd_id == ID_DAP_SWO_Transport)
 		{
 			uint8_t ret = DAP_ERROR;
 			uint8_t transport = request[req_ptr++];
 			if (!(param->trace_status & DAP_SWO_CAPTURE_ACTIVE))
 			{
+				#if SWO_STREAM
+				if (transport <= 2)
+				#else
 				if (transport <= 1)
+				#endif
 				{
 					param->transport = transport;
 					ret = DAP_OK;
@@ -1170,10 +1336,10 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 				baudrate = SWO_UART_MAX_BAUDRATE;
 			else if (baudrate < SWO_UART_MIN_BAUDRATE)
 				baudrate = SWO_UART_MIN_BAUDRATE;
-	#if (SWO_UART != 0)
+			#if (SWO_UART != 0)
 			if (param->update_swo_usart_param)
 				param->update_swo_usart_param(NULL, &baudrate);
-	#endif
+			#endif
 			SET_LE_U32(response + resp_ptr, baudrate);
 			resp_ptr += 4;
 		}
@@ -1183,22 +1349,49 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			if (active != (param->trace_status & DAP_SWO_CAPTURE_ACTIVE))
 			{
 				if (active)
-					STREAM_INIT((struct vsf_stream_t *)&param->swo_rx);
+				{
+					STREAM_INIT(&param->swo_rx->stream);
+					param->trace_o = 0;
+					#if TIMESTAMP_CLOCK
+					param->trace_timestamp = 0;
+					#endif
+				}
 				param->trace_status = active;
 			}
 			response[resp_ptr++] = DAP_OK;
 		}
 		else if (cmd_id == ID_DAP_SWO_Status)
 		{
-			uint32_t count = STREAM_GET_DATA_SIZE((struct vsf_stream_t *)&param->swo_rx);		
+			uint32_t count = STREAM_GET_DATA_SIZE(&param->swo_rx->stream);		
 			response[resp_ptr++] = param->trace_status;
 			SET_LE_U32(response + resp_ptr, count);
 			resp_ptr += 4;
 		}
+		else if (cmd_id == ID_DAP_SWO_ExtendedStatus)
+		{
+			uint8_t sb_cmd = request[req_ptr++];
+			
+			if (sb_cmd & 0x1)
+				response[resp_ptr++] = param->trace_status;
+			if (sb_cmd & 0x2)
+			{
+				uint32_t count = STREAM_GET_DATA_SIZE(&param->swo_rx->stream);
+				SET_LE_U32(response + resp_ptr, count);
+				resp_ptr += 4;
+			}
+			#if TIMESTAMP_CLOCK
+			if (sb_cmd & 0x4)
+			{
+				SET_LE_U32(response + resp_ptr, param->trace_o + stream_get_data_size(&param->swo_rx->stream));
+				SET_LE_U32(response + resp_ptr + 4, param->trace_timestamp);
+				resp_ptr += 8;
+			}
+			#endif
+		}
 		else if (cmd_id == ID_DAP_SWO_Data)
 		{
 			uint16_t count = min(GET_LE_U16(request + req_ptr),
-					STREAM_GET_DATA_SIZE((struct vsf_stream_t *)&param->swo_rx));
+					STREAM_GET_DATA_SIZE(&param->swo_rx->stream));
 			req_ptr += 2;
 			response[resp_ptr++] = param->trace_status;
 			if (param->transport != 1)
@@ -1210,18 +1403,18 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 				struct vsf_buffer_t buffer;			
 				buffer.buffer = response + resp_ptr + 2;
 				buffer.size = count;
-				count = STREAM_READ((struct vsf_stream_t *)&param->swo_rx, &buffer);
+				count = STREAM_READ(&param->swo_rx->stream, &buffer);
 			}
 			SET_LE_U16(response + resp_ptr, count);
 			resp_ptr += 2 + count;
 			
 			if (param->trace_status == (DAP_SWO_CAPTURE_ACTIVE | DAP_SWO_CAPTURE_PAUSED))
 			{
-				if (STREAM_GET_FREE_SIZE((struct vsf_stream_t *)&param->swo_rx))
+				if (STREAM_GET_FREE_SIZE(&param->swo_rx->stream))
 					param->trace_status = DAP_SWO_CAPTURE_ACTIVE;
 			}
 		}
-	#endif
+		#endif
 #endif // PROJ_CFG_DAP_STANDARD_ENABLE
 		else
 		{
@@ -1290,6 +1483,15 @@ static struct vsfsm_state_t *sem_evt_handler(struct vsfsm_t *sm, vsfsm_evt_t evt
 	return NULL;
 }
 
+static void swo_on_rx(void *p)
+{
+	struct dap_param_t *param = p;
+	
+#if (TIMESTAMP_CLOCK != 0U) 
+	param->trace_timestamp = vsfhal_tickclk_get_us();
+#endif
+}
+
 vsf_err_t DAP_init(struct dap_param_t *param)
 {
 #if PROJ_CFG_DAP_STANDARD_ENABLE
@@ -1304,9 +1506,8 @@ vsf_err_t DAP_init(struct dap_param_t *param)
 	param->swd_conf.data_phase = 0;
 #endif
 #if SWO_UART
-	param->swo_rx.stream.op = &fifostream_op;
-	param->swo_rx.mem.buffer.buffer = (uint8_t *)param->swo_buff;
-	param->swo_rx.mem.buffer.size = sizeof(param->swo_buff);
+	param->swo_rx->stream.callback_rx.param = param;
+	param->swo_rx->stream.callback_tx.on_inout = swo_on_rx;
 #endif
 #endif	// PROJ_CFG_DAP_STANDARD_ENABLE
 	

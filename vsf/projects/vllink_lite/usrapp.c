@@ -108,9 +108,9 @@ struct usrapp_t usrapp =
 #endif
 
 #if PROJ_CFG_USART_TRST_SWO_ENABLE
-	.usart_trst_swo.stream_tx.stream.op				= &fifostream_op,
-	.usart_trst_swo.stream_tx.mem.buffer.buffer		= (uint8_t *)&usrapp.usart_trst_swo.txbuff,
-	.usart_trst_swo.stream_tx.mem.buffer.size		= sizeof(usrapp.usart_trst_swo.txbuff),
+	//.usart_trst_swo.stream_tx.stream.op				= &fifostream_op,
+	//.usart_trst_swo.stream_tx.mem.buffer.buffer		= (uint8_t *)&usrapp.usart_trst_swo.txbuff,
+	//.usart_trst_swo.stream_tx.mem.buffer.size		= sizeof(usrapp.usart_trst_swo.txbuff),
 	.usart_trst_swo.stream_rx.stream.op				= &fifostream_op, 
 	.usart_trst_swo.stream_rx.mem.buffer.buffer		= (uint8_t *)&usrapp.usart_trst_swo.rxbuff,
 	.usart_trst_swo.stream_rx.mem.buffer.size		= sizeof(usrapp.usart_trst_swo.rxbuff),
@@ -135,7 +135,7 @@ struct usrapp_t usrapp =
 	.usart_trst_swo.usart_stream.mode				= PERIPHERAL_UART_MODE_DEFAULT,
 	.usart_trst_swo.usart_stream.int_priority		= PERIPHERAL_UART_PRIORITY,
 	.usart_trst_swo.usart_stream.baudrate			= PERIPHERAL_UART_BAUD_DEFAULT,
-	.usart_trst_swo.usart_stream.stream_tx			= &usrapp.usart_trst_swo.stream_tx.stream,
+	//.usart_trst_swo.usart_stream.stream_tx			= &usrapp.usart_trst_swo.stream_tx.stream,
 	.usart_trst_swo.usart_stream.stream_rx			= &usrapp.usart_trst_swo.stream_rx.stream,
 #endif
 #endif
