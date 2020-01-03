@@ -42,6 +42,9 @@ GPLv3，随便玩
 
 欢迎加入QQ群：512256420
 
+## 购买渠道
+* [Taobao](https://shop216739170.taobao.com/)
+
 ## TODO List
 
 ### 近期目标
