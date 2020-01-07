@@ -236,10 +236,10 @@ struct dap_param_t
 	uint32_t trace_timestamp;
 #endif
 #endif	// SWO_UART
-	uint8_t transport;
+	uint8_t transport;	// 0 - None; 1 - Read trace data via DAP_SWO_Data command; 2 - Send trace data via separate WinUSB endpoint
 	
 	uint8_t trace_status;
-	uint8_t trace_mode;
+	uint8_t trace_mode;	// 0 - Off; 1 - UART; 2 - Manchester
 #endif	// SWO_UART || SWO_MANCHESTER
 
 	uint8_t port;

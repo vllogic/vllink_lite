@@ -1348,11 +1348,18 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			{
 				if (active)
 				{
-					STREAM_INIT(&param->swo_rx->stream);
 					param->trace_o = 0;
 					#if TIMESTAMP_CLOCK
 					param->trace_timestamp = 0;
 					#endif
+
+					STREAM_INIT(&param->swo_rx->stream);
+					STREAM_CONNECT_RX(&param->swo_rx->stream);
+				}
+				else
+				{
+					// stop usart rx
+					STREAM_DISCONNECT_RX(&param->swo_rx->stream);
 				}
 				param->trace_status = active;
 			}
@@ -1392,7 +1399,7 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 					STREAM_GET_DATA_SIZE(&param->swo_rx->stream));
 			req_ptr += 2;
 			response[resp_ptr++] = param->trace_status;
-			if (param->transport != 1)
+			if (param->transport != 1)	// Read trace data via DAP_SWO_Data command
 				count = 0;
 			if (count > (param->pkt_size - 2 - resp_ptr))
 				count = param->pkt_size - 2 - resp_ptr;
@@ -1405,12 +1412,14 @@ static uint16_t cmd_handler(struct dap_param_t *param, uint8_t *request, uint8_t
 			}
 			SET_LE_U16(response + resp_ptr, count);
 			resp_ptr += 2 + count;
+			param->trace_o += count;
 			
-			if (param->trace_status == (DAP_SWO_CAPTURE_ACTIVE | DAP_SWO_CAPTURE_PAUSED))
-			{
-				if (STREAM_GET_FREE_SIZE(&param->swo_rx->stream))
-					param->trace_status = DAP_SWO_CAPTURE_ACTIVE;
-			}
+			// TODO
+			//if (param->trace_status == (DAP_SWO_CAPTURE_ACTIVE | DAP_SWO_CAPTURE_PAUSED))
+			//{
+			//	if (STREAM_GET_FREE_SIZE(&param->swo_rx->stream))
+			//		param->trace_status = DAP_SWO_CAPTURE_ACTIVE;
+			//}
 		}
 		#endif
 #endif // PROJ_CFG_DAP_STANDARD_ENABLE
@@ -1483,8 +1492,12 @@ static struct vsfsm_state_t *sem_evt_handler(struct vsfsm_t *sm, vsfsm_evt_t evt
 
 static void swo_on_rx(void *p)
 {
+	// TODO: 
+	//	set DAP_SWO_CAPTURE_PAUSED when STREAM_GET_FREE_SIZE() < TRACE_BLOCK_SIZE (64)
+	//	support record trace overrum / trace stream error
+
 	struct dap_param_t *param = p;
-	
+
 #if (TIMESTAMP_CLOCK != 0U) 
 	param->trace_timestamp = vsfhal_tickclk_get_us();
 #endif
@@ -1505,7 +1518,7 @@ vsf_err_t DAP_init(struct dap_param_t *param)
 #endif
 #if SWO_UART
 	param->swo_rx->stream.callback_rx.param = param;
-	param->swo_rx->stream.callback_tx.on_inout = swo_on_rx;
+	param->swo_rx->stream.callback_rx.on_inout = swo_on_rx;
 #endif
 #endif	// PROJ_CFG_DAP_STANDARD_ENABLE
 	

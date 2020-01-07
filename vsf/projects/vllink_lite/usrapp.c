@@ -119,6 +119,9 @@ struct usrapp_t usrapp =
 	.dap_param.get_serial							= usrapp_get_serial,
 #if PROJ_CFG_DAP_VERDOR_UART_ENABLE
 	.dap_param.update_swo_usart_param				= usrapp_update_swo_usart_param,
+#if SWO_UART || SWO_MANCHESTER
+	.dap_param.swo_rx								= &usrapp.usart_trst_swo.stream_rx,
+#endif
 #endif
 
 #if PROJ_CFG_USART_EXT_ENABLE
