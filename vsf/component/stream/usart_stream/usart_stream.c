@@ -82,6 +82,21 @@ static void uart_on_rx(void *p)
 	}
 }
 
+static void uart_tx_on_connect(void *p)
+{
+	struct usart_stream_info_t *usart_stream = p;
+
+	vsfhal_usart_config(usart_stream->index, usart_stream->baudrate,
+			usart_stream->mode);
+}
+
+static void uart_tx_on_disconnect(void *p)
+{
+	struct usart_stream_info_t *usart_stream = p;
+
+	vsfhal_usart_config(usart_stream->index, 0, usart_stream->mode);
+}
+
 vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream)
 {
 	if (usart_stream->index == VSFHAL_DUMMY_PORT)
@@ -105,15 +120,15 @@ vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream)
 		stream_init(usart_stream->stream_rx);
 		usart_stream->stream_rx->callback_tx.param = usart_stream;
 		usart_stream->stream_rx->callback_tx.on_inout = uart_on_rx;
-		usart_stream->stream_rx->callback_tx.on_connect = NULL;
-		usart_stream->stream_rx->callback_tx.on_disconnect = NULL;	
+		usart_stream->stream_rx->callback_tx.on_connect = uart_tx_on_connect;
+		usart_stream->stream_rx->callback_tx.on_disconnect = uart_tx_on_disconnect;	
 	}
 
 	vsfhal_usart_init(usart_stream->index);
 	vsfhal_usart_config_cb(usart_stream->index, usart_stream->int_priority,
 			usart_stream, uart_on_tx, uart_rx_int);
-	vsfhal_usart_config(usart_stream->index, usart_stream->baudrate,
-			usart_stream->mode);
+	// do not enable usart default
+	vsfhal_usart_config(usart_stream->index, 0, usart_stream->mode);
 
 	return VSFERR_NONE;
 }

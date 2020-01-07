@@ -164,6 +164,12 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 		break;
 	}
 	
+	if (!baudrate)
+	{
+		USART_CTL0(usartx) = 0;
+		return VSFERR_NONE;
+	}
+	
 	if (mode & (VSFHAL_USART_PARITY_ODD | VSFHAL_USART_PARITY_EVEN))
 		mode |= VSFHAL_USART_BITLEN_9;
 

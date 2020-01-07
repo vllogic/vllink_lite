@@ -47,13 +47,6 @@ GPLv3，随便玩
 
 ## TODO List
 
-### 近期目标
-
-1. 编写通过WebUSB对Vllink Lite进行固件更新的网页
+1. SWO功能测试
 2. 编写 ID_DAP_Vendor1 - ID_DAP_Vendor5 串口命令，支持多路串口同时收发
-
-### 远期目标
-
-1. 利用板上SPI Flash，研究自动化较高的离线编程器方案
-2. SWO功能测试
-
+3. 利用板上SPI Flash，研究自动化较高的离线编程器方案
