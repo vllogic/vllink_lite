@@ -57,8 +57,8 @@
 
 1. 进入`文件 -> 首选项 -> 设置`，选择工作区，在右上角打开json文件，增加如下配置： 
    ```
-    "idf.deviceInterface": "interface/cmsis-dap.cfg",
-    "idf.deviceInterfaceWin": "interface\\cmsis-dap.cfg",
+    "idf.deviceInterface": "interface/cmsis-dap_4M.cfg",
+    "idf.deviceInterfaceWin": "interface\\cmsis-dap_4M.cfg",
     "idf.board": "board/esp-wroom-32.cfg",
     "idf.boardWin": "board\\esp-wroom-32.cfg",
     "idf.projectName": "hello-world",
@@ -91,5 +91,66 @@
    ![idf_gdb](./idf_gdb.png)
 
 ## 图形化调试
+1. 安装插件`Native Debug`
+2. 增加环境变量`IDF_PATH` -> `D:\esp\esp-idf`
+3. 在`.vscode`目录下增加`c_cpp_properties.json`文件
+   ```
+    {
+        "configurations": [
+            {
+                "name": "Win32",
+                "includePath": [
+                    "${workspaceFolder}/**",
+                    "${env:IDF_PATH}/components/**"
+                ],
+                "defines": [
+                    "_DEBUG",
+                    "UNICODE",
+                    "_UNICODE"
+                ],
+                "compilerPath": "C:/Software/esp_idf_tools/tools/xtensa-esp32-elf/esp-2019r2-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc.exe",
+                "cStandard": "c11",
+                "cppStandard": "c++17",
+                "intelliSenseMode": "${default}"
+            }
+        ],
+        "version": 4
+    }
+   ```
+4. 在`.vscode`目录下增加`launch.json`文件
+   ```
+    {
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "gdb",
+                "request": "launch",
+                "name" : "Flash and Debug",
+                "target": "./build/hello-world.elf",
+                "cwd": "${workspaceFolder}",
+                "gdbpath" : "xtensa-esp32-elf-gdb",
+                "autorun": [
+                    "target remote :3333",
+                    "mon reset halt",
+                    "mon program_esp32 ./build/hello-world.bin 0x10000 verify",
+                    "mon reset halt",
+                    "flushregs",
+                    "thb app_main",
+                    "c"
+                ],
+                //"preLaunchTask": "openocd"
+            }
+        ]
+    }
+   ```
+5. 重启VSCode
+6. 执行`ESP-IDF:OpenOCD Manager.` 启动OpenOCD
+7. 然后按F5，开始调试，如果出现未跳转到app_main的情况，点击调试框中的reset即可
+   
+   ![debug](./debug.png)
+8. 完成
 
-TODO
+## 参考
+1. [Get started with ESP32 on Visual Studio Code for Windows 10](https://www.youtube.com/watch?v=KRyvly_SYS8&list=PLvtTUqQ2PdLwBddDkwRJ0GECkJeTe_Yf6)
+2. [JTAG 调试](https://docs.espressif.com/projects/esp-idf/zh_CN/latest/api-guides/jtag-debugging/index.html)
+3. [Espressif IDF for VSCode 爬坑之路一：ESP32 的 esp-idf 例子编译与烧录](https://blog.csdn.net/zztiger123/article/details/103811665)
