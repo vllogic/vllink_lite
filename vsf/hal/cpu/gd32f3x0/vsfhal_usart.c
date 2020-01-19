@@ -173,10 +173,9 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 	{
 		DMA_CH1CTL = 0;
 		USART_CTL0(usartx) = 0;
-		USART_CTL0(usartx) = USART_CTL0_RTIE | (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
-		USART_CTL1(usartx) = USART_CTL1_RTEN | ((mode >> 16) & 0x3000);
+		USART_CTL0(usartx) = USART_CTL0_RBNEIE | (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
+		USART_CTL1(usartx) = ((mode >> 16) & 0x3000);
 		USART_CTL2(usartx) = USART_CTL2_DENT;
-		USART_RT(usartx) = 30;
 
 		// dma tx
 		DMA_CH1CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_DIR | DMA_CHXCTL_FTFIE;
@@ -186,9 +185,9 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 	{
 		DMA_CH3CTL = 0;
 		USART_CTL0(usartx) = 0;
-		USART_CTL0(usartx) = (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
+		USART_CTL0(usartx) = USART_CTL0_RBNEIE | (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
 		USART_CTL1(usartx) = (mode >> 16) & 0x3000;
-		USART_CTL2(usartx) = USART_CTL2_DENR | USART_CTL2_DENT;
+		USART_CTL2(usartx) = USART_CTL2_DENT;
 		
 		// dma tx
 		DMA_CH3CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_DIR | DMA_CHXCTL_FTFIE;
@@ -196,7 +195,7 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 	}
 	USART_BAUD(usartx) = temp / baudrate;
 	USART_CMD(usartx) = 0x1f;
-	USART_RFCS(usartx) |= USART_RFCS_RFEN | USART_RFCS_RFFIE;
+	USART_RFCS(usartx) |= USART_RFCS_RFEN;
 	USART_CTL0(usartx) |= USART_CTL0_UEN;
 
 	return VSFERR_NONE;
@@ -404,17 +403,25 @@ vsf_err_t vsfhal_usart_rx_int_config(vsfhal_usart_t index, bool enable)
 	return VSFERR_NONE;
 }
 
+static uint8_t pos2 = 0, r2[64];
+
 #if VSFHAL_USART0_ENABLE
 ROOT void USART0_IRQHandler(void)
 {
-	if (USART_STAT(USART0) & USART_STAT_RTF)
-		USART_INTC(USART0) = USART_INTC_RTC;
+	//if (USART_STAT(USART0) & USART_STAT_RTF)
+	//	USART_INTC(USART0) = USART_INTC_RTC;
 	if (USART_STAT(USART0) & USART_STAT_RBNE)
 	{
-		if (USART_RFCS(USART0) & USART_RFCS_RFFINT)
-			USART_RFCS(USART0) &= ~USART_RFCS_RFFINT;
+		uint8_t v = USART_RDATA(USART0);
+		if (pos2 < 40)
+			r2[pos2++] = v;
+		else
+			__ASM("NOP");
+		
+		//if (USART_RFCS(USART0) & USART_RFCS_RFFINT)
+		//	USART_RFCS(USART0) &= ~USART_RFCS_RFFINT;
 		if (vsfhal_usart_onrx[0])
-			vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0], USART_RDATA(USART0));
+			vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0], v);
 	}
 }
 
@@ -431,8 +438,8 @@ ROOT void USART1_IRQHandler(void)
 {
 	if (USART_STAT(USART1) & USART_STAT_RBNE)
 	{
-		if (USART_RFCS(USART1) & USART_RFCS_RFFINT)
-			USART_RFCS(USART1) &= ~USART_RFCS_RFFINT;
+		//if (USART_RFCS(USART1) & USART_RFCS_RFFINT)
+		//	USART_RFCS(USART1) &= ~USART_RFCS_RFFINT;
 		if (vsfhal_usart_onrx[1])
 			vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1], USART_RDATA(USART0));
 	}
@@ -450,8 +457,8 @@ void gd32f3x0_usart1_poll(void)
 	DISABLE_GLOBAL_INTERRUPT();
 	if (USART_STAT(USART1) & USART_STAT_RBNE)
 	{
-		if (USART_RFCS(USART1) & USART_RFCS_RFFINT)
-			USART_RFCS(USART1) &= ~USART_RFCS_RFFINT;
+		//if (USART_RFCS(USART1) & USART_RFCS_RFFINT)
+		//	USART_RFCS(USART1) &= ~USART_RFCS_RFFINT;
 		if (vsfhal_usart_onrx[1])
 			vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1], USART_RDATA(USART0));
 	}

@@ -108,18 +108,24 @@ static vsf_err_t vsfusbd_CDCACMControl_request_process(struct vsfusbd_device_t *
 
 	if (USB_CDCACMREQ_SET_LINE_CODING == request->bRequest)
 	{
-		struct usb_CDCACM_line_coding_t *line_coding = &param->line_coding;
+		struct usb_CDCACM_line_coding_t line_coding;
 
-		line_coding->bitrate = GET_LE_U32(&buffer->buffer[0]);
-		line_coding->stopbittype = buffer->buffer[4];
-		line_coding->paritytype = buffer->buffer[5];
-		line_coding->datatype = buffer->buffer[6];
+		line_coding.bitrate = GET_LE_U32(&buffer->buffer[0]);
+		line_coding.stopbittype = buffer->buffer[4];
+		line_coding.paritytype = buffer->buffer[5];
+		line_coding.datatype = buffer->buffer[6];
 
-		if ((param->callback.set_line_coding != NULL) &&
-			(param->callback.set_line_coding(line_coding)))
+		if (memcmp(&param->line_coding, &line_coding, sizeof(struct usb_CDCACM_line_coding_t)))
 		{
-			return VSFERR_FAIL;
+			if ((param->callback.set_line_coding != NULL) &&
+					(param->callback.set_line_coding(&line_coding)))
+			{
+				return VSFERR_FAIL;
+			}
+			else
+				memcpy(&param->line_coding, &line_coding, sizeof(struct usb_CDCACM_line_coding_t));
 		}
+		
 		vsfusbd_CDCData_connect(&param->CDC);
 	}
 	else

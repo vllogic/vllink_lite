@@ -22,7 +22,7 @@
 
 #define USART_BUF_SIZE	64
 
-static uint8_t pos = 0, r[64];
+static uint8_t last_head = 0, pos = 0, r[64];
 static void uart_rx_int(void *p, uint16_t rx)
 {
 	uint8_t size;
@@ -57,26 +57,53 @@ static void uart_rx_int(void *p, uint16_t rx)
 		size = vsfhal_usart_rx_bytes(param->index, buffer->buffer + 1, size);
 	buffer->size = size + 1;
 	
-	if (pos < 64)
-		r[pos++] = buffer->size;
 	vsfsm_post_evt_pending(&param->sm, evt);
 }
 
 static struct vsfsm_state_t *rx_evt_handler(struct vsfsm_t *sm, vsfsm_evt_t evt)
 {
+	uint8_t head;
 	struct usart_stream_info_t *param = sm->user_data;
 
+	if (pos == 41)
+		__ASM("NOP");
+	
 	switch (evt)
 	{
 	case VSFSM_EVT_USER_LOCAL:
+		head = ((struct vsf_fifostream_t *)param->stream_rx)->mem.head;
+		if (head < last_head)
+			__ASM("NOP");
+		
 		stream_write(param->stream_rx, &param->buffer0);
 		param->buffer0.size = 0;
+		
+		head = ((struct vsf_fifostream_t *)param->stream_rx)->mem.head;
+		if (pos < 64)
+			r[pos++] = head;
+	if (head < last_head)
+		__ASM("NOP");
+	else
+		last_head = head;
 		break;
 	case VSFSM_EVT_USER_LOCAL + 1:
+		head = ((struct vsf_fifostream_t *)param->stream_rx)->mem.head;
+		if (head < last_head)
+			__ASM("NOP");
+		
 		stream_write(param->stream_rx, &param->buffer1);
 		param->buffer1.size = 0;
+		
+		head = ((struct vsf_fifostream_t *)param->stream_rx)->mem.head;
+		if (pos < 64)
+			r[pos++] = head;
+	if (head < last_head)
+		__ASM("NOP");
+	else
+		last_head = head;
 		break;
 	}
+		
 
 	return NULL;
 }

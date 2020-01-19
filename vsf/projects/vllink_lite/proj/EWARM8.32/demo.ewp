@@ -4755,6 +4755,9 @@
                             </file>
                             <file>
                                 <name>$PROJ_DIR$\..\..\..\..\component\usb\class\device\CDC\vsfusbd_RNDIS.c</name>
+                                <excluded>
+                                    <configuration>Vllink_Lite_Debug</configuration>
+                                </excluded>
                             </file>
                             <file>
                                 <name>$PROJ_DIR$\..\..\..\..\component\usb\class\device\CDC\vsfusbd_RNDIS.h</name>
