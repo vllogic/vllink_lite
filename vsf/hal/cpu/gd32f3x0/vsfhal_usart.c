@@ -303,12 +303,12 @@ uint16_t vsfhal_usart_tx_get_data_size(vsfhal_usart_t index)
 	{
 	case 0:
 		if (DMA_CH1CTL & DMA_CHXCTL_CHEN)
-			return DMA_CH1CNT;
+			return DMA_BUFF_SIZE;
 		else
 			return 0;
 	case 1:
 		if (DMA_CH3CTL & DMA_CHXCTL_CHEN)
-			return DMA_CH3CNT;
+			return DMA_BUFF_SIZE;
 		else
 			return 0;
 	default:
@@ -541,6 +541,7 @@ static void usart0_dma_handler(void)
 	// tx dma
 	if ((DMA_CH1CTL & DMA_CHXCTL_CHEN) && (DMA_CH1CNT == 0))
 	{
+		DMA_CH1CTL &= ~DMA_CHXCTL_CHEN;
 		if (vsfhal_usart_ontx[0])
 			vsfhal_usart_ontx[0](vsfhal_usart_callback_param[0]);
 	}
@@ -577,6 +578,7 @@ static void usart1_dma_handler(void)
 	// tx dma
 	if ((DMA_CH3CTL & DMA_CHXCTL_CHEN) && (DMA_CH3CNT == 0))
 	{
+		DMA_CH3CTL &= ~DMA_CHXCTL_CHEN;
 		if (vsfhal_usart_ontx[1])
 			vsfhal_usart_ontx[1](vsfhal_usart_callback_param[1]);
 	}
