@@ -172,9 +172,7 @@ vsf_err_t vsf_fifo_init(struct vsf_fifo_t *fifo)
 		return VSFERR_INVALID_PARAMETER;
 	}
 #endif
-	if (((uint32_t)fifo == 0x200012b8) && fifo->head)
-		__ASM("NOP");
-	
+
 	fifo->head = fifo->tail = 0;
 	return VSFERR_NONE;
 }
@@ -278,8 +276,6 @@ uint32_t vsf_fifo_push(struct vsf_fifo_t *fifo, uint32_t size, uint8_t *data)
 			fifo->head = 0;
 		}
 	}
-	if (fifo->head == 0)
-		__ASM("NOP");
 	return size;
 }
 

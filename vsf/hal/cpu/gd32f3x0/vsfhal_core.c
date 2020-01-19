@@ -338,10 +338,10 @@ ROOT void SysTick_Handler(void)
 	{
 		tickclk_callback(tickclk_param);
 	}
-//#if VSFHAL_USART_EN && VSFHAL_USART1_ENABLE
-//	extern void gd32f3x0_usart1_poll(void);
-//	gd32f3x0_usart1_poll();
-//#endif
+#if VSFHAL_USART_EN && VSFHAL_USART1_ENABLE
+	extern void gd32f3x0_usart1_poll(void);
+	gd32f3x0_usart1_poll();
+#endif
 }
 
 vsf_err_t vsfhal_tickclk_config_cb(void (*callback)(void*), void *param)

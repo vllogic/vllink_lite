@@ -29,13 +29,6 @@ struct usart_stream_info_t
 
 	struct vsf_stream_t *stream_tx;
 	struct vsf_stream_t *stream_rx;
-	
-	uint8_t buf0[8];
-	struct vsf_buffer_t buffer0;
-	uint8_t buf1[8];
-	struct vsf_buffer_t buffer1;
-
-	struct vsfsm_t sm;
 };
 
 vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream);

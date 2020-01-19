@@ -63,7 +63,7 @@
 #include "component/usb/core/vsfusbd.h"
 #include "component/usb/class/device/CDC/vsfusbd_CDC.h"
 #include "component/usb/class/device/CDC/vsfusbd_CDCACM.h"
-//#include "component/usb/class/device/CDC/vsfusbd_RNDIS.h"
+#include "component/usb/class/device/CDC/vsfusbd_RNDIS.h"
 #include "component/usb/class/device/HID/vsfusbd_HID.h"
 #include "component/usb/class/device/MSC/vsfusbd_MSC_BOT.h"
 
