@@ -56,16 +56,6 @@ static void uart_on_tx(void *p)
 	{
 		buffer.buffer = buf;
 		buffer.size = stream_read(param->stream_tx, &buffer);
-		
-		static bool stop = 0;
-		if (stop)
-			stop = 0;
-		
-		if (buffer.size == 48)
-		{
-			stop = 1;
-		}
-		
 		if (buffer.size)
 		{
 			vsfhal_usart_tx_bytes(param->index, buf, buffer.size);
