@@ -335,17 +335,17 @@ uint16_t vsfhal_usart_rx_bytes(vsfhal_usart_t index, uint8_t *data, uint16_t siz
 	if (index >= VSFHAL_USART_NUM)
 		return 0;
 
-	if ((rx_dma_buff_pos[index] + size) <= (VSFHAL_USART_NUM * 2))
+	if ((rx_dma_buff_pos[index] + size) <= (DMA_BUFF_SIZE * 2))
 	{
 		tail = size;
 		head = 0;
 	}
 	else
 	{
-		tail = VSFHAL_USART_NUM * 2 - rx_dma_buff_pos[index];
+		tail = DMA_BUFF_SIZE * 2 - rx_dma_buff_pos[index];
 		head = size - tail;
 	}
-		  
+
 	if (tail)
 		memcpy(data, &rx_dma_buff[index][rx_dma_buff_pos[index]], tail);
 	if (head)
@@ -360,15 +360,15 @@ uint16_t vsfhal_usart_rx_bytes(vsfhal_usart_t index, uint8_t *data, uint16_t siz
 
 uint16_t vsfhal_usart_rx_get_data_size(vsfhal_usart_t index)
 {
-	uint16_t dma_pos;
+	uint32_t dma_pos;
 
 	switch (index)
 	{
 	case 0:
-		dma_pos = VSFHAL_USART_NUM * 2 - DMA_CH2CNT;
+		dma_pos = DMA_BUFF_SIZE * 2 - DMA_CH2CNT;
 		break;
 	case 1:
-		dma_pos = VSFHAL_USART_NUM * 2 - DMA_CH4CNT;
+		dma_pos = DMA_BUFF_SIZE * 2 - DMA_CH4CNT;
 		break;
 	default:
 		return 0;
@@ -377,7 +377,7 @@ uint16_t vsfhal_usart_rx_get_data_size(vsfhal_usart_t index)
 	if (rx_dma_buff_pos[index] <= dma_pos)
 		return dma_pos - rx_dma_buff_pos[index];
 	else
-		return dma_pos + VSFHAL_USART_NUM * 2 - rx_dma_buff_pos[index];
+		return dma_pos + DMA_BUFF_SIZE * 2 - rx_dma_buff_pos[index];
 }
 
 uint16_t vsfhal_usart_rx_get_free_size(vsfhal_usart_t index)
@@ -419,7 +419,7 @@ ROOT void USART0_IRQHandler(void)
 	if (USART_STAT(USART0) & USART_STAT_RTF)
 	{
 		USART_INTC(USART0) = USART_INTC_RTC;
-		dma_pos = VSFHAL_USART_NUM * 2 - DMA_CH2CNT;
+		dma_pos = DMA_BUFF_SIZE * 2 - DMA_CH2CNT;
 		if ((dma_pos != rx_dma_buff_pos[0]) && vsfhal_usart_onrx[0])
 			vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0]);
 	}
@@ -436,9 +436,15 @@ ROOT void DMA_Channel1_2_IRQHandler(void)
 			vsfhal_usart_ontx[0](vsfhal_usart_callback_param[0]);
 	}
 	// rx dma
-	if (DMA_INTF & (DMA_INTF_GIF << (0x2 * 4)))
+	if (DMA_INTF & (DMA_INTF_HTFIF << (0x2 * 4)))
 	{
-		DMA_INTC = DMA_INTC_GIFC << (0x2 * 4);
+		DMA_INTC = DMA_INTF_HTFIF << (0x2 * 4);
+		if (vsfhal_usart_onrx[0])
+			vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0]);
+	}
+	if (DMA_INTF & (DMA_INTF_FTFIF << (0x2 * 4)))
+	{
+		DMA_INTC = DMA_INTF_FTFIF << (0x2 * 4);
 		if (vsfhal_usart_onrx[0])
 			vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0]);
 	}
@@ -448,9 +454,6 @@ ROOT void DMA_Channel1_2_IRQHandler(void)
 // used for usart1 tx/rx
 ROOT void DMA_Channel3_4_IRQHandler(void)
 {
-	DMA_INTC = (DMA_INTC_GIFC << (3 * 4)) | (DMA_INTC_GIFC << (4 * 4));
-	usart1_dma_handler();
-	
 	// tx dma
 	if (DMA_INTF & (DMA_INTF_GIF << (0x3 * 4)))
 	{
@@ -471,9 +474,17 @@ void gd32f3x0_usart1_poll(void)
 {
 	uint16_t dma_pos;
 
-	dma_pos = VSFHAL_USART_NUM * 2 - DMA_CH4CNT;
-	if ((dma_pos != rx_dma_buff_pos[1]) && vsfhal_usart_onrx[1])
-		vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1]);
+	if (DMA_CH4CTL & DMA_CHXCTL_CHEN)
+	{
+		istate_t gint = GET_GLOBAL_INTERRUPT_STATE();
+		DISABLE_GLOBAL_INTERRUPT();
+		
+		dma_pos = DMA_BUFF_SIZE * 2 - DMA_CH4CNT;
+		if ((dma_pos != rx_dma_buff_pos[1]) && vsfhal_usart_onrx[1])
+			vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1]);
+		
+		SET_GLOBAL_INTERRUPT_STATE(gint);
+	}
 }
 #endif
 
