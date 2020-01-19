@@ -26,12 +26,8 @@
 
 static uint8_t tx_dma_buff[VSFHAL_USART_NUM][DMA_BUFF_SIZE];
 
-static uint8_t rx_dma_buf_sel[VSFHAL_USART_NUM];
-static uint8_t rx_dma_buff_pos[VSFHAL_USART_NUM][2];
-static uint8_t rx_dma_buff[VSFHAL_USART_NUM][2][DMA_BUFF_SIZE];
-
 static void (*vsfhal_usart_ontx[VSFHAL_USART_NUM])(void *);
-static void (*vsfhal_usart_onrx[VSFHAL_USART_NUM])(void *);
+static void (*vsfhal_usart_onrx[VSFHAL_USART_NUM])(void *, uint16_t rx);
 static void *vsfhal_usart_callback_param[VSFHAL_USART_NUM];
 
 #define CONFIG_USART_GPIO(port, pin_idx)		do {	\
@@ -176,28 +172,19 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 	if (index == 0)
 	{
 		DMA_CH1CTL = 0;
-		DMA_CH2CTL = 0;
 		USART_CTL0(usartx) = 0;
 		USART_CTL0(usartx) = USART_CTL0_RTIE | (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
 		USART_CTL1(usartx) = USART_CTL1_RTEN | ((mode >> 16) & 0x3000);
-		USART_CTL2(usartx) = USART_CTL2_DENR | USART_CTL2_DENT;
+		USART_CTL2(usartx) = USART_CTL2_DENT;
 		USART_RT(usartx) = 30;
-		
+
 		// dma tx
 		DMA_CH1CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_DIR | DMA_CHXCTL_FTFIE;
 		DMA_CH1PADDR = (uint32_t)(usartx + 0x28U);
-
-		// dma rx
-		rx_dma_buf_sel[0] = 0;
-		DMA_CH2PADDR = (uint32_t)(usartx + 0x24U);
-		DMA_CH2MADDR = (uint32_t)rx_dma_buff[0][0];
-		DMA_CH2CNT = DMA_BUFF_SIZE;
-		DMA_CH2CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_CHEN;
 	}
 	else
 	{
 		DMA_CH3CTL = 0;
-		DMA_CH4CTL = 0;
 		USART_CTL0(usartx) = 0;
 		USART_CTL0(usartx) = (mode & 0x1600) | USART_CTL0_TEN | USART_CTL0_REN;
 		USART_CTL1(usartx) = (mode >> 16) & 0x3000;
@@ -206,24 +193,17 @@ vsf_err_t vsfhal_usart_config(vsfhal_usart_t index, uint32_t baudrate, uint32_t 
 		// dma tx
 		DMA_CH3CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_DIR | DMA_CHXCTL_FTFIE;
 		DMA_CH3PADDR = (uint32_t)(usartx + 0x28U);
-
-		// dma rx
-		rx_dma_buf_sel[1] = 0;
-		DMA_CH4PADDR = (uint32_t)(usartx + 0x24U);
-		DMA_CH4MADDR = (uint32_t)rx_dma_buff[1][0];
-		DMA_CH4CNT = DMA_BUFF_SIZE;
-		DMA_CH4CTL = DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_CHEN;
 	}
 	USART_BAUD(usartx) = temp / baudrate;
 	USART_CMD(usartx) = 0x1f;
-	USART_RFCS(usartx) |= USART_RFCS_RFEN;
+	USART_RFCS(usartx) |= USART_RFCS_RFEN | USART_RFCS_RFFIE;
 	USART_CTL0(usartx) |= USART_CTL0_UEN;
 
 	return VSFERR_NONE;
 }
 
 vsf_err_t vsfhal_usart_config_cb(vsfhal_usart_t index, int32_t int_priority, void *p,
-		void (*ontx)(void *), void (*onrx)(void *))
+		void (*ontx)(void *), void (*onrx)(void *, uint16_t))
 {
 	if (index >= VSFHAL_USART_NUM)
 		return VSFERR_BUG;
@@ -246,8 +226,8 @@ vsf_err_t vsfhal_usart_config_cb(vsfhal_usart_t index, int32_t int_priority, voi
 		#endif
 		#if VSFHAL_USART1_ENABLE
 		case 1:
-			//NVIC_EnableIRQ(USART1_IRQn);
-			//NVIC_SetPriority(USART1_IRQn, int_priority);
+			NVIC_EnableIRQ(USART1_IRQn);
+			NVIC_SetPriority(USART1_IRQn, int_priority);
 			NVIC_EnableIRQ(DMA_Channel3_4_IRQn);
 			NVIC_SetPriority(DMA_Channel3_4_IRQn, int_priority);
 			break;
@@ -346,132 +326,48 @@ vsf_err_t vsfhal_usart_tx_int_config(vsfhal_usart_t index, bool enable)
 
 uint16_t vsfhal_usart_rx_bytes(vsfhal_usart_t index, uint8_t *data, uint16_t size)
 {
-	uint8_t buf[DMA_BUFF_SIZE];
+	uint16_t i;
+	uint32_t usartx;
 
 	switch (index)
 	{
 	case 0:
-		if (DMA_CH2CTL & DMA_CHXCTL_CHEN)
-		{
-			if (rx_dma_buf_sel[0] == 0)
-			{
-				if (rx_dma_buff_pos[0][1])
-				{
-					if (size >= rx_dma_buff_pos[0][1])
-					{
-						size = rx_dma_buff_pos[0][1];
-						memcpy(data, rx_dma_buff[0][1], size);
-						rx_dma_buff_pos[0][1] = 0;
-						return size;
-					}
-					else
-					{
-						memcpy(data, rx_dma_buff[0][1], size);
-						memcpy(buf, rx_dma_buff[0][1] + size, rx_dma_buff_pos[0][1] - size);
-						memcpy(rx_dma_buff[0][1], buf, rx_dma_buff_pos[0][1] - size);
-						rx_dma_buff_pos[0][1] -= size;
-						return size;
-					}
-				}
-			}
-			else
-			{
-				if (rx_dma_buff_pos[0][0])
-				{
-					if (size >= rx_dma_buff_pos[0][0])
-					{
-						size = rx_dma_buff_pos[0][0];
-						memcpy(data, rx_dma_buff[0][0], size);
-						rx_dma_buff_pos[0][0] = 0;
-						return size;
-					}
-					else
-					{
-						memcpy(data, rx_dma_buff[0][0], size);
-						memcpy(buf, rx_dma_buff[0][0] + size, rx_dma_buff_pos[0][0] - size);
-						memcpy(rx_dma_buff[0][0], buf, rx_dma_buff_pos[0][0] - size);
-						rx_dma_buff_pos[0][0] -= size;
-						return size;
-					}
-				}
-			}
-		}
+		usartx = USART0;
 		break;
 	case 1:
-		if (DMA_CH4CTL & DMA_CHXCTL_CHEN)
-		{
-			if (rx_dma_buf_sel[1] == 0)
-			{
-				if (rx_dma_buff_pos[1][1])
-				{
-					if (size >= rx_dma_buff_pos[1][1])
-					{
-						size = rx_dma_buff_pos[1][1];
-						memcpy(data, rx_dma_buff[1][1], size);
-						rx_dma_buff_pos[1][1] = 0;
-						return size;
-					}
-					else
-					{
-						memcpy(data, rx_dma_buff[1][1], size);
-						memcpy(buf, rx_dma_buff[1][1] + size, rx_dma_buff_pos[1][1] - size);
-						memcpy(rx_dma_buff[1][1], buf, rx_dma_buff_pos[1][1] - size);
-						rx_dma_buff_pos[1][1] -= size;
-						return size;
-					}
-				}
-			}
-			else
-			{
-				if (rx_dma_buff_pos[1][0])
-				{
-					if (size >= rx_dma_buff_pos[1][0])
-					{
-						size = rx_dma_buff_pos[1][0];
-						memcpy(data, rx_dma_buff[1][0], size);
-						rx_dma_buff_pos[1][0] = 0;
-						return size;
-					}
-					else
-					{
-						memcpy(data, rx_dma_buff[1][0], size);
-						memcpy(buf, rx_dma_buff[1][0] + size, rx_dma_buff_pos[1][0] - size);
-						memcpy(rx_dma_buff[1][0], buf, rx_dma_buff_pos[1][0] - size);
-						rx_dma_buff_pos[1][0] -= size;
-						return size;
-					}
-				}
-			}
-		}
+		usartx = USART1;
 		break;
+	default:
+		return 0;
 	}
-	return 0;
+	
+	for (i = 0; i < size; i++)
+		data[i] = USART_RDATA(usartx);
+	return size;
 }
 
 uint16_t vsfhal_usart_rx_get_data_size(vsfhal_usart_t index)
 {
+	uint16_t size;
+	uint32_t usartx;
+
 	switch (index)
 	{
 	case 0:
-		if (DMA_CH2CTL & DMA_CHXCTL_CHEN)
-		{
-			if (rx_dma_buf_sel[0] == 0)
-				return rx_dma_buff_pos[0][1];
-			else
-				return rx_dma_buff_pos[0][0];
-		}
+		usartx = USART0;
 		break;
 	case 1:
-		if (DMA_CH4CTL & DMA_CHXCTL_CHEN)
-		{
-			if (rx_dma_buf_sel[1] == 0)
-				return rx_dma_buff_pos[1][1];
-			else
-				return rx_dma_buff_pos[1][0];
-		}
+		usartx = USART1;
 		break;
+	default:
+		return 0;
 	}
-	return 0;
+	
+	size = (USART_RFCS(usartx) >> 12) & 0x7;
+	if (USART_STAT(usartx) & USART_STAT_RBNE)
+		size += 1;
+	
+	return size;
 }
 
 uint16_t vsfhal_usart_rx_get_free_size(vsfhal_usart_t index)
@@ -481,135 +377,85 @@ uint16_t vsfhal_usart_rx_get_free_size(vsfhal_usart_t index)
 
 vsf_err_t vsfhal_usart_rx_int_config(vsfhal_usart_t index, bool enable)
 {
+	uint32_t usartx;
+
 	switch (index)
 	{
 	case 0:
-		if (enable)
-			DMA_CH2CTL |= DMA_CHXCTL_FTFIE;
-		else
-			DMA_CH2CTL &= ~DMA_CHXCTL_FTFIE;
+		usartx = USART0;
 		break;
 	case 1:
-		if (enable)
-			DMA_CH4CTL |= DMA_CHXCTL_FTFIE;
-		else
-			DMA_CH4CTL &= ~DMA_CHXCTL_FTFIE;
+		usartx = USART1;
 		break;
 	default:
 		return VSFERR_BUG;
 	}
 
+	if (enable)
+	{
+		USART_CTL0(usartx) &= ~USART_CTL0_RTIE;
+		USART_RFCS(usartx) &= ~USART_RFCS_RFFIE;
+	}
+	else
+	{
+		USART_CTL0(usartx) |= USART_CTL0_RTIE;
+		USART_RFCS(usartx) |= USART_RFCS_RFFIE;
+	}
 	return VSFERR_NONE;
 }
 
-static uint8_t rx_dma_buf_sel[VSFHAL_USART_NUM];
-static uint8_t rx_dma_buff_pos[VSFHAL_USART_NUM][2];
-static uint8_t rx_dma_buff[VSFHAL_USART_NUM][2][DMA_BUFF_SIZE];
-
-static void (*vsfhal_usart_ontx[VSFHAL_USART_NUM])(void *);
-static void (*vsfhal_usart_onrx[VSFHAL_USART_NUM])(void *);
-static void *vsfhal_usart_callback_param[VSFHAL_USART_NUM];
-
-static void usart0_dma_handler(void)
-{
-	// rx dma
-	if ((DMA_CH2CTL & DMA_CHXCTL_CHEN) && (DMA_CH2CNT != DMA_BUFF_SIZE))
-	{
-		if (rx_dma_buf_sel[0] == 0)
-		{
-			DMA_CH2CTL &= ~DMA_CHXCTL_CHEN;
-			rx_dma_buff_pos[0][0] = DMA_BUFF_SIZE - DMA_CH2CNT;
-			DMA_CH2MADDR = (uint32_t)rx_dma_buff[0][1];
-			DMA_CH2CNT = DMA_BUFF_SIZE;
-			DMA_CH2CTL |= DMA_CHXCTL_CHEN;
-			rx_dma_buf_sel[0] = 1;
-			if (vsfhal_usart_onrx[0])
-				vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0]);
-		}
-		else
-		{
-			DMA_CH2CTL &= ~DMA_CHXCTL_CHEN;
-			rx_dma_buff_pos[0][1] = DMA_BUFF_SIZE - DMA_CH2CNT;
-			DMA_CH2MADDR = (uint32_t)rx_dma_buff[0][0];
-			DMA_CH2CNT = DMA_BUFF_SIZE;
-			DMA_CH2CTL |= DMA_CHXCTL_CHEN;
-			rx_dma_buf_sel[0] = 0;
-			if (vsfhal_usart_onrx[0])
-				vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0]);
-		}
-	}
-	// tx dma
-	if ((DMA_CH1CTL & DMA_CHXCTL_CHEN) && (DMA_CH1CNT == 0))
-	{
-		if (vsfhal_usart_ontx[0])
-			vsfhal_usart_ontx[0](vsfhal_usart_callback_param[0]);
-	}
-}
-
-static void usart1_dma_handler(void)
-{
-	// rx dma
-	if ((DMA_CH4CTL & DMA_CHXCTL_CHEN) && (DMA_CH4CNT != DMA_BUFF_SIZE))
-	{
-		if (rx_dma_buf_sel[1] == 0)
-		{
-			DMA_CH4CTL &= ~DMA_CHXCTL_CHEN;
-			rx_dma_buff_pos[1][0] = DMA_BUFF_SIZE - DMA_CH4CNT;
-			DMA_CH4MADDR = (uint32_t)rx_dma_buff[1][1];
-			DMA_CH4CNT = DMA_BUFF_SIZE;
-			DMA_CH4CTL |= DMA_CHXCTL_CHEN;
-			rx_dma_buf_sel[1] = 1;
-			if (vsfhal_usart_onrx[1])
-				vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1]);
-		}
-		else
-		{
-			DMA_CH4CTL &= ~DMA_CHXCTL_CHEN;
-			rx_dma_buff_pos[1][1] = DMA_BUFF_SIZE - DMA_CH4CNT;
-			DMA_CH4MADDR = (uint32_t)rx_dma_buff[1][0];
-			DMA_CH4CNT = DMA_BUFF_SIZE;
-			DMA_CH4CTL |= DMA_CHXCTL_CHEN;
-			rx_dma_buf_sel[1] = 0;
-			if (vsfhal_usart_onrx[1])
-				vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1]);
-		}
-	}
-	// tx dma
-	if ((DMA_CH3CTL & DMA_CHXCTL_CHEN) && (DMA_CH3CNT == 0))
-	{
-		if (vsfhal_usart_ontx[1])
-			vsfhal_usart_ontx[1](vsfhal_usart_callback_param[1]);
-	}
-}
-
 #if VSFHAL_USART0_ENABLE
-// used for usart0 tx/rx
 ROOT void USART0_IRQHandler(void)
 {
 	if (USART_STAT(USART0) & USART_STAT_RTF)
-	{
 		USART_INTC(USART0) = USART_INTC_RTC;
-		usart0_dma_handler();
+	if (USART_STAT(USART0) & USART_STAT_RBNE)
+	{
+		if (USART_RFCS(USART0) & USART_RFCS_RFFINT)
+			USART_RFCS(USART0) &= ~USART_RFCS_RFFINT;
+		if (vsfhal_usart_onrx[0])
+			vsfhal_usart_onrx[0](vsfhal_usart_callback_param[0], USART_RDATA(USART0));
 	}
 }
 
 ROOT void DMA_Channel1_2_IRQHandler(void)
 {
 	DMA_INTC = (DMA_INTC_GIFC << (1 * 4)) | (DMA_INTC_GIFC << (2 * 4));
-	usart0_dma_handler();
+	DMA_CH1CTL &= ~DMA_CHXCTL_CHEN;
+	if (vsfhal_usart_ontx[0])
+		vsfhal_usart_ontx[0](vsfhal_usart_callback_param[0]);
 }
 #endif
 #if VSFHAL_USART1_ENABLE
-// used for usart1 tx/rx
+ROOT void USART1_IRQHandler(void)
+{
+	if (USART_STAT(USART1) & USART_STAT_RBNE)
+	{
+		if (USART_RFCS(USART1) & USART_RFCS_RFFINT)
+			USART_RFCS(USART1) &= ~USART_RFCS_RFFINT;
+		if (vsfhal_usart_onrx[1])
+			vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1], USART_RDATA(USART0));
+	}
+}
 ROOT void DMA_Channel3_4_IRQHandler(void)
 {
 	DMA_INTC = (DMA_INTC_GIFC << (3 * 4)) | (DMA_INTC_GIFC << (4 * 4));
-	usart1_dma_handler();
+	DMA_CH3CTL &= ~DMA_CHXCTL_CHEN;
+	if (vsfhal_usart_ontx[1])
+		vsfhal_usart_ontx[1](vsfhal_usart_callback_param[1]);
 }
 void gd32f3x0_usart1_poll(void)
 {
-	if ((DMA_CH4CTL & DMA_CHXCTL_CHEN) && (DMA_CH4CNT != DMA_BUFF_SIZE))
-		usart1_dma_handler();
+	istate_t gint = GET_GLOBAL_INTERRUPT_STATE();
+	DISABLE_GLOBAL_INTERRUPT();
+	if (USART_STAT(USART1) & USART_STAT_RBNE)
+	{
+		if (USART_RFCS(USART1) & USART_RFCS_RFFINT)
+			USART_RFCS(USART1) &= ~USART_RFCS_RFFINT;
+		if (vsfhal_usart_onrx[1])
+			vsfhal_usart_onrx[1](vsfhal_usart_callback_param[1], USART_RDATA(USART0));
+	}
+	SET_GLOBAL_INTERRUPT_STATE(gint);
 }
 #endif
 

@@ -22,23 +22,63 @@
 
 #define USART_BUF_SIZE	64
 
-static void uart_rx_int(void *p)
+static uint8_t pos = 0, r[64];
+static void uart_rx_int(void *p, uint16_t rx)
 {
-	uint8_t buf[USART_BUF_SIZE];
-	struct vsf_buffer_t buffer;
+	uint8_t size;
+	uint32_t evt;
+	struct vsf_buffer_t *buffer;
 	struct usart_stream_info_t *param = p;
 
 	if (!param->stream_rx)
 		return;
 	
-	buffer.buffer = buf;
-	buffer.size = min(vsfhal_usart_rx_get_data_size(param->index), USART_BUF_SIZE);
-	if (buffer.size)
+	if (param->buffer0.size == 0)
 	{
-		buffer.size = vsfhal_usart_rx_bytes(param->index, buf, buffer.size);
-		if (buffer.size)
-			stream_write(param->stream_rx, &buffer);
+		evt = VSFSM_EVT_USER_LOCAL;
+		buffer = &param->buffer0;
 	}
+	else if (param->buffer1.size == 0)
+	{
+		evt = VSFSM_EVT_USER_LOCAL + 1;
+		buffer = &param->buffer1;
+	}
+	else
+	{
+		// over read
+		uint8_t buf[8];
+		vsfhal_usart_rx_bytes(param->index, buf, 8);
+		return;
+	}
+	
+	buffer->buffer[0] = rx;
+	size = min(vsfhal_usart_rx_get_data_size(param->index), 7);
+	if (size)
+		size = vsfhal_usart_rx_bytes(param->index, buffer->buffer + 1, size);
+	buffer->size = size + 1;
+	
+	if (pos < 64)
+		r[pos++] = buffer->size;
+	vsfsm_post_evt_pending(&param->sm, evt);
+}
+
+static struct vsfsm_state_t *rx_evt_handler(struct vsfsm_t *sm, vsfsm_evt_t evt)
+{
+	struct usart_stream_info_t *param = sm->user_data;
+
+	switch (evt)
+	{
+	case VSFSM_EVT_USER_LOCAL:
+		stream_write(param->stream_rx, &param->buffer0);
+		param->buffer0.size = 0;
+		break;
+	case VSFSM_EVT_USER_LOCAL + 1:
+		stream_write(param->stream_rx, &param->buffer1);
+		param->buffer1.size = 0;
+		break;
+	}
+
+	return NULL;
 }
 
 static void uart_on_tx(void *p)
@@ -122,6 +162,12 @@ vsf_err_t usart_stream_init(struct usart_stream_info_t *usart_stream)
 		usart_stream->stream_rx->callback_tx.on_inout = uart_on_rx;
 		usart_stream->stream_rx->callback_tx.on_connect = uart_tx_on_connect;
 		usart_stream->stream_rx->callback_tx.on_disconnect = uart_tx_on_disconnect;	
+		
+		usart_stream->buffer0.buffer = usart_stream->buf0;
+		usart_stream->buffer1.buffer = usart_stream->buf1;
+		usart_stream->sm.init_state.evt_handler = rx_evt_handler;
+		usart_stream->sm.user_data = usart_stream;
+		vsfsm_init(&usart_stream->sm);
 	}
 
 	vsfhal_usart_init(usart_stream->index);
