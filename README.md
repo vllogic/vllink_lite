@@ -49,4 +49,5 @@ GPLv3，随便玩
 
 1. SWO功能测试
 2. 编写 ID_DAP_Vendor1 - ID_DAP_Vendor5 串口命令，支持多路串口同时收发
-3. 利用板上SPI Flash，研究自动化较高的离线编程器方案
+3. 集成taget chip memory rw功能，增加虚拟CDC口，通过直接读写RAM实现调试I/O，类似RTT(J-Link)及Nuconsole(Nu-Link)
+4. 利用板上SPI Flash，研究自动化较高的离线编程器方案
