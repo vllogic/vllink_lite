@@ -1,0 +1,135 @@
+/*****************************************************************************
+ *   Copyright(C)2009-2019 by VSF Team                                       *
+ *                                                                           *
+ *  Licensed under the Apache License, Version 2.0 (the "License");          *
+ *  you may not use this file except in compliance with the License.         *
+ *  You may obtain a copy of the License at                                  *
+ *                                                                           *
+ *     http://www.apache.org/licenses/LICENSE-2.0                            *
+ *                                                                           *
+ *  Unless required by applicable law or agreed to in writing, software      *
+ *  distributed under the License is distributed on an "AS IS" BASIS,        *
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+ *  See the License for the specific language governing permissions and      *
+ *  limitations under the License.                                           *
+ *                                                                           *
+ ****************************************************************************/
+
+
+
+#ifndef __VSF_INPUT_H__
+#define __VSF_INPUT_H__
+
+/*============================ INCLUDES ======================================*/
+#include "./vsf_input_cfg.h"
+
+#if VSF_USE_INPUT == ENABLED
+
+/*============================ MACROS ========================================*/
+
+#define VSF_INPUT_ITEM_EX(__item, __bitoffset, __bitlen, __is_signed, __config) \
+            {                                                                   \
+                .item       = (__item),                                         \
+                .offset     = (__bitoffset),                                    \
+                .bitlen     = (__bitlen),                                       \
+                .is_signed  = (__is_signed),                                    \
+                .config     = (__config),                                       \
+            }
+
+#define VSF_INPUT_ITEM(__item, __bitoffset, __bitlen, __is_signed)              \
+            VSF_INPUT_ITEM_EX((__item), (__bitoffset), (__bitlen), (__is_signed), false)
+
+/*============================ MACROFIED FUNCTIONS ===========================*/
+/*============================ TYPES =========================================*/
+
+typedef uint32_t vk_input_timestamp_t;
+
+struct vk_input_item_info_t {
+    uint32_t item       : 8;
+    uint32_t bitlen     : 7;
+    uint32_t is_signed  : 1;
+    uint32_t offset     : 14;
+    uint32_t config     : 1;
+    uint32_t endian     : 1;
+};
+typedef struct vk_input_item_info_t vk_input_item_info_t;
+
+union vk_input_value_t {
+    uint32_t bit    : 1;
+    uint32_t valu32;
+    uint16_t valu16;
+    uint8_t valu8;
+    int32_t val32;
+    int16_t val16;
+    int8_t val8;
+};
+typedef union vk_input_value_t vk_input_value_t;
+
+enum vk_input_type_t {
+    VSF_INPUT_TYPE_UNKNOWN,
+};
+typedef enum vk_input_type_t vk_input_type_t;
+
+struct vk_input_evt_t {
+    void *dev;
+    uint32_t duration;          // duration in ms between pre and cur
+    uint64_t id;
+    vk_input_value_t pre;
+    vk_input_value_t cur;
+};
+typedef struct vk_input_evt_t vk_input_evt_t;
+
+struct vk_input_parser_t {
+    vk_input_item_info_t *info;
+    uint8_t num;
+
+    vk_input_value_t pre;
+    vk_input_value_t cur;
+};
+typedef struct vk_input_parser_t vk_input_parser_t;
+
+typedef void (*vk_input_on_evt_t)(vk_input_type_t type, vk_input_evt_t *evt);
+struct vk_input_notifier_t {
+    vsf_slist_node_t notifier_node;
+    vk_input_on_evt_t on_evt;
+    uint8_t mask;
+};
+typedef struct vk_input_notifier_t vk_input_notifier_t;
+
+/*============================ INCLUDES ======================================*/
+
+#include "./protocol/vsf_input_gamepad.h"
+#include "./protocol/vsf_input_sensor.h"
+#include "./protocol/vsf_input_touchscreen.h"
+#include "./protocol/vsf_input_keyboard.h"
+#include "./protocol/vsf_input_mouse.h"
+
+/*============================ GLOBAL VARIABLES ==============================*/
+/*============================ LOCAL VARIABLES ===============================*/
+/*============================ PROTOTYPES ====================================*/
+
+extern uint_fast32_t vk_input_buf_get_value(uint8_t *buf, uint_fast8_t offset, uint_fast8_t len);
+extern void vk_input_buf_set_value(uint8_t *buf, uint_fast8_t offset, uint_fast8_t len, uint_fast32_t value);
+extern void vk_input_buf_clear(uint8_t *buf, uint_fast8_t offset, uint_fast8_t len);
+extern void vk_input_buf_set(uint8_t *buf, uint_fast8_t offset, uint_fast8_t len);
+
+extern vk_input_item_info_t * vk_input_parse(vk_input_parser_t *parser, uint8_t *pre, uint8_t *cur);
+
+extern void vk_input_notifier_register(vk_input_notifier_t *notifier);
+extern void vk_input_notifier_unregister(vk_input_notifier_t *notifier);
+
+extern void vsf_input_on_sensor(vk_sensor_evt_t *sensor_evt);
+extern void vsf_input_on_touchscreen(vk_touchscreen_evt_t *ts_evt);
+extern void vsf_input_on_gamepad(vk_gamepad_evt_t *gamepad_evt);
+extern void vsf_input_on_keyboard(vk_keyboard_evt_t *keyboard_evt);
+
+extern void vsf_input_on_new_dev(vk_input_type_t type, void *dev);
+extern void vsf_input_on_free_dev(vk_input_type_t type, void *dev);
+extern void vsf_input_on_evt(vk_input_type_t type, vk_input_evt_t *evt);
+
+// returns duration
+extern uint_fast32_t vk_input_update_timestamp(vk_input_timestamp_t *timestamp);
+
+#endif      // VSF_USE_INPUT
+#endif      // __VSF_INPUT_H__
+/* EOF */
