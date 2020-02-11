@@ -22,7 +22,7 @@
 #define __TOP_APP_CFG_H__
 
 /*============================ INCLUDES ======================================*/
-#include "build_config.h"
+#include "compile_definitions.h"
 /*============================ MACROS ========================================*/
 
 #define ASSERT(...)                     if (!(__VA_ARGS__)) {while(1);};

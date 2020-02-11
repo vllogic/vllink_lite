@@ -24,6 +24,11 @@ set(VSFHAL_CHIP_NAME        GD32F350)
 set(VSFHAL_ARCH_SERIES      arm)
 set(VSFHAL_ARCH_NAME        cortex-m4)
 
+set(PROJ_COMPILE_DEFINITIONS
+  __GigaDevice__
+  __GD32F350__
+)
+
 # select toolchain
 include(${VSF_BASE}/cmake/gnuarmemb.cmake)
 
@@ -50,14 +55,20 @@ target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
 
 target_compile_definitions(${CMAKE_PROJECT_NAME}
   PUBLIC
-    __GigaDevice__
-    __GD32F350__
+    ${PROJ_COMPILE_DEFINITIONS}
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
   PRIVATE
     vsfkernel
 )
+
+file(WRITE compile_definitions.h "// Auto Generate\n\n")
+foreach(def ${PROJ_COMPILE_DEFINITIONS})
+  file(APPEND compile_definitions.h "#ifndef ${def}\n")
+  file(APPEND compile_definitions.h "#   define ${def}\n")
+  file(APPEND compile_definitions.h "#endif\n\n")
+endforeach()
 
 target_link_options(${CMAKE_PROJECT_NAME}
   PRIVATE
