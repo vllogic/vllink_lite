@@ -4,4 +4,6 @@ target_sources(vsfkernel INTERFACE
   vsf_arch_abstraction.c
 )
 
-add_subdirectory(${VSFHAL_ARCH_SERIES})
+if(IS_DIRECTORY ${VSFHAL_ARCH_SERIES})
+  add_subdirectory(${VSFHAL_ARCH_SERIES})
+endif()

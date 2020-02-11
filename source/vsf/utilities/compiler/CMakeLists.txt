@@ -1,4 +1,6 @@
 # CMakeLists head
 
 add_subdirectory(__common)
-add_subdirectory(${VSFHAL_ARCH_SERIES})
+if(IS_DIRECTORY ${VSFHAL_ARCH_SERIES})
+  add_subdirectory(${VSFHAL_ARCH_SERIES})
+endif()
