@@ -15,30 +15,26 @@
  *                                                                           *
  ****************************************************************************/
 
-#ifndef __HAL_DRIVER_GIGADEVICE_GD32F3X0_DEVICE_H__
-#define __HAL_DRIVER_GIGADEVICE_GD32F3X0_DEVICE_H__
+#if defined(__VSF_HEADER_ONLY_SHOW_ARCH_INFO__)
+#   include "hal/vsf_hal_cfg.h"
+#   include "./device.h"
+#   undef   __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
+#else
+
+#   ifndef __HAL_DRIVER_GIGADEVICE_GD32F350_H__
+#       define __HAL_DRIVER_GIGADEVICE_GD32F350_H__
 
 /*============================ INCLUDES ======================================*/
-#include "hal/vsf_hal_cfg.h"
-
-#undef VSF_DEVICE_HEADER
-
-#if     defined(__GD32F350__)
-#   define  VSF_DEVICE_HEADER       "./GD32F350/device.h"
-#else
-#   error No supported device found.
-#endif
-
-/* include specified device driver header file */
-#include VSF_DEVICE_HEADER
-
+#       include "hal/vsf_hal_cfg.h"
+#       include "./device.h"
+#       include "../common/usb/usb.h"
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
-
+#   endif
 
 #endif
 /* EOF */

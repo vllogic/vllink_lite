@@ -15,15 +15,27 @@
  *                                                                           *
  ****************************************************************************/
 
+#ifndef __HAL_DEVICE_GIGADEVICE_GD32F330_H__
+#define __HAL_DEVICE_GIGADEVICE_GD32F330_H__
 
-//! \note Top Level Configuration 
+/*============================ INCLUDES ======================================*/
+#include "hal/vsf_hal_cfg.h"
 
-#ifndef __VSF_PRIVATE_H__
-#define __VSF_PRIVATE_H__
+/*============================ MACROS ========================================*/
+
+/*\note first define basic info for arch. */
+#define VSF_ARCH_PRI_NUM            16
+#define VSF_ARCH_PRI_BIT            4
+
+// software interrupt provided by a dedicated device
+#define VSF_DEV_SWI_NUM             9
+#define VSF_DEV_SWI_LIST            70, 71, 72, 73, 74, 75, 76, 77, 78
 
 /*============================ INCLUDES ======================================*/
 
-#include "component/vsf_component_private.h"
+/*\note this is should be the only place where __common.h is included.*/
+#include "../common/__common.h"
+#include "../common/vendor/Include/gd32f3x0.h"
 
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/

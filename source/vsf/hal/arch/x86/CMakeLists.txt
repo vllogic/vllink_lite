@@ -1,5 +1,3 @@
 # CMakeLists head
 
-if(IS_DIRECTORY ${VSFHAL_SYSTEM})
-  add_subdirectory(${VSFHAL_SYSTEM})
-endif()
+add_subdirectory_existed(${VSFHAL_SYSTEM})

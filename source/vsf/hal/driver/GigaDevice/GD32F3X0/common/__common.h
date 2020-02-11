@@ -15,33 +15,21 @@
  *                                                                           *
  ****************************************************************************/
 
+#ifndef __HAL_DRIVER_GIGADEVICE_GD32F3X0_COMMON_H__
+#define __HAL_DRIVER_GIGADEVICE_GD32F3X0_COMMON_H__
+
+/* \note __common.h should only be included by device.h */
+
 /*============================ INCLUDES ======================================*/
 #include "hal/vsf_hal_cfg.h"
-
-#undef VSF_GIGADEVICE_DRIVER_HEADER
-
-#if     defined(__GD32F350__)
-//  TODO
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/GD32F350/driver.h"
-#else
-#   error No supported device found.
-#endif
-
-/* include specified device driver header file */
-#include VSF_GIGADEVICE_DRIVER_HEADER
-
-
-
-#ifndef __HAL_DRIVER_GIGADEVICE_H__
-#define __HAL_DRIVER_GIGADEVICE_H__
-
+#include "hal/arch/vsf_arch.h"
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
+/*============================ INCLUDES ======================================*/
 /*============================ PROTOTYPES ====================================*/
-
 
 #endif
 /* EOF */

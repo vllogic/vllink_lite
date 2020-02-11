@@ -15,15 +15,9 @@
  *                                                                           *
  ****************************************************************************/
 
-
-//! \note Top Level Configuration 
-
-#ifndef __VSF_PRIVATE_H__
-#define __VSF_PRIVATE_H__
-
 /*============================ INCLUDES ======================================*/
-
-#include "component/vsf_component_private.h"
+#include "hal/vsf_hal_cfg.h"
+#include "./device.h"
 
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
@@ -31,7 +25,17 @@
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
+/*============================ IMPLEMENTATION ================================*/
+
+/*! \note initialize device driver
+ *  \param none
+ *  \retval true initialization succeeded.
+ *  \retval false initialization failed
+ */
+bool vsf_driver_init(void)
+{
+    return true;
+}
 
 
-#endif
 /* EOF */

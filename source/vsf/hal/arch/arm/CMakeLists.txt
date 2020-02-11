@@ -38,6 +38,4 @@ vsf_link_options(
 )
 ]]
 
-if(IS_DIRECTORY ${ARCH_SUB})
-  add_subdirectory(${ARCH_SUB})
-endif()
+add_subdirectory_existed(${ARCH_SUB})
