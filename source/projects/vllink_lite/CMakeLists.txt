@@ -35,7 +35,7 @@ include(${VSF_BASE}/cmake/gnuarmemb.cmake)
 # select toolchain
 include(${VSF_BASE}/cmake/extensions.cmake)
 
-project(kernel_test C CXX ASM)
+project(vllink_lite C CXX ASM)
 
 #set(CONFIG_SHELL_LINUX    1)
 #message(STATUS "${PROJECT_SOURCE_DIR}")
@@ -48,19 +48,20 @@ add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})
 
 add_subdirectory(${VSF_BASE} ${CMAKE_CURRENT_BINARY_DIR}/vsf_base)
 
+#add_definitions(-DDEBUG=1 -O0 -g3)
+#add_definitions(-O3)
+
 target_include_directories(${CMAKE_PROJECT_NAME} PUBLIC
   .
   config
 )
 
-target_compile_definitions(${CMAKE_PROJECT_NAME}
-  PUBLIC
-    ${PROJ_COMPILE_DEFINITIONS}
+target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
+  ${PROJ_COMPILE_DEFINITIONS}
 )
 
-target_link_libraries(${CMAKE_PROJECT_NAME}
-  PRIVATE
-    vsfkernel
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
+  vsfkernel
 )
 
 file(WRITE compile_definitions.h "// Auto Generate\n\n")
@@ -70,23 +71,26 @@ foreach(def ${PROJ_COMPILE_DEFINITIONS})
   file(APPEND compile_definitions.h "#endif\n\n")
 endforeach()
 
-target_link_options(${CMAKE_PROJECT_NAME}
-  PRIVATE
-    LINKER:-Map=output.map
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+  LINKER:-T${CMAKE_CURRENT_SOURCE_DIR}/linker_script.ld
+  LINKER:-Map=output.map
 )
 
-target_link_options(${CMAKE_PROJECT_NAME}
-  PRIVATE
-    --specs=nosys.specs
+target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+  --specs=nosys.specs
 )
 
-set_target_properties(${CMAKE_PROJECT_NAME}
-  PROPERTIES
-    SUFFIX ".elf"
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+  SUFFIX ".elf"
 )
 
 add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    USES_TERMINAL
+  COMMAND ${CMAKE_OBJCOPY} -O ihex ${CMAKE_PROJECT_NAME}.elf ${CMAKE_PROJECT_NAME}.hex
+  COMMAND ${CMAKE_OBJCOPY} -O binary ${CMAKE_PROJECT_NAME}.elf ${CMAKE_PROJECT_NAME}.bin
+)
+
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+  COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  USES_TERMINAL
 )

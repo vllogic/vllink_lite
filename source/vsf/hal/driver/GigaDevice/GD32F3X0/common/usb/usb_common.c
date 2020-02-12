@@ -33,23 +33,14 @@ vsf_err_t gd32f3x0_usb_init(gd32f3x0_usb_t *usb, vsf_arch_prio_t priority)
     const gd32f3x0_usb_const_t *param = usb->param;
     struct dwcotg_core_global_regs_t *global_regs = param->reg;
 
-    #if 0
-    uint_fast32_t usbfs_prescaler;
-    // TODO: get real ckpll_clock
-    uint_fast32_t ckpll_clock = 96000000;
+    // TODO: get cpu clock config
 
-    if (ckpll_clock == 48000000) {
-        usbfs_prescaler = RCU_CKUSB_CKPLL_DIV1;
-    } else if (ckpll_clock == 72000000) {
-        usbfs_prescaler = RCU_CKUSB_CKPLL_DIV1_5;
-    } else if (ckpll_clock == 96000000) {
-          usbfs_prescaler = RCU_CKUSB_CKPLL_DIV2;
-    } else if (ckpll_clock == 120000000) {
-          usbfs_prescaler = RCU_CKUSB_CKPLL_DIV2_5;
-    } else {
-        VSF_HAL_ASSERT(false);
-    }
-    #endif
+    RCU_ADDAPB1EN |= RCU_ADDAPB1EN_CTCEN;
+    CTC_CTL1 = (0x2ul << 28) | (0x1cul << 16) | (48000 - 1);
+    CTC_CTL0 |= CTC_CTL0_AUTOTRIM | CTC_CTL0_CNTEN;
+
+    RCU_ADDCTL |= RCU_ADDCTL_CK48MSEL;
+    RCU_AHBEN |= RCU_AHBEN_USBFS;
 
     global_regs->gahbcfg &= ~USB_OTG_GAHBCFG_GINT;
 
