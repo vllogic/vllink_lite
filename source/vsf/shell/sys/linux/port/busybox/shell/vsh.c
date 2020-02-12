@@ -1,5 +1,7 @@
 #include "../config.h"
 
+#if VSF_USE_LINUX == ENABLED && VSF_USE_LINUX_BUSYBOX == ENABLED
+
 #define VSF_LINUX_INHERIT
 #include <unistd.h>
 #include <stdio.h>
@@ -367,3 +369,5 @@ int cat_main(int argc, char *argv[])
     close(fd);
     return 0;
 }
+
+#endif  // VSF_USE_LINUX == ENABLED && VSF_USE_LINUX_BUSYBOX == ENABLED

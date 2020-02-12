@@ -15,26 +15,52 @@
  *                                                                           *
  ****************************************************************************/
 
-#if defined(__VSF_HEADER_ONLY_SHOW_ARCH_INFO__)
-#   include "hal/vsf_hal_cfg.h"
-#   include "./device.h"
-#   undef   __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
-#else
-
-#   ifndef __HAL_DRIVER_GIGADEVICE_GD32F350_H__
-#       define __HAL_DRIVER_GIGADEVICE_GD32F350_H__
+#ifndef __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
+#define __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
 
 /*============================ INCLUDES ======================================*/
-#       include "hal/vsf_hal_cfg.h"
-#       include "./device.h"
-#       include "../common/usb/usb.h"
+#include "hal/vsf_hal_cfg.h"
+
 /*============================ MACROS ========================================*/
+
+/*\note first define basic info for arch. */
+#define VSF_ARCH_PRI_NUM            16
+#define VSF_ARCH_PRI_BIT            4
+
+// software interrupt provided by a dedicated device
+#define VSF_DEV_SWI_NUM             9
+#define VSF_DEV_SWI_LIST            70, 71, 72, 73, 74, 75, 76, 77, 78
+
+/*============================ INCLUDES ======================================*/
+
+/*\note this is should be the only place where __common.h is included.*/
+#include "./common/__common.h"
+#include "./common/vendor/Include/gd32f3x0.h"
+
+/*============================ MACROS ========================================*/
+#if     defined(__GD32F350__)
+#define USB_OTG_COUNT               1
+#define USB_OTG0_IRQHandler         USBFS_IRQHandler
+// required by dwcotg, define the max ep number of dwcotg
+#define USB_DWCOTG_MAX_EP_NUM       4
+
+#define USB_OTG0_CONFIG                                                         \
+    .ep_num = 8,                                                                \
+    .irq = USBFS_IRQn,                                                          \
+    .reg = USBFS_BASE,                                                          \
+    .buffer_word_size = 0x500 >> 2,                                             \
+    .speed = USB_SPEED_FULL,                                                    \
+	.dma_en = false,                                                            \
+	.ulpi_en = false,                                                           \
+	.utmi_en = false,                                                           \
+	.vbus_en = false,
+#endif
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
-#   endif
+
 
 #endif
 /* EOF */

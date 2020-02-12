@@ -30,8 +30,10 @@
 
 vsf_err_t gd32f3x0_usb_init(gd32f3x0_usb_t *usb, vsf_arch_prio_t priority)
 {
-    struct dwcotg_core_global_regs_t *global_regs;
     const gd32f3x0_usb_const_t *param = usb->param;
+    struct dwcotg_core_global_regs_t *global_regs = param->reg;
+
+    #if 0
     uint_fast32_t usbfs_prescaler;
     // TODO: get real ckpll_clock
     uint_fast32_t ckpll_clock = 96000000;
@@ -47,18 +49,15 @@ vsf_err_t gd32f3x0_usb_init(gd32f3x0_usb_t *usb, vsf_arch_prio_t priority)
     } else {
         VSF_HAL_ASSERT(false);
     }
+    #endif
 
-    rcu_usb_clock_config(usbfs_prescaler);
-    rcu_periph_clock_enable(RCU_USBFS);
-
-    global_regs = param->reg;
     global_regs->gahbcfg &= ~USB_OTG_GAHBCFG_GINT;
 
-    if (priority != vsf_arch_prio_ivalid) {
-        eclic_set_irq_lvl(param->irq, priority << (8 - VSF_ARCH_PRI_BIT));
-        eclic_enable_interrupt(param->irq);
+    if (priority >= 0) {
+        NVIC_SetPriority(param->irq, priority);
+        NVIC_EnableIRQ(param->irq);
     } else {
-        eclic_disable_interrupt(param->irq);
+        NVIC_DisableIRQ(param->irq);
     }
     return VSF_ERR_NONE;
 }

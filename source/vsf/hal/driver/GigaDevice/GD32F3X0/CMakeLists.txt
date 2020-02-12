@@ -1,4 +1,7 @@
 # CMakeLists head
 
+target_sources(vsfkernel INTERFACE
+    driver.c
+)
+
 add_subdirectory(common)
-add_subdirectory_existed(${VSFHAL_CHIP_NAME})

@@ -42,7 +42,7 @@ static void vk_dwcotg_reset(vk_dwcotg_t *dwcotg)
 
 void vk_dwcotg_phy_init(vk_dwcotg_t *dwcotg,
                         const vk_dwcotg_param_t *param,
-                        vsf_dwcotg_hw_info_t *hw_info)
+                        vk_dwcotg_hw_info_t *hw_info)
 {
     struct dwcotg_core_global_regs_t *global_regs = dwcotg->reg.global_regs;
 

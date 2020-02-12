@@ -21,12 +21,13 @@
 #   undef   __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
 #else
 
-#   ifndef __HAL_DRIVER_GIGADEVICE_GD32F330_H__
-#       define __HAL_DRIVER_GIGADEVICE_GD32F330_H__
+#   ifndef __HAL_DRIVER_GIGADEVICE_GD32F3X0_H__
+#       define __HAL_DRIVER_GIGADEVICE_GD32F3X0_H__
 
 /*============================ INCLUDES ======================================*/
 #       include "hal/vsf_hal_cfg.h"
 #       include "./device.h"
+#       include "./common/usb/usb.h"
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/

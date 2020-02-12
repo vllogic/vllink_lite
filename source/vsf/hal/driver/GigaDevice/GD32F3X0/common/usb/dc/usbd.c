@@ -22,7 +22,7 @@
 
 #if VSF_USE_USB_DEVICE == ENABLED && VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
 
-// for vsf_dwcotg_dc_ip_info_t
+// for vk_dwcotg_dc_ip_info_t
 #include "component/usb/driver/otg/dwcotg/vsf_dwcotg_dcd.h"
 
 /*============================ MACROS ========================================*/
@@ -52,7 +52,7 @@ void gd32f3x0_usbd_fini(gd32f3x0_usb_t *dc)
 void gd32f3x0_usbd_get_info(gd32f3x0_usb_t *dc, usb_dc_ip_info_t *info)
 {
     const gd32f3x0_usb_const_t *param = dc->param;
-    vsf_dwcotg_dc_ip_info_t *dwcotg_info = (vsf_dwcotg_dc_ip_info_t *)info;
+    vk_dwcotg_dc_ip_info_t *dwcotg_info = (vk_dwcotg_dc_ip_info_t *)info;
 
     VSF_HAL_ASSERT(dwcotg_info != NULL);
     dwcotg_info->regbase = dc->param->reg;

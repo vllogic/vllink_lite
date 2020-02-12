@@ -23,10 +23,8 @@
 #if     defined(__GD32VF103__)
 //  TODO
 #   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32VF103/GD32VF103C8/driver.h"
-#elif     defined(__GD32F330__)
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/GD32F330/driver.h"
-#elif     defined(__GD32F350__)
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/GD32F350/driver.h"
+#elif     defined(__GD32F330__) || defined(__GD32F350__)
+#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/driver.h"
 #else
 #   error No supported device found.
 #endif

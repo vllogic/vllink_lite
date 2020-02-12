@@ -23,10 +23,8 @@
 
 #undef VSF_DEVICE_HEADER
 
-#if     defined(__GD32F330__)
-#   define  VSF_DEVICE_HEADER       "./GD32F330/device.h"
-#elif   defined(__GD32F350__)
-#   define  VSF_DEVICE_HEADER       "./GD32F350/device.h"
+#if     defined(__GD32F330__) || defined(__GD32F350__)
+#   define  VSF_DEVICE_HEADER       "./device.h"
 #else
 #   error No supported device found.
 #endif

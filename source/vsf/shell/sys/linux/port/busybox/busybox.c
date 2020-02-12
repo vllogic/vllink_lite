@@ -1,5 +1,7 @@
 #include <unistd.h>
 
+#if VSF_USE_LINUX == ENABLED && VSF_USE_LINUX_BUSYBOX == ENABLED
+
 extern void vsh_set_path(char **path);
 extern int vsh_main(int argc, char *argv[]);
 extern int cd_main(int argc, char *argv[]);
@@ -48,3 +50,5 @@ int busybox_install(void)
     vsh_set_path((char **)path);
     return 0;
 }
+
+#endif  // VSF_USE_LINUX == ENABLED && VSF_USE_LINUX_BUSYBOX == ENABLED
