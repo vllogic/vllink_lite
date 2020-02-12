@@ -176,7 +176,7 @@ vsf_err_t vk_dwcotg_usbd_init(vk_dwcotg_dcd_t *usbd, usb_dc_cfg_t *cfg)
 
     vk_dwcotg_phy_init(&usbd->use_as__vk_dwcotg_t,
                         &param->use_as__vk_dwcotg_param_t,
-                        &info.use_as__vk_dwcotg_hw_info_t);
+                        &info.use_as__vsf_dwcotg_hw_info_t);
 
     global_regs->gahbcfg |= USB_OTG_GAHBCFG_TXFELVL;
     if (usbd->dma_en) {

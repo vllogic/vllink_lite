@@ -179,13 +179,13 @@ static const usrapp_usb_device_const_t __usrapp_usb_device_const = {
             .dwcotg_param       = {
                 .op             = &VSF_USB_DC0_IP,
                 .speed          = USRAPP_CFG_USBD_SPEED,
-            },+
+            },
 #   elif USRAPP_CFG_DCD_TYPE == USRAPP_CFG_DCD_TYPE_MUSB_FDRC
             musb_fdrc_param     = {
                 .op             = &VSF_USB_DC0_IP,
             },
-        },
 #   endif
+        },
 #endif
         .dev_desc               = {
             USB_DT_DEVICE_SIZE,                                                 \

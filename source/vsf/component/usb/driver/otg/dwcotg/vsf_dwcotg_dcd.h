@@ -52,7 +52,7 @@ typedef struct vk_dwcotg_dcd_param_t vk_dwcotg_dcd_param_t;
 
 struct vk_dwcotg_dc_ip_info_t {
     implement(usb_dc_ip_info_t)
-    implement(vk_dwcotg_hw_info_t)
+    implement(vsf_dwcotg_hw_info_t)
 };
 typedef struct vk_dwcotg_dc_ip_info_t vk_dwcotg_dc_ip_info_t;
 
