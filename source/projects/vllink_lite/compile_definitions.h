@@ -1,10 +1,10 @@
 // Auto Generate
 
-#ifndef __GigaDevice__
-#   define __GigaDevice__
+#ifndef PROJ_CFG_VLLINK_LITE
+#   define PROJ_CFG_VLLINK_LITE
 #endif
 
-#ifndef __GD32F350__
-#   define __GD32F350__
+#ifndef BRD_CFG_VLLINK_LITE_R3
+#   define BRD_CFG_VLLINK_LITE_R3
 #endif
 

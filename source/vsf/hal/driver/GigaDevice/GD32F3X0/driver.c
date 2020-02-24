@@ -22,20 +22,28 @@
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
+typedef void(*pFunc)(void);
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
+extern const pFunc __VECTOR_TABLE[];
 /*============================ IMPLEMENTATION ================================*/
 
-/*! \note initialize device driver
- *  \param none
- *  \retval true initialization succeeded.
- *  \retval false initialization failed
- */
-bool vsf_driver_init(void)
-{
-    uint32_t tmp32;
+static vsf_clk_info_t vsf_clk_info = {
+	.clken = CHIP_CLKEN,
+	.hclksrc = CHIP_HCLKSRC,
+	.pllsrc = CHIP_PLLSRC,
+	.usbsrc = CHIP_USBSRC,
+	.lse_freq_hz = CHIP_LSE_FREQ_HZ,
+	.hse_freq_hz = CHIP_HSE_FREQ_HZ,
+	.pll_freq_hz = CHIP_PLL_FREQ_HZ,
+	.ahb_freq_hz = CHIP_AHB_FREQ_HZ,
+	.apb1_freq_hz = CHIP_APB1_FREQ_HZ,
+	.apb2_freq_hz = CHIP_APB2_FREQ_HZ,
+};
 
+static void vsf_clk_init(vsf_clk_info_t *info)
+{
     // select irc8m
     RCU_CTL0 |= RCU_CTL0_IRC8MEN;
     while(!(RCU_CTL0 & RCU_CTL0_IRC8MSTB));
@@ -76,8 +84,73 @@ bool vsf_driver_init(void)
     //SCB->VTOR = vsfhal_info.vector_table;
     //SCB->AIRCR = 0x05FA0000 | vsfhal_info.priority_group;
 
+
+}
+
+bool vsf_driver_init(void)
+{
+    uint32_t tmp32;
+
+	NVIC_SetPriorityGrouping(3);
+    SCB->VTOR = (uint32_t)__VECTOR_TABLE;
+
+	vsf_clk_init(&vsf_clk_info);
+	
     return true;
 }
 
+vsf_clk_info_t *vsf_clk_info_get(void)
+{
+	return &vsf_clk_info;
+}
+
+static callback_param_t dma_stream_callback[DMA_COUNT][DMA_STREAM_COUNT];
+static void *dma_stream_callback_param[DMA_COUNT][DMA_STREAM_COUNT];
+
+void vsf_config_dma_stream_callback(uint8_t dma, uint8_t stream, callback_param_t callback, void *param)
+{
+    VSF_HAL_ASSERT(dma < DMA_COUNT);
+    VSF_HAL_ASSERT(stream < DMA_STREAM_COUNT);
+
+    dma_stream_callback[dma][stream] = callback;
+    dma_stream_callback_param[dma][stream] = param;
+}
+
+ROOT void DMA_Channel0_IRQHandler(void)
+{
+    if (dma_stream_callback[0][0]) {
+        dma_stream_callback[0][0](dma_stream_callback_param[0][0]);
+    }
+}
+
+ROOT void DMA_Channel1_2_IRQHandler(void)
+{
+    if (dma_stream_callback[0][1]) {
+        dma_stream_callback[0][1](dma_stream_callback_param[0][1]);
+    }
+    if (dma_stream_callback[0][2]) {
+        dma_stream_callback[0][2](dma_stream_callback_param[0][2]);
+    }
+}
+
+ROOT void DMA_Channel3_4_IRQHandler(void)
+{
+    if (dma_stream_callback[0][3]) {
+        dma_stream_callback[0][3](dma_stream_callback_param[0][3]);
+    }
+    if (dma_stream_callback[0][4]) {
+        dma_stream_callback[0][4](dma_stream_callback_param[0][4]);
+    }
+}
+
+ROOT void DMA_Channel5_6_IRQHandler(void)
+{
+    if (dma_stream_callback[0][5]) {
+        dma_stream_callback[0][5](dma_stream_callback_param[0][5]);
+    }
+    if (dma_stream_callback[0][6]) {
+        dma_stream_callback[0][6](dma_stream_callback_param[0][6]);
+    }
+}
 
 /* EOF */
