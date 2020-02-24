@@ -1,3 +1,4 @@
 # CMakeLists head
 
-add_subdirectory(linux)
+# remove
+#add_subdirectory(linux)
