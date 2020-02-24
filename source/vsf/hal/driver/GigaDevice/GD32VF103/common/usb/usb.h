@@ -25,7 +25,7 @@
 //#include "hal/interface/vsf_interface_pm.h"
 #include "hal/interface/vsf_interface_usb.h"
 
-// for vk_dwcotg_hw_info_t
+// for vsf_dwcotg_hw_info_t
 #include "component/usb/driver/otg/dwcotg/vsf_dwcotg_hw.h"
 
 /*============================ MACROS ========================================*/
@@ -45,7 +45,7 @@ struct gd32vf103_usb_const_t {
     IRQn_Type irq;
     void *reg;
 
-    implement(vk_dwcotg_hw_info_t)
+    implement(vsf_dwcotg_hw_info_t)
 };
 typedef struct gd32vf103_usb_const_t gd32vf103_usb_const_t;
 

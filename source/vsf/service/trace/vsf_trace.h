@@ -61,9 +61,9 @@
 
 #if VSF_USE_TRACE == ENABLED
 #   if VSF_USE_SERVICE_VSFSTREAM == ENABLED
-#       define vsf_trace_init(__ADDR)  __vsf_trace_init((vsf_stream_t *)(__ADDR))
+#       define vsf_trace_init(__stream) __vsf_trace_init((vsf_stream_t *)(__stream))
 #   elif VSF_USE_SERVICE_STREAM == ENABLED
-#       define vsf_trace_init(__ADDR)  __vsf_trace_init((vsf_stream_tx_t *)(__ADDR))
+#       define vsf_trace_init(__stream) __vsf_trace_init((vsf_stream_tx_t *)(__stream))
 #   endif
 #endif
 
@@ -91,21 +91,33 @@ extern void __vsf_trace_init(vsf_stream_tx_t *ptTX);
 #   endif
 extern void vsf_trace_fini(void);
 
-SECTION(".text.vsf.trace.vsf_trace_buffer")
-extern void vsf_trace_buffer(   vsf_trace_level_t level, 
+SECTION(".text.vsf.trace.__vsf_trace_buffer")
+extern void __vsf_trace_buffer( vsf_trace_level_t level, 
                                 void *buffer, 
                                 uint_fast16_t len, 
                                 uint_fast32_t flag);
+
+#define __vsf_trace_buffer3(__level, __buffer, __len)                           \
+        __vsf_trace_buffer((__level), (__buffer), (__len), VSF_TRACE_DF_DEFAULT)
+#define __vsf_trace_buffer4(__level, __buffer, __len, __flag)                   \
+        __vsf_trace_buffer((__level), (__buffer), (__len), VSF_TRACE_DF_DEFAULT)
+// prototype
+//  vsf_trace_buffer(__level, __buffer, __len)          // use VSF_TRACE_DF_DEFAULT
+//  vsf_trace_buffer(__level, __buffer, __len, __flag)  // use flag
+#define vsf_trace_buffer(__level, __buffer, __len, ...)                         \
+        __PLOOC_EVAL(__vsf_trace_buffer, (__level), (__buffer), (__len), ##__VA_ARGS__)\
+            ((__level), (__buffer), (__len), ##__VA_ARGS__)
+
 extern void vsf_trace_string(vsf_trace_level_t level, const char *str);
 extern void vsf_trace(vsf_trace_level_t level, const char *format, ...);
 
 #else
 #   if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
-#       define vsf_trace_init(__ARG)
-#       define vsf_trace_fini(__ARG)
-#       define vsf_trace(__ARG)
-#       define vsf_trace_buffer(__ARG)
-#       define vsf_trace_string(__ARG)
+#       define vsf_trace_init(__arg)
+#       define vsf_trace_fini(__arg)
+#       define vsf_trace(__arg)
+#       define vsf_trace_buffer(__arg)
+#       define vsf_trace_string(__arg)
 #   else
 #       define vsf_trace_init(...)
 #       define vsf_trace_fini(...)

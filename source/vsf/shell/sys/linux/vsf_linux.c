@@ -21,6 +21,7 @@
 
 #if VSF_USE_LINUX == ENABLED
 
+#define VSF_EDA_CLASS_INHERIT
 #define VSFSTREAM_CLASS_INHERIT
 #define VSF_FS_INHERIT
 #define VSF_LINUX_IMPLEMENT
@@ -33,7 +34,6 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <fcntl.h>
-#include <dirent.h>
 #include <errno.h>
 #include <stdarg.h>
 
@@ -45,6 +45,10 @@
 
 #ifndef VSF_LINUX_CFG_STACKSIZE
 #   define VSF_LINUX_CFG_STACKSIZE          1024
+#endif
+
+#ifndef VSF_LINUX_CFG_PRIO_LOWEST
+#   define VSF_LINUX_CFG_PRIO_LOWEST        vsf_prio_0
 #endif
 
 #ifndef VSF_LINUX_CFG_PRIO_HIGHEST
@@ -70,15 +74,6 @@ struct vsf_linux_main_priv_t {
     vsf_linux_process_ctx_t *ctx;
 };
 typedef struct vsf_linux_main_priv_t vsf_linux_main_priv_t;
-
-struct vsf_linux_fs_priv_t {
-    vk_file_t *file;
-    uint64_t pos;
-
-    struct dirent dir;
-    vk_file_t *child;
-};
-typedef struct vsf_linux_fs_priv_t vsf_linux_fs_priv_t;
 
 struct vsf_linux_stream_priv_t {
     vsf_stream_t *stream;
@@ -123,7 +118,7 @@ static const vsf_linux_thread_op_t __vsf_linux_main_op = {
     .on_terminate       = vsf_linux_thread_on_terminate,
 };
 
-static const vsf_linux_fd_op_t __vsf_linux_fs_fdop = {
+const vsf_linux_fd_op_t __vsf_linux_fs_fdop = {
     .priv_size          = sizeof(vsf_linux_fs_priv_t),
     .fcntl              = __vsf_linux_fs_fcntl,
     .read               = __vsf_linux_fs_read,
@@ -151,20 +146,18 @@ int vsf_linux_create_fhs(void)
 
 static int __vsf_linux_init_thread(int argc, char *argv[])
 {
+#ifndef WEAK_VSF_LINUX_CREATE_FHS
+    int err = vsf_linux_create_fhs();
+#else
+    int err = WEAK_VSF_LINUX_CREATE_FHS();
+#endif
+    if (err) { return err; }
     return execl("/sbin/init", "init", NULL);
 }
 
 static int __vsf_linux_kernel_thread(int argc, char *argv[])
 {
-    int err;
-
     __vsf_linux.kernel_process = vsf_linux_get_cur_process();
-#ifndef WEAK_VSF_LINUX_CREATE_FHS
-    err = vsf_linux_create_fhs();
-#else
-    err = WEAK_VSF_LINUX_CREATE_FHS();
-#endif
-    if (err) { return err; }
 
     // create init process(pid1)
     vsf_linux_start_process_internal(0, __vsf_linux_init_thread, VSF_LINUX_CFG_PRIO_HIGHEST);
@@ -221,7 +214,7 @@ vsf_err_t vsf_linux_init(vsf_linux_stdio_stream_t *stdio_stream)
     vsf_linux_glibc_init();
 
     // create kernel process(pid0)
-    if (NULL != vsf_linux_start_process_internal(0, __vsf_linux_kernel_thread, vsf_prio_0)) {
+    if (NULL != vsf_linux_start_process_internal(0, __vsf_linux_kernel_thread, VSF_LINUX_CFG_PRIO_LOWEST)) {
         return VSF_ERR_NONE;
     }
     return VSF_ERR_FAIL;
@@ -261,7 +254,7 @@ vsf_linux_thread_t * vsf_linux_create_thread(vsf_linux_process_t *process, int s
 
 int vsf_linux_start_thread(vsf_linux_thread_t *thread)
 {
-    vsf_thread_start(   &thread->use_as__vsf_thread_t,
+    vk_thread_start(   &thread->use_as__vsf_thread_t,
                         &thread->use_as__vsf_thread_cb_t,
                         thread->process->prio);
     return 0;
@@ -271,7 +264,7 @@ vsf_linux_process_t * vsf_linux_create_process(int stack_size)
 {
     vsf_linux_process_t *process = calloc(1, sizeof(vsf_linux_process_t));
     if (process != NULL) {
-        process->prio = vsf_prio_0;
+        process->prio = vsf_prio_inherit;
         process->stdio_stream = __vsf_linux.stdio_stream;
 
         vsf_linux_thread_t *thread = vsf_linux_create_thread(process, stack_size, &__vsf_linux_main_op);
@@ -305,7 +298,7 @@ int vsf_linux_start_process(vsf_linux_process_t *process)
 static vsf_linux_process_t * vsf_linux_start_process_internal(int stack_size,
         vsf_linux_main_entry_t entry, vsf_prio_t prio)
 {
-    VSF_LINUX_ASSERT(prio <= VSF_LINUX_CFG_PRIO_HIGHEST);
+    VSF_LINUX_ASSERT((prio >= VSF_LINUX_CFG_PRIO_LOWEST) && (prio <= VSF_LINUX_CFG_PRIO_HIGHEST));
     vsf_linux_process_t *process = vsf_linux_create_process(stack_size);
     if (process != NULL) {
         process->prio = prio;
@@ -552,10 +545,10 @@ static ssize_t __vsf_linux_fs_read(vsf_linux_fd_t *sfd, void *buf, size_t count)
 {
     vsf_linux_fs_priv_t *priv = (vsf_linux_fs_priv_t *)sfd->priv;
     vk_file_t *file = priv->file;
-    int32_t rsize;
+    int32_t rsize = 1;
     ssize_t result = 0;
 
-    do {
+    while ((count > 0) && (rsize > 0)) {
         vk_file_read(file, priv->pos, count, (uint8_t *)buf, &rsize);
         if (VSF_ERR_NONE != vk_file_get_errcode(file)) {
             return -1;
@@ -565,7 +558,7 @@ static ssize_t __vsf_linux_fs_read(vsf_linux_fd_t *sfd, void *buf, size_t count)
         result += rsize;
         priv->pos += rsize;
         buf = (uint8_t *)buf + rsize;
-    } while ((count > 0) && (rsize > 0));
+    }
     return result;
 }
 
@@ -576,7 +569,7 @@ static ssize_t __vsf_linux_fs_write(vsf_linux_fd_t *sfd, void *buf, size_t count
     int32_t wsize;
     ssize_t result = 0;
 
-    do {
+    while (count > 0) {
         vk_file_write(file, priv->pos, count, (uint8_t *)buf, &wsize);
         if (VSF_ERR_NONE != vk_file_get_errcode(file)) {
             return -1;
@@ -586,7 +579,7 @@ static ssize_t __vsf_linux_fs_write(vsf_linux_fd_t *sfd, void *buf, size_t count
         result += wsize;
         priv->pos += wsize;
         buf = (uint8_t *)buf + wsize;
-    } while (count > 0);
+    }
     return result;
 }
 
@@ -904,20 +897,23 @@ int sigprocmask(int how, const sigset_t *set, sigset_t *oldset)
 static int __vsf_linux_fs_create(const char* pathname, mode_t mode, vk_file_attr_t attr, uint_fast64_t size)
 {
     int err = 0;
-    char *path = strdup(pathname);
+    char *path = strdup(pathname), *name = NULL, *name_tmp;
     if (!path) {
         errno = ENOENT;
         return -1;
     }
 
-    char *name = vk_file_getfilename((char *)pathname);
-    path[name - pathname] = '\0';
+    name_tmp = vk_file_getfilename((char *)pathname);
+    path[name_tmp - pathname] = '\0';
     vk_file_t *dir = __vsf_linux_fs_get_file(path);
     if (!dir) {
         err = -1;
         goto do_return;
     }
 
+    // TODO: name is allocated, so if created file is removed
+    //  how to free name?
+    name = strdup(name_tmp);
     vk_file_create(dir, name, attr, size);
     if (VSF_ERR_NONE != vk_file_get_errcode(dir)) {
         err = -1;
@@ -928,6 +924,9 @@ static int __vsf_linux_fs_create(const char* pathname, mode_t mode, vk_file_attr
     }
 
 do_return:
+    if ((err < 0) && (name != NULL)) {
+        free(name);
+    }
     free(path);
     return err;
 }
@@ -1085,7 +1084,7 @@ struct dirent * readdir(DIR *dir)
 
     child = priv->child;
     priv->dir.d_name = child->name;
-    priv->dir.d_reclen = strlen(child->name);
+    priv->dir.d_reclen = vk_file_get_name_length(child);
     priv->dir.d_type = child->attr & VSF_FILE_ATTR_DIRECTORY ? DT_DIR :
                 child->attr & VSF_FILE_ATTR_EXECUTE ? DT_EXE : DT_REG;
     return &priv->dir;
@@ -1103,7 +1102,7 @@ int closedir(DIR *dir)
 }
 
 int mount(const char *source, const char *target,
-   const vk_fs_op_t *filesystem, unsigned long mountflags, const void *data)
+    const vk_fs_op_t *filesystem, unsigned long mountflags, const void *data)
 {
     int fd = open(target, 0);
     if (fd < 0) { return fd; }
@@ -1111,9 +1110,21 @@ int mount(const char *source, const char *target,
     vsf_linux_fd_t *sfd = vsf_linux_get_fd(fd);
     vsf_linux_fs_priv_t *priv = (vsf_linux_fs_priv_t *)sfd->priv;
     vk_file_t *dir = priv->file;
-    vk_fs_mount(dir, filesystem, (void *)data);
+    vsf_err_t err;
+
+    if (filesystem != NULL) {
+        vk_fs_mount(dir, filesystem, (void *)data);
+        err = dir->ctx.err;
+    } else {
+        vk_malfs_mounter_t mounter;
+        mounter.dir = dir;
+        mounter.mal = (vk_mal_t *)data;
+        vk_malfs_mount_mbr(&mounter);
+        err = mounter.err;
+    }
+
     close(fd);
-    if (VSF_ERR_NONE != dir->ctx.err) {
+    if (VSF_ERR_NONE != err) {
         return -1;
     }
     return 0;
