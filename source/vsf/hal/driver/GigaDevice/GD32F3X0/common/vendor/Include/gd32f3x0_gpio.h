@@ -39,11 +39,11 @@ OF SUCH DAMAGE.
 #include "gd32f3x0.h"
 
 /* GPIOx(x=A,B,C,D,F) definitions */
-#define GPIOA                      (GPIO_BASE + 0x00000000U)
-#define GPIOB                      (GPIO_BASE + 0x00000400U)
-#define GPIOC                      (GPIO_BASE + 0x00000800U)
-#define GPIOD                      (GPIO_BASE + 0x00000C00U)
-#define GPIOF                      (GPIO_BASE + 0x00001400U)
+#define GPIOA_BASE                      (GPIO_BASE + 0x00000000U)
+#define GPIOB_BASE                      (GPIO_BASE + 0x00000400U)
+#define GPIOC_BASE                      (GPIO_BASE + 0x00000800U)
+#define GPIOD_BASE                      (GPIO_BASE + 0x00000C00U)
+#define GPIOF_BASE                      (GPIO_BASE + 0x00001400U)
 
 /* registers definitions */
 #define GPIO_CTL(gpiox)            REG32((gpiox) + 0x00000000U)    /*!< GPIO port control register */

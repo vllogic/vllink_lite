@@ -1,6 +1,10 @@
 # CMakeLists head
 
 target_sources(vsfkernel INTERFACE
+    flash_lv0.c
+    io_lv0.c
+    usart_lv0.c
+    startup_GD32F3X0.c
     __common.c
 )
 

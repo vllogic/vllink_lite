@@ -1049,16 +1049,16 @@
                 <name>$PROJ_DIR$\config\brd_cfg.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\config\brd_cfg_f730_bt_batt_tft.h</name>
+                <name>$PROJ_DIR$\config\brd_cfg_vllink_lite_r3.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\config\chip_cfg_f730.h</name>
+                <name>$PROJ_DIR$\config\chip_cfg_f350.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\config\proj_cfg.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\config\proj_cfg_demo.h</name>
+                <name>$PROJ_DIR$\config\proj_cfg_vllink_lite.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\config\vsf_usr_cfg.h</name>
@@ -1131,6 +1131,9 @@
             </group>
             <group>
                 <name>fs</name>
+                <excluded>
+                    <configuration>vllink_lite</configuration>
+                </excluded>
                 <group>
                     <name>driver</name>
                     <group>
@@ -1233,6 +1236,9 @@
             </group>
             <group>
                 <name>mal</name>
+                <excluded>
+                    <configuration>vllink_lite</configuration>
+                </excluded>
                 <group>
                     <name>driver</name>
                     <group>
@@ -1293,6 +1299,9 @@
             </group>
             <group>
                 <name>scsi</name>
+                <excluded>
+                    <configuration>vllink_lite</configuration>
+                </excluded>
                 <group>
                     <name>drvier</name>
                     <group>
@@ -1326,6 +1335,9 @@
             </group>
             <group>
                 <name>tcpip</name>
+                <excluded>
+                    <configuration>vllink_lite</configuration>
+                </excluded>
                 <group>
                     <name>netdrv</name>
                     <file>
@@ -1341,6 +1353,9 @@
             </group>
             <group>
                 <name>ui</name>
+                <excluded>
+                    <configuration>vllink_lite</configuration>
+                </excluded>
                 <group>
                     <name>disp_drv</name>
                     <group>
@@ -1905,6 +1920,168 @@
             </group>
             <group>
                 <name>driver</name>
+                <group>
+                    <name>GigaDevice</name>
+                    <group>
+                        <name>GD32F3X0</name>
+                        <group>
+                            <name>common</name>
+                            <group>
+                                <name>usb</name>
+                                <group>
+                                    <name>dc</name>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\dc\usbd.c</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\dc\usbd.h</name>
+                                    </file>
+                                </group>
+                                <group>
+                                    <name>hc</name>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\hc\usbh.c</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\hc\usbh.h</name>
+                                    </file>
+                                </group>
+                                <file>
+                                    <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\usb.c</name>
+                                </file>
+                                <file>
+                                    <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\usb.h</name>
+                                </file>
+                                <file>
+                                    <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\usb_common.c</name>
+                                </file>
+                                <file>
+                                    <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usb\usb_lv0.c</name>
+                                </file>
+                            </group>
+                            <group>
+                                <name>vendor</name>
+                                <group>
+                                    <name>Include</name>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_adc.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_cec.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_cmp.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_crc.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_ctc.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_dac.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_dbg.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_dma.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_exti.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_fmc.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_fwdgt.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_gpio.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_i2c.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_misc.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_pmu.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_rcu.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_rtc.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_spi.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_syscfg.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_timer.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_tsi.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_usart.h</name>
+                                    </file>
+                                    <file>
+                                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\vendor\Include\gd32f3x0_wwdgt.h</name>
+                                    </file>
+                                </group>
+                            </group>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\__common.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\__common.h</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\flash.h</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\flash_lv0.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\io.h</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\io_lv0.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\startup_GD32F3X0.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usart.h</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usart_lv0.c</name>
+                            </file>
+                        </group>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\__device.h</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\device.h</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\driver.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\driver.h</name>
+                        </file>
+                    </group>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\driver.h</name>
+                    </file>
+                </group>
                 <file>
                     <name>$PROJ_DIR$\..\..\vsf\hal\driver\driver.h</name>
                 </file>
@@ -2224,6 +2401,9 @@
         </group>
         <group>
             <name>shell</name>
+            <excluded>
+                <configuration>vllink_lite</configuration>
+            </excluded>
             <group>
                 <name>sys</name>
                 <group>

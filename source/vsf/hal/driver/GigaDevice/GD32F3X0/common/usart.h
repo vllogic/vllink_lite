@@ -15,22 +15,52 @@
  *                                                                           *
  ****************************************************************************/
 
-#ifndef __HAL_DRIVER_GIGADEVICE_GD32F3X0_COMMON_H__
-#define __HAL_DRIVER_GIGADEVICE_GD32F3X0_COMMON_H__
-
-/* \note __common.h should only be included by device.h */
+#ifndef __HAL_DRIVER_GIGADEVICE_GD32F3X0_USART_H__
+#define __HAL_DRIVER_GIGADEVICE_GD32F3X0_USART_H__
 
 /*============================ INCLUDES ======================================*/
+
 #include "hal/vsf_hal_cfg.h"
-#include "./vendor/Include/gd32f3x0.h"
-#include "hal/arch/vsf_arch.h"
+#include "../__device.h"
+
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
+
+enum usart_idx_t {
+    #if USART0_ENABLE
+    USART0_IDX,
+    #endif
+    #if USART1_ENABLE
+    USART1_IDX,
+    #endif
+};
+
+enum usart_mode_t{
+    USART_PARITY_NONE           = (0x0ul << 9),
+    USART_PARITY_ODD            = (0x3ul << 9),
+    USART_PARITY_EVEN           = (0x2ul << 9),
+    USART_STOPBITS_0P5          = (0x1ul << (8 + 12)),
+    USART_STOPBITS_1            = (0x0ul << (8 + 12)),
+    USART_STOPBITS_1P5          = (0x3ul << (8 + 12)),
+    USART_STOPBITS_2            = (0x2ul << (8 + 12)),
+    USART_CTS                   = (0x3ul << (16 + 9)),
+    USART_RTS                   = (0x2ul << (16 + 8)),
+};
+
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ INCLUDES ======================================*/
 /*============================ PROTOTYPES ====================================*/
+
+void vsf_usart_init(enum usart_idx_t idx);
+void vsf_usart_fini(enum usart_idx_t idx);
+void vsf_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode);
+void vsf_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *));
+uint16_t vsfhal_usart_tx_bytes(enum usart_idx_t idx, uint8_t *data, uint16_t size);
+uint16_t vsfhal_usart_tx_get_free_size(enum usart_idx_t idx);
+uint16_t vsfhal_usart_rx_bytes(enum usart_idx_t idx, uint8_t *data, uint16_t size);
+uint16_t vsfhal_usart_rx_get_data_size(enum usart_idx_t idx);
 
 #endif
 /* EOF */

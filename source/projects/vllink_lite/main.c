@@ -27,9 +27,9 @@
 /*============================ PROTOTYPES ====================================*/
 
 #if VSF_USE_USB_DEVICE == ENABLED
-extern void usrapp_usbd_init(void);
-extern void usrapp_usbd_cdcuart_get_stream(vsf_stream_t **stream_tx, vsf_stream_t **stream_rx);
-extern void usrapp_usbd_cdcshell_get_stream(vsf_stream_t **stream_tx, vsf_stream_t **stream_rx);
+//extern void usrapp_usbd_init(void);
+//extern void usrapp_usbd_cdcuart_get_stream(vsf_stream_t **stream_tx, vsf_stream_t **stream_rx);
+//extern void usrapp_usbd_cdcshell_get_stream(vsf_stream_t **stream_tx, vsf_stream_t **stream_rx);
 #endif
 
 /*============================ IMPLEMENTATION ================================*/
@@ -37,7 +37,7 @@ extern void usrapp_usbd_cdcshell_get_stream(vsf_stream_t **stream_tx, vsf_stream
 int main(void)
 {
 #if VSF_USE_USB_DEVICE == ENABLED
-    usrapp_usbd_init();
+    //usrapp_usbd_init();
 #endif
 
 

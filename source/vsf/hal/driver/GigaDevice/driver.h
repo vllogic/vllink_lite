@@ -20,7 +20,7 @@
 
 #undef VSF_GIGADEVICE_DRIVER_HEADER
 
-#if     defined(__GD32F3X0__)
+#if     defined(__GD32F330__) || defined(__GD32F350__)
 #   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/driver.h"
 #elif   defined(__GD32VF103__)
 //  TODO

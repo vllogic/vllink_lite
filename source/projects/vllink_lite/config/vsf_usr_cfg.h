@@ -23,6 +23,8 @@
 
 /*============================ INCLUDES ======================================*/
 #include "compile_definitions.h"
+#include "proj_cfg.h"
+#include "brd_cfg.h"
 /*============================ MACROS ========================================*/
 
 #define ASSERT(...)                     if (!(__VA_ARGS__)) {while(1);};
@@ -144,34 +146,10 @@
 #define VSF_USE_HEAP                                    DISABLED
 #   define VSF_HEAP_CFG_MCB_MAGIC_EN                    DISABLED
 
-#define VSF_USE_USB_HOST                                DISABLED
-#   define VSF_USE_USB_HOST_ECM                         DISABLED
-#   define VSF_USE_USB_HOST_LIBUSB                      DISABLED
-
-// VSF_USE_USB_DEVICE will be enabled if target chip supports USBD
 #define VSF_USE_USB_DEVICE                              ENABLED
-#   define VSF_USBD_CFG_USE_EDA                         ENABLED
-#   define VSF_USE_USB_DEVICE_CDCACM                    ENABLED
-#   define APP_CFG_USBD_VID                             0xA7A8
-#   define APP_CFG_USBD_PID                             0x2348
+#   define VSF_USE_USB_DEVICE_DCD_DWCOTG                ENABLED
 
-#define VSF_USE_MAL                                     DISABLED
-#   define VSF_USE_MEM_MAL                              DISABLED
-#   define VSF_USE_FAKEFAT32_MAL                        DISABLED
-
-#define VSF_USE_FS                                      DISABLED
-#   define VSF_USE_MEMFS                                DISABLED
-#   define VSF_USE_FATFS                                DISABLED
-
-#define VSF_USE_TRACE                                   DISABLED
-
-#define VSF_USE_LINUX                                   DISABLED
-#   define VSF_USE_LINUX_LIBUSB                         VSF_USE_USB_HOST
-#   define VSF_USE_LINUX_BUSYBOX                        DISABLED
-
-
-
-#define VSF_USE_PBUF                                    DISABLED
+#define VSF_USE_PBUF                                    ENABLED
 #define VSF_PBUF_CFG_INDIRECT_RW_SUPPORT                DISABLED
 #define VSF_PBUF_CFG_SUPPORT_REF_COUNTING               DISABLED
 
@@ -209,34 +187,6 @@ enum {
 
 #endif
 
-
-#ifndef USRAPP_CFG_DCD_TYPE_DEFAULT
-#   define USRAPP_CFG_DCD_TYPE_DEFAULT      0
-#   define USRAPP_CFG_DCD_TYPE_DWCOTG       1
-#   define USRAPP_CFG_DCD_TYPE_MUSB_FDRC    2
-#endif
-
-#if     defined(__GD32F350__)
-//#   define VSF_HEAP_SIZE                                0x10000
-#   define VSF_SYSTIMER_FREQ                            (128000000ul)
-
-#   define VSF_USE_USB_DEVICE                           ENABLED
-#       define VSF_USE_USB_DEVICE_DCD_DWCOTG            ENABLED
-#       define VSF_USBD_CFG_EDA_PRIORITY                vsf_prio_1
-#       define VSF_USBD_CFG_HW_PRIORITY                 vsf_arch_prio_1
-#       define USRAPP_CFG_DCD_TYPE                      USRAPP_CFG_DCD_TYPE_DWCOTG
-#       define USRAPP_CFG_USBD_SPEED                    USB_SPEED_FULL
-#       define USRAPP_CFG_STREAM_ALIGN                  1
-
-#	    define APPCFG_USBD_VID					        0x0D28
-#	    define APPCFG_USBD_PID					        0x0204
-#	    define APPCFG_USBD_BCD					        0x0100
-
-#       define USRAPP_CFG_CDCUART_TX_STREAM_SIZE        128
-#       define USRAPP_CFG_CDCUART_RX_STREAM_SIZE        128
-#       define USRAPP_CFG_CDCSHELL_TX_STREAM_SIZE       64
-#       define USRAPP_CFG_CDCSHELL_RX_STREAM_SIZE       64
-#endif
 
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/

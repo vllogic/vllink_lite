@@ -44,58 +44,115 @@ static vsf_clk_info_t vsf_clk_info = {
 
 static void vsf_clk_init(vsf_clk_info_t *info)
 {
-    // select irc8m
+    uint32_t tmp32;
+
+    VSF_HAL_ASSERT(info && (info->pllsrc <= GD32F3X0_PLLSRC_HSI48M));
+ 
     RCU_CTL0 |= RCU_CTL0_IRC8MEN;
     while(!(RCU_CTL0 & RCU_CTL0_IRC8MSTB));
     RCU_CFG0 &= ~RCU_CFG0_SCS;
 
-    // enable hsi48m
-    RCU_ADDCTL |= RCU_ADDCTL_IRC48MEN;
-    while(!(RCU_ADDCTL & RCU_ADDCTL_IRC48MSTB));
+    if (info->clken & GD32F3X0_CLKEN_HSI48M) {
+        RCU_ADDCTL |= RCU_ADDCTL_IRC48MEN;
+        while(!(RCU_ADDCTL & RCU_ADDCTL_IRC48MSTB));
+    }
 
-    // not enable hse
-    //RCU_CTL0 |= RCU_CTL0_HXTALEN;
-    //while(!(RCU_CTL0 & RCU_CTL0_HXTALSTB));
+    if (info->clken & GD32F3X0_CLKEN_HSE) {
+        RCU_ADDCTL |= RCU_CTL0_HXTALEN;
+        while(!(RCU_ADDCTL & RCU_CTL0_HXTALSTB));
+    }
 
-    // config pll
-    tmp32 = 48000000 / 4000000 - 1;
     RCU_CTL0 &= ~RCU_CTL0_PLLEN;
-    RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
-    RCU_CFG1 |= RCU_CFG1_PLLPRESEL | tmp32;
-    RCU_CFG0 |= RCU_CFG0_PLLSEL;
-    tmp32 = 128000000 / 4000000 - 1;
-    RCU_CFG0 &= ~RCU_CFG0_PLLMF;
-    RCU_CFG1 &= ~RCU_CFG1_PLLMF5;
-    RCU_CFG0 |= ((tmp32 & 0xf) << 18) | ((tmp32 & 0x10) << 23);
-    RCU_CFG1 |= ((tmp32 & 0x20) << 26);
+    if (info->clken & GD32F3X0_CLKEN_PLL) {
+        
+		if (info->pllsrc == GD32F3X0_PLLSRC_HSI8M_D2) {
+			RCU_CFG0 &= RCU_CFG0_PLLSEL;
+		} else if (info->pllsrc == GD32F3X0_PLLSRC_HSE) {
+			RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
+			RCU_CFG1 |= info->hse_freq_hz / 2000000 - 1;
+			RCU_CFG0 |= RCU_CFG0_PLLSEL;
+		} else if (info->pllsrc == GD32F3X0_PLLSRC_HSI48M) {
+			RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
+			RCU_CFG1 |= RCU_CFG1_PLLPRESEL | (48000000 / 2000000 - 1);
+			RCU_CFG0 |= RCU_CFG0_PLLSEL;
+		}
+        
+        tmp32 = info->pll_freq_hz / 2000000 - 1;
+        RCU_CFG0 &= ~RCU_CFG0_PLLMF;
+        RCU_CFG1 &= ~RCU_CFG1_PLLMF5;
+        RCU_CFG0 |= ((tmp32 & 0xf) << 18) | ((tmp32 & 0x10) << 23);
+        RCU_CFG1 |= ((tmp32 & 0x20) << 26);
 
-    RCU_CTL0 |= RCU_CTL0_PLLEN;
-    while(!(RCU_CTL0 & RCU_CTL0_PLLSTB));
+        RCU_CTL0 |= RCU_CTL0_PLLEN;
+        while(!(RCU_CTL0 & RCU_CTL0_PLLSTB));
+    }
 
-    // config ahb apb1 apb2: apb1 == apb2 == ahb / 2 == pll / 2
-    RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
-    RCU_CFG0 |= RCU_APB1_CKAHB_DIV2 | RCU_APB2_CKAHB_DIV2 | RCU_AHB_CKSYS_DIV1;
+	RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
+	tmp32 = info->ahb_freq_hz / info->apb1_freq_hz;
+	if (tmp32 == 2)
+		RCU_CFG0 |= BIT(10);
+	else if (tmp32 == 4)
+		RCU_CFG0 |= BIT(10) | BIT(8);
+	else if (tmp32 == 8)
+		RCU_CFG0 |= BITS(9, 10);
+	else
+		RCU_CFG0 |= BITS(8, 10);
+	tmp32 = info->ahb_freq_hz / info->apb2_freq_hz;
+	if (tmp32 == 2)
+		RCU_CFG0 |= BIT(13);
+	else if (tmp32 == 4)
+		RCU_CFG0 |= BIT(13) | BIT(11);
+	else if (tmp32 == 8)
+		RCU_CFG0 |= BITS(12, 13);
+	else
+		RCU_CFG0 |= BITS(11, 13);
+	if (info->hclksrc == GD32F3X0_HCLKSRC_HSE)
+		tmp32 = info->hse_freq_hz;
+	else if (info->hclksrc == GD32F3X0_HCLKSRC_PLL)
+		tmp32 = info->pll_freq_hz;
+	else
+		tmp32 = 8000000;
+	tmp32 = tmp32 / info->ahb_freq_hz;
+	if (tmp32 == 1)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV1;
+	else if (tmp32 == 2)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV2;
+	else if (tmp32 == 4)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV4;
+	else if (tmp32 == 8)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV8;
+	else if (tmp32 == 16)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV16;
+	else if (tmp32 == 64)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV64;
+	else if (tmp32 == 128)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV128;
+	else if (tmp32 == 256)
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV256;
+	else
+		RCU_CFG0 |= RCU_AHB_CKSYS_DIV512;
 
-    RCU_CFG0 |= RCU_CKSYSSRC_PLL;
-    while((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
-
-    RCU_CTL0 &= ~RCU_CTL0_IRC8MEN;
-
-    //SCB->VTOR = vsfhal_info.vector_table;
-    //SCB->AIRCR = 0x05FA0000 | vsfhal_info.priority_group;
-
-
+    if (info->hclksrc == GD32F3X0_HCLKSRC_HSE) {
+        RCU_CFG0 |= RCU_CKSYSSRC_HXTAL;
+        while((RCU_CFG0 & RCU_SCSS_HXTAL) != RCU_SCSS_HXTAL);
+    } else if (info->hclksrc == GD32F3X0_HCLKSRC_PLL) {
+        RCU_CFG0 |= RCU_CKSYSSRC_PLL;
+        while((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
+    } else {
+        RCU_CFG0 &= ~RCU_CFG0_SCS;
+        while((RCU_CFG0 & RCU_SCSS_IRC8M) != RCU_SCSS_IRC8M);
+    }
+    
+    if (!(info->clken & GD32F3X0_CLKEN_HSI))
+        RCU_CTL0 &= ~RCU_CTL0_IRC8MEN;
 }
 
 bool vsf_driver_init(void)
 {
-    uint32_t tmp32;
-
 	NVIC_SetPriorityGrouping(3);
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
 
 	vsf_clk_init(&vsf_clk_info);
-	
     return true;
 }
 

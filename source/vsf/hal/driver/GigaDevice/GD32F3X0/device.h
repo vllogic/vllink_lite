@@ -28,8 +28,8 @@
 #define VSF_ARCH_PRI_BIT            4
 
 // software interrupt provided by a dedicated device
-#define VSF_DEV_SWI_NUM             9
-#define VSF_DEV_SWI_LIST            70, 71, 72, 73, 74, 75, 76, 77, 78
+#define VSF_DEV_SWI_NUM             10
+#define VSF_DEV_SWI_LIST            70, 71, 72, 73, 74, 75, 76, 77, 78, 79
 
 /*============================ INCLUDES ======================================*/
 
@@ -52,7 +52,7 @@
 #define USB_OTG0_CONFIG                                                         \
     .ep_num = 8,                                                                \
     .irq = USBFS_IRQn,                                                          \
-    .reg = USBFS_BASE,                                                          \
+    .reg = (void *)USBFS_BASE,                                                  \
     .buffer_word_size = 0x500 >> 2,                                             \
     .speed = USB_SPEED_FULL,                                                    \
 	.dma_en = false,                                                            \

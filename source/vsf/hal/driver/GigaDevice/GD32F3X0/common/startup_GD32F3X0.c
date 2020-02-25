@@ -22,7 +22,7 @@
  * limitations under the License.
  */
 
-#include "../../device.h"
+#include "../device.h"
 
 /*----------------------------------------------------------------------------
   Exception / Interrupt Handler Function Prototype
@@ -202,6 +202,8 @@ void SWI7_IRQHandler        (void){}
 WEAK(SWI8_IRQHandler) 
 void SWI8_IRQHandler        (void){}
 
+WEAK(SWI9_IRQHandler) 
+void SWI9_IRQHandler        (void){}
 
 /*----------------------------------------------------------------------------
   Exception / Interrupt Vector table
@@ -294,7 +296,7 @@ ROOT const pFunc __VECTOR_TABLE[] __VECTOR_TABLE_ATTRIBUTE = {
     SWI6_IRQHandler,                          /*  76 SWI8 */
     SWI7_IRQHandler,                          /*  77 SWI8 */
     SWI8_IRQHandler,                          /*  78 SWI8 */
-    0,                                        /* Reserved */
+    SWI9_IRQHandler,                          /*  79 SWI9 */
     0,                                        /* Reserved */
     0,                                        /* Reserved */
     0,                                        /* Reserved */
