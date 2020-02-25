@@ -38,11 +38,6 @@
 
 /*============================ MACROS ========================================*/
 
-#define GPIO_PORT_COUNT     (0 + GPIOA_ENABLE + GPIOB_ENABLE + GPIOC_ENABLE +   \
-                                GPIOD_ENABLE + GPIOF_ENABLE)
-#define USART_COUNT         (0 + USART0_ENABLE + USART1_ENABLE)
-
-
 #if     defined(__GD32F350__)
 #define USB_OTG_COUNT               1
 #define USB_OTG0_IRQHandler         USBFS_IRQHandler

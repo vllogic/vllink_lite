@@ -58,7 +58,7 @@ static void usart_rx_irq(void *p);
 
 #if USART_COUNT > 0
 
-static USART_TypeDef * const usart_list[USART_COUNT] = {
+static USART_TypeDef * const usart_reg_list[USART_COUNT] = {
     #if USART0_ENABLE
     USART0,
     #endif  // USART0_ENABLE
@@ -150,7 +150,7 @@ void vsf_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
     VSF_HAL_ASSERT(idx < USART_COUNT);
     
 	uint_fast32_t temp;
-	USART_TypeDef *usart = usart_list[idx];
+	USART_TypeDef *usart = usart_reg_list[idx];
     struct vsf_clk_info_t *info = vsf_clk_info_get();
 
     usart->CR1 = 0;

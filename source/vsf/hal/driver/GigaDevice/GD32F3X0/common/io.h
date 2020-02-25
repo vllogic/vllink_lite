@@ -24,6 +24,10 @@
 #include "../__device.h"
 
 /*============================ MACROS ========================================*/
+
+#define GPIO_PORT_COUNT     (0 + GPIOA_ENABLE + GPIOB_ENABLE + GPIOC_ENABLE +   \
+                                GPIOD_ENABLE + GPIOF_ENABLE)
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
