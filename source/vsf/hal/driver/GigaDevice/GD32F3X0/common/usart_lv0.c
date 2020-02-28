@@ -33,8 +33,8 @@
 #   endif
 #endif
 
-#define vsf_usart_protect                       vsf_protect(VSF_HAL_CFG_USART_PROTECT_LEVEL)
-#define vsf_usart_unprotect                     vsf_unprotect(VSF_HAL_CFG_USART_PROTECT_LEVEL)
+#define vsfhal_usart_protect                       vsf_protect(VSF_HAL_CFG_USART_PROTECT_LEVEL)
+#define vsfhal_usart_unprotect                     vsf_unprotect(VSF_HAL_CFG_USART_PROTECT_LEVEL)
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
@@ -91,7 +91,7 @@ static usart_control_t usart_control[USART_COUNT];
 static uint8_t usart1_rx_cnt;
 #endif  // USART1_ENABLE
 
-void vsf_usart_init(enum usart_idx_t idx)
+void vsfhal_usart_init(enum usart_idx_t idx)
 {
     VSF_HAL_ASSERT(idx < USART_COUNT);
 
@@ -100,34 +100,34 @@ void vsf_usart_init(enum usart_idx_t idx)
     case USART0_IDX:
 		RCU_AHBEN |= RCU_AHBEN_DMAEN;
 		RCU_APB2EN |= RCU_APB2EN_USART0EN;
-        vsf_gpio_init(USART0_TXD_IO_PORT);
-        vsf_gpio_init(USART0_RXD_IO_PORT);
-        vsf_gpio_init(USART0_CTS_IO_PORT);
-        vsf_gpio_init(USART0_RTS_IO_PORT);
-        vsf_gpio_config(USART0_TXD_IO_PORT, USART0_TXD_IO_PIN, IO_AF | USART0_TXD_IO_AF);
-        vsf_gpio_config(USART0_RXD_IO_PORT, USART0_RXD_IO_PIN, IO_AF | USART0_RXD_IO_AF);
-        vsf_gpio_config(USART0_CTS_IO_PORT, USART0_CTS_IO_PIN, IO_AF | USART0_CTS_IO_AF);
-        vsf_gpio_config(USART0_RTS_IO_PORT, USART0_RTS_IO_PIN, IO_AF | USART0_RTS_IO_AF);
+        vsfhal_gpio_init(USART0_TXD_IO_PORT);
+        vsfhal_gpio_init(USART0_RXD_IO_PORT);
+        vsfhal_gpio_init(USART0_CTS_IO_PORT);
+        vsfhal_gpio_init(USART0_RTS_IO_PORT);
+        vsfhal_gpio_config(USART0_TXD_IO_PORT, USART0_TXD_IO_PIN, IO_AF | USART0_TXD_IO_AF);
+        vsfhal_gpio_config(USART0_RXD_IO_PORT, USART0_RXD_IO_PIN, IO_AF | USART0_RXD_IO_AF);
+        vsfhal_gpio_config(USART0_CTS_IO_PORT, USART0_CTS_IO_PIN, IO_AF | USART0_CTS_IO_AF);
+        vsfhal_gpio_config(USART0_RTS_IO_PORT, USART0_RTS_IO_PIN, IO_AF | USART0_RTS_IO_AF);
         break;
     #endif
     #if USART1_ENABLE
     case USART1_IDX:
 		RCU_AHBEN |= RCU_AHBEN_DMAEN;
 		RCU_APB1EN |= RCU_APB1EN_USART1EN | RCU_APB1EN_TIMER13EN;
-        vsf_gpio_init(USART1_TXD_IO_PORT);
-        vsf_gpio_init(USART1_RXD_IO_PORT);
-        vsf_gpio_init(USART1_CTS_IO_PORT);
-        vsf_gpio_init(USART1_RTS_IO_PORT);
-        vsf_gpio_config(USART1_TXD_IO_PORT, USART1_TXD_IO_PIN, IO_AF | USART1_TXD_IO_AF);
-        vsf_gpio_config(USART1_RXD_IO_PORT, USART1_RXD_IO_PIN, IO_AF | USART1_RXD_IO_AF);
-        vsf_gpio_config(USART1_CTS_IO_PORT, USART1_CTS_IO_PIN, IO_AF | USART1_CTS_IO_AF);
-        vsf_gpio_config(USART1_RTS_IO_PORT, USART1_RTS_IO_PIN, IO_AF | USART1_RTS_IO_AF);
+        vsfhal_gpio_init(USART1_TXD_IO_PORT);
+        vsfhal_gpio_init(USART1_RXD_IO_PORT);
+        vsfhal_gpio_init(USART1_CTS_IO_PORT);
+        vsfhal_gpio_init(USART1_RTS_IO_PORT);
+        vsfhal_gpio_config(USART1_TXD_IO_PORT, USART1_TXD_IO_PIN, IO_AF | USART1_TXD_IO_AF);
+        vsfhal_gpio_config(USART1_RXD_IO_PORT, USART1_RXD_IO_PIN, IO_AF | USART1_RXD_IO_AF);
+        vsfhal_gpio_config(USART1_CTS_IO_PORT, USART1_CTS_IO_PIN, IO_AF | USART1_CTS_IO_AF);
+        vsfhal_gpio_config(USART1_RTS_IO_PORT, USART1_RTS_IO_PIN, IO_AF | USART1_RTS_IO_AF);
         break;
     #endif
     }
 }
 
-void vsf_usart_fini(enum usart_idx_t idx)
+void vsfhal_usart_fini(enum usart_idx_t idx)
 {
     VSF_HAL_ASSERT(idx < USART_COUNT);
 
@@ -145,13 +145,13 @@ void vsf_usart_fini(enum usart_idx_t idx)
     }
 }
 
-void vsf_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
+void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
 {
     VSF_HAL_ASSERT(idx < USART_COUNT);
     
 	uint_fast32_t temp;
 	USART_TypeDef *usart = usart_reg_list[idx];
-    struct vsf_clk_info_t *info = vsf_clk_info_get();
+    struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
 
     usart->CR1 = 0;
 
@@ -207,8 +207,8 @@ void vsf_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
 
     usart->CR1 = (mode & (USART_CR1_M0 | USART_CR1_PCE | USART_CR1_PS)) |
         USART_CR1_RTOIE | USART_CR1_TE | USART_CR1_RE;
-    usart->CR2 = ((mode >> 8) & USART_CR2_STOP) | USART_CR2_RTOEN;
-    usart->CR3 = ((mode >> 16) & (USART_CR3_RTSE | USART_CR3_CTSE)) |
+    usart->CR2 = ((mode >> 4) & USART_CR2_STOP) | USART_CR2_RTOEN;
+    usart->CR3 = ((mode >> 20) & (USART_CR3_HDSEL | USART_CR3_RTSE | USART_CR3_CTSE)) |
         USART_CR3_DMAR | USART_CR3_DMAT;
     usart->RTOR = 30;
     usart->BRR = temp / baudrate;
@@ -217,7 +217,7 @@ void vsf_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
     usart->CR1 |= USART_CR1_UE;
 }
 
-void vsf_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *))
+void vsfhal_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *))
 {
     VSF_HAL_ASSERT(idx < USART_COUNT);
     

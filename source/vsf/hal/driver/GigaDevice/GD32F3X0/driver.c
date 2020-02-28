@@ -29,7 +29,7 @@ typedef void(*pFunc)(void);
 extern const pFunc __VECTOR_TABLE[];
 /*============================ IMPLEMENTATION ================================*/
 
-static vsf_clk_info_t vsf_clk_info = {
+static vsfhal_clk_info_t vsfhal_clk_info = {
 	.clken = CHIP_CLKEN,
 	.hclksrc = CHIP_HCLKSRC,
 	.pllsrc = CHIP_PLLSRC,
@@ -42,7 +42,7 @@ static vsf_clk_info_t vsf_clk_info = {
 	.apb2_freq_hz = CHIP_APB2_FREQ_HZ,
 };
 
-static void vsf_clk_init(vsf_clk_info_t *info)
+static void clk_init(vsfhal_clk_info_t *info)
 {
     uint32_t tmp32;
 
@@ -152,14 +152,16 @@ bool vsf_driver_init(void)
 	NVIC_SetPriorityGrouping(3);
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
 
-	vsf_clk_init(&vsf_clk_info);
+	clk_init(&vsfhal_clk_info);
     return true;
 }
 
-vsf_clk_info_t *vsf_clk_info_get(void)
+vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 {
-	return &vsf_clk_info;
+	return &vsfhal_clk_info;
 }
+
+#if DMA_COUNT > 0
 
 static callback_param_t dma_stream_callback[DMA_COUNT][DMA_STREAM_COUNT];
 static void *dma_stream_callback_param[DMA_COUNT][DMA_STREAM_COUNT];
@@ -173,41 +175,56 @@ void vsf_config_dma_stream_callback(uint8_t dma, uint8_t stream, callback_param_
     dma_stream_callback_param[dma][stream] = param;
 }
 
+#if DMA_STREAM_COUNT > 0
 ROOT void DMA_Channel0_IRQHandler(void)
 {
     if (dma_stream_callback[0][0]) {
         dma_stream_callback[0][0](dma_stream_callback_param[0][0]);
     }
 }
+#endif
 
+#if DMA_STREAM_COUNT > 1
 ROOT void DMA_Channel1_2_IRQHandler(void)
 {
     if (dma_stream_callback[0][1]) {
         dma_stream_callback[0][1](dma_stream_callback_param[0][1]);
     }
+	#if DMA_STREAM_COUNT > 2
     if (dma_stream_callback[0][2]) {
         dma_stream_callback[0][2](dma_stream_callback_param[0][2]);
     }
+	#endif
 }
+#endif
 
+#if DMA_STREAM_COUNT > 3
 ROOT void DMA_Channel3_4_IRQHandler(void)
 {
     if (dma_stream_callback[0][3]) {
         dma_stream_callback[0][3](dma_stream_callback_param[0][3]);
     }
+	#if DMA_STREAM_COUNT > 4
     if (dma_stream_callback[0][4]) {
         dma_stream_callback[0][4](dma_stream_callback_param[0][4]);
     }
+	#endif
 }
+#endif
 
+#if DMA_STREAM_COUNT > 5
 ROOT void DMA_Channel5_6_IRQHandler(void)
 {
     if (dma_stream_callback[0][5]) {
         dma_stream_callback[0][5](dma_stream_callback_param[0][5]);
     }
+	#if DMA_STREAM_COUNT > 6
     if (dma_stream_callback[0][6]) {
         dma_stream_callback[0][6](dma_stream_callback_param[0][6]);
     }
+	#endif
 }
+#endif
+#endif
 
 /* EOF */

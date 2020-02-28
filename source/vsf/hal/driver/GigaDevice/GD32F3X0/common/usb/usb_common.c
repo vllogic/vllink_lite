@@ -32,7 +32,7 @@ vsf_err_t gd32f3x0_usb_init(gd32f3x0_usb_t *usb, vsf_arch_prio_t priority)
 {
     const gd32f3x0_usb_const_t *param = usb->param;
     struct dwcotg_core_global_regs_t *global_regs = param->reg;
-    struct vsf_clk_info_t *info = vsf_clk_info_get();
+    struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
     
     if (info->usbsrc == GD32F3X0_USBSRC_PLL) {
         RCU_ADDAPB1EN |= RCU_ADDAPB1EN_CTCEN;

@@ -286,7 +286,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>00000000</state>
+                    <state>11111110</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -370,16 +370,16 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
                     <version>0</version>
-                    <state>1</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>1</state>
+                    <state>3</state>
                 </option>
                 <option>
                     <name>CompilerMisraRules98</name>
@@ -438,7 +438,7 @@
                 <option>
                     <name>CCOptStrategySlave</name>
                     <version>0</version>
-                    <state>1</state>
+                    <state>2</state>
                 </option>
                 <option>
                     <name>CCGuardCalls</name>
@@ -1068,16 +1068,19 @@
             <name>$PROJ_DIR$\compile_definitions.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\f730x8_flash.icf</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\f730x8_qspi.icf</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\f730x8_ram.icf</name>
+            <name>$PROJ_DIR$\gd32f350x8_booted.icf</name>
         </file>
         <file>
             <name>$PROJ_DIR$\main.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\usb_device.c</name>
+            <excluded>
+                <configuration>vllink_lite</configuration>
+            </excluded>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\usbd_config.c</name>
         </file>
     </group>
     <group>
@@ -2044,6 +2047,12 @@
                                 <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\__common.h</name>
                             </file>
                             <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\delay.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\delay.h</name>
+                            </file>
+                            <file>
                                 <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\flash.h</name>
                             </file>
                             <file>
@@ -2056,7 +2065,19 @@
                                 <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\io_lv0.c</name>
                             </file>
                             <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\jtag.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\jtag.h</name>
+                            </file>
+                            <file>
                                 <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\startup_GD32F3X0.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\swd.c</name>
+                            </file>
+                            <file>
+                                <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\swd.h</name>
                             </file>
                             <file>
                                 <name>$PROJ_DIR$\..\..\vsf\hal\driver\GigaDevice\GD32F3X0\common\usart.h</name>

@@ -327,7 +327,7 @@ static void __vsf_evtq_post_do(vsf_eda_t *pthis, uintptr_t value)
         __vsf_eda.cur.msg = NULL;
     } else {
         __vsf_eda.cur.evt = VSF_EVT_MESSAGE;
-        __vsf_eda.cur.msg = (void *)value;
+        __vsf_eda.cur.msg = value;
     }
     __vsf_dispatch_evt(pthis, __vsf_eda.cur.evt);
     __vsf_eda.cur = ctx_old;

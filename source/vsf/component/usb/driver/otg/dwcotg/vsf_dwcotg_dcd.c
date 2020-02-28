@@ -26,10 +26,10 @@
 #include "vsf.h"
 
 /*============================ MACROS ========================================*/
-#define DWCOTG_DEBUG
-#define DWCOTG_DEBUG_DUMP_USB_ON
-#define DWCOTG_DEBUG_DUMP_FUNC_CALL
-#define DWCOTG_DEBUG_DUMP_DATA
+//#define DWCOTG_DEBUG
+//#define DWCOTG_DEBUG_DUMP_USB_ON
+//#define DWCOTG_DEBUG_DUMP_FUNC_CALL
+//#define DWCOTG_DEBUG_DUMP_DATA
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 enum __usb_evt_t {

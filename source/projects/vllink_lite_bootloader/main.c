@@ -22,8 +22,8 @@
 
 int main(void)
 {
-	vk_usbd_init(&user_usbd);
-	vk_usbd_connect(&user_usbd);
+	vk_usbd_init(&usrapp_usbd.dev);
+	vk_usbd_connect(&usrapp_usbd.dev);
     return 0;
 }
 

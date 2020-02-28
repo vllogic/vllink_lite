@@ -56,9 +56,6 @@
 	.vbus_en = false,
 #endif
 
-#define DMA_COUNT           		2
-#define DMA_STREAM_COUNT    		7
-
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
@@ -102,7 +99,7 @@ enum gd32f3x0_usbsrc_t
 #define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #endif
 
-struct vsf_clk_info_t {
+struct vsfhal_clk_info_t {
 	uint32_t clken;
 	
 	enum gd32f3x0_hclksrc_t hclksrc;
@@ -117,14 +114,14 @@ struct vsf_clk_info_t {
 	uint32_t apb1_freq_hz;
 	uint32_t apb2_freq_hz;
 };
-typedef struct vsf_clk_info_t vsf_clk_info_t;
+typedef struct vsfhal_clk_info_t vsfhal_clk_info_t;
 
 typedef void(*callback_param_t)(void *param);
 
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
-extern vsf_clk_info_t *vsf_clk_info_get(void);
+extern vsfhal_clk_info_t *vsfhal_clk_info_get(void);
 extern void vsf_config_dma_stream_callback(uint8_t dma, uint8_t stream, callback_param_t callback, void *param);
 
 #endif

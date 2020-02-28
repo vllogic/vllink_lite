@@ -28,8 +28,8 @@
 #   endif
 #endif
 
-#define vsf_gpio_protect                        vsf_protect(VSF_HAL_CFG_GPIO_PROTECT_LEVEL)
-#define vsf_gpio_unprotect                      vsf_unprotect(VSF_HAL_CFG_GPIO_PROTECT_LEVEL)
+#define vsfhal_gpio_protect                        vsf_protect(VSF_HAL_CFG_GPIO_PROTECT_LEVEL)
+#define vsfhal_gpio_unprotect                      vsf_unprotect(VSF_HAL_CFG_GPIO_PROTECT_LEVEL)
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
@@ -82,7 +82,7 @@ static GPIO_TypeDef * const gpio_reg_table[GPIO_PORT_COUNT] = {
 };
 
 
-void vsf_gpio_init(enum gpio_port_t port)
+void vsfhal_gpio_init(enum gpio_port_t port)
 {
     if (port == GPIO_DUMMY_PORT)
         return;
@@ -92,7 +92,7 @@ void vsf_gpio_init(enum gpio_port_t port)
     RCU_AHBEN |= RCU_AHBEN_PAEN << hw_idx;
 }
 
-void vsf_gpio_fini(enum gpio_port_t port)
+void vsfhal_gpio_fini(enum gpio_port_t port)
 {
     if (port == GPIO_DUMMY_PORT)
         return;
@@ -102,7 +102,7 @@ void vsf_gpio_fini(enum gpio_port_t port)
     RCU_AHBEN &= ~(RCU_AHBEN_PAEN << hw_idx);
 }
 
-void vsf_gpio_config(enum gpio_port_t port, uint32_t pin_mask, uint32_t config)
+void vsfhal_gpio_config(enum gpio_port_t port, uint32_t pin_mask, uint32_t config)
 {
     if (port == GPIO_DUMMY_PORT)
         return;
@@ -141,17 +141,17 @@ void vsf_gpio_config(enum gpio_port_t port, uint32_t pin_mask, uint32_t config)
         mask2 |= 0x3 << (offset * 2);
     }
     
-    vsf_protect_t state = vsf_gpio_protect();
+    vsf_protect_t state = vsfhal_gpio_protect();
 	reg->MODER  = (reg->MODER & ~mask2) | mode_reg;
 	reg->OTYPER  = (reg->OTYPER & ~mask1) | out_type_reg;
 	reg->OSPEEDR  = (reg->OSPEEDR & ~mask2) | speed_reg;
 	reg->PUPDR  = (reg->PUPDR & ~mask2) | pull_reg;
 	reg->AFR[0]  = (reg->AFR[0] & ~mask_af0) | af_reg0;
 	reg->AFR[1]  = (reg->AFR[1] & ~mask_af1) | af_reg1;
-    vsf_gpio_unprotect(state);
+    vsfhal_gpio_unprotect(state);
 }
 
-uint32_t vsf_gpio_read(enum gpio_port_t port, uint32_t pin_mask)
+uint32_t vsfhal_gpio_read(enum gpio_port_t port, uint32_t pin_mask)
 {
     if (port == GPIO_DUMMY_PORT)
         return 0;
@@ -162,7 +162,7 @@ uint32_t vsf_gpio_read(enum gpio_port_t port, uint32_t pin_mask)
     return reg->IDR & pin_mask;
 }
 
-void vsf_gpio_write(enum gpio_port_t port, uint32_t pin_value, uint32_t pin_mask)
+void vsfhal_gpio_write(enum gpio_port_t port, uint32_t pin_value, uint32_t pin_mask)
 {
     if (port == GPIO_DUMMY_PORT)
         return;
@@ -178,14 +178,14 @@ void vsf_gpio_write(enum gpio_port_t port, uint32_t pin_value, uint32_t pin_mask
     reg->BSRR = (reset_mask << 16) | set_mask;
 }
 
-void vsf_gpio_set(enum gpio_port_t port, uint32_t pin_mask)
+void vsfhal_gpio_set(enum gpio_port_t port, uint32_t pin_mask)
 {
-    vsf_gpio_write(port, pin_mask, pin_mask);
+    vsfhal_gpio_write(port, pin_mask, pin_mask);
 }
 
-void vsf_gpio_clear(enum gpio_port_t port, uint32_t pin_mask)
+void vsfhal_gpio_clear(enum gpio_port_t port, uint32_t pin_mask)
 {
-    vsf_gpio_write(port, 0, pin_mask);
+    vsfhal_gpio_write(port, 0, pin_mask);
 }
 
 #endif

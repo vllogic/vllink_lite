@@ -91,13 +91,13 @@ enum gpio_mode_t{
 /*============================ INCLUDES ======================================*/
 /*============================ PROTOTYPES ====================================*/
 
-void vsf_gpio_init(enum gpio_port_t port);
-void vsf_gpio_fini(enum gpio_port_t port);
-void vsf_gpio_config(enum gpio_port_t port, uint32_t pin_mask, uint32_t config);
-uint32_t vsf_gpio_read(enum gpio_port_t port, uint32_t pin_mask);
-void vsf_gpio_write(enum gpio_port_t port, uint32_t pin_value, uint32_t pin_mask);
-void vsf_gpio_set(enum gpio_port_t port, uint32_t pin_mask);
-void vsf_gpio_clear(enum gpio_port_t port, uint32_t pin_mask);
+void vsfhal_gpio_init(enum gpio_port_t port);
+void vsfhal_gpio_fini(enum gpio_port_t port);
+void vsfhal_gpio_config(enum gpio_port_t port, uint32_t pin_mask, uint32_t config);
+uint32_t vsfhal_gpio_read(enum gpio_port_t port, uint32_t pin_mask);
+void vsfhal_gpio_write(enum gpio_port_t port, uint32_t pin_value, uint32_t pin_mask);
+void vsfhal_gpio_set(enum gpio_port_t port, uint32_t pin_mask);
+void vsfhal_gpio_clear(enum gpio_port_t port, uint32_t pin_mask);
 
 #endif
 /* EOF */
