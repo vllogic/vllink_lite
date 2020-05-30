@@ -7,6 +7,7 @@ target_sources(vsfkernel INTERFACE
 add_subdirectory(3rd-party)
 add_subdirectory(av)
 add_subdirectory(crypto)
+add_subdirectory(debugger)
 add_subdirectory(fs)
 add_subdirectory(input)
 add_subdirectory(mal)
