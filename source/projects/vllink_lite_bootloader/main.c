@@ -1,30 +1,12 @@
-/***************************************************************************
- *   Copyright (C) 2018 - 2020 by Chen Le <talpachen@gmail.com>            *
- *                                                                         *
- *   This program is free software: you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation, either version 3 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
- ***************************************************************************/
-
-/*============================ INCLUDES ======================================*/
-
 #include "vsf.h"
-#include "usb_device.c"
 
 int main(void)
 {
-	vk_usbd_init(&usrapp_usbd.dev);
-	vk_usbd_connect(&usrapp_usbd.dev);
+#   if VSF_USE_TRACE == ENABLED
+    vsf_start_trace();
+#   endif
+
+    //extern void vsf_dfu_start(void);
+    //vsf_dfu_start();
     return 0;
 }
-
-/* EOF */

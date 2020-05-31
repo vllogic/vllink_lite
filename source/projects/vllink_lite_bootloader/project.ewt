@@ -1219,13 +1219,13 @@
             <name>$PROJ_DIR$\main.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\usb_device.c</name>
+            <name>$PROJ_DIR$\usrapp_usbd_common.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\vsf_usbd_DFU.c</name>
+            <name>$PROJ_DIR$\usrapp_usbd_common.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\vsf_usbd_DFU.h</name>
+            <name>$PROJ_DIR$\vsf_dfu.c</name>
         </file>
     </group>
     <group>

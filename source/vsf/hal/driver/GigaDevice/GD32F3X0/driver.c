@@ -29,6 +29,7 @@ typedef void(*pFunc)(void);
 extern const pFunc __VECTOR_TABLE[];
 /*============================ IMPLEMENTATION ================================*/
 
+#ifndef PROJ_CFG_CORE_INIT_TINY
 static vsfhal_clk_info_t vsfhal_clk_info = {
 	.clken = CHIP_CLKEN,
 	.hclksrc = CHIP_HCLKSRC,
@@ -41,9 +42,11 @@ static vsfhal_clk_info_t vsfhal_clk_info = {
 	.apb1_freq_hz = CHIP_APB1_FREQ_HZ,
 	.apb2_freq_hz = CHIP_APB2_FREQ_HZ,
 };
+#endif
 
 static void clk_init(vsfhal_clk_info_t *info)
 {
+#ifndef PROJ_CFG_CORE_INIT_TINY
     uint32_t tmp32;
 
     VSF_HAL_ASSERT(info && (info->pllsrc <= GD32F3X0_PLLSRC_HSI48M));
@@ -145,6 +148,38 @@ static void clk_init(vsfhal_clk_info_t *info)
     
     if (!(info->clken & GD32F3X0_CLKEN_HSI))
         RCU_CTL0 &= ~RCU_CTL0_IRC8MEN;
+#else
+	// select irc8m
+	RCU_CTL0 |= RCU_CTL0_IRC8MEN;
+	while(!(RCU_CTL0 & RCU_CTL0_IRC8MSTB));
+	RCU_CFG0 &= ~RCU_CFG0_SCS;
+
+	RCU_ADDCTL |= RCU_ADDCTL_IRC48MEN;
+	while(!(RCU_ADDCTL & RCU_ADDCTL_IRC48MSTB));
+
+	RCU_CTL0 &= ~RCU_CTL0_PLLEN;
+
+	RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
+	RCU_CFG1 |= RCU_CFG1_PLLPRESEL | 11;
+	RCU_CFG0 |= RCU_CFG0_PLLSEL;
+
+	RCU_CFG0 &= ~RCU_CFG0_PLLMF;
+	RCU_CFG1 &= ~RCU_CFG1_PLLMF5;
+	RCU_CFG0 |= ((31 & 0xf) << 18) | ((31 & 0x10) << 23);
+	RCU_CFG1 |= ((31 & 0x20) << 26);
+
+	RCU_CTL0 |= RCU_CTL0_PLLEN;
+	while(!(RCU_CTL0 & RCU_CTL0_PLLSTB));
+	
+	// config ahb apb1 apb2
+	RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
+	RCU_CFG0 |= BIT(10);
+	RCU_CFG0 |= BIT(13);
+	RCU_CFG0 |= RCU_AHB_CKSYS_DIV1;
+
+	RCU_CFG0 |= RCU_CKSYSSRC_PLL;
+	while((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
+#endif
 }
 
 bool vsf_driver_init(void)
@@ -152,13 +187,21 @@ bool vsf_driver_init(void)
 	NVIC_SetPriorityGrouping(3);
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
 
+#ifndef PROJ_CFG_CORE_INIT_TINY
 	clk_init(&vsfhal_clk_info);
+#else
+	clk_init(NULL);
+#endif
     return true;
 }
 
 vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 {
+#ifndef PROJ_CFG_CORE_INIT_TINY
 	return &vsfhal_clk_info;
+#else
+	return NULL;
+#endif
 }
 
 #if DMA_COUNT > 0

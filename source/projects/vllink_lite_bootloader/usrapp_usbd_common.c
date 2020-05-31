@@ -16,34 +16,57 @@
  ****************************************************************************/
 
 /*============================ INCLUDES ======================================*/
-//#include "../common.h"
-#include "./usb.h"
+
+#include "./usrapp_usbd_common.h"
+
+#if     VSF_USE_USB_DEVICE == ENABLED                                           \
+    &&  (   VSF_USE_USB_DEVICE_DCD_MUSB_FDRC == ENABLED                         \
+        ||  VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED                            \
+        ||  VSF_USE_USB_DEVICE_DCD_USBIP == ENABLED)
 
 /*============================ MACROS ========================================*/
-
-#define __USB_HC_INTERFACE_DEF(__N, __VALUE)                                    \
-const i_usb_hc_ip_t VSF_USB_HC##__N##_IP = __USB_HC_IP_INTERFACE_FUNC_DEF(__N, __VALUE);
-
-#define __USB_DC_INTERFACE_DEF(__N, __VALUE)                                    \
-const i_usb_dc_ip_t VSF_USB_DC##__N##_IP = __USB_DC_IP_INTERFACE_FUNC_DEF(__N, __VALUE);
-
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
 
-//REPEAT_MACRO(USB_OTG_COUNT, __USB_HC_IP_FUNC_DEF, NULL)
-REPEAT_MACRO(USB_OTG_COUNT, __USB_DC_IP_FUNC_DEF, NULL)
-
-#if USB_OTG_COUNT > 0
-//REPEAT_MACRO(USB_OTG_COUNT, __USB_HC_INTERFACE_DEF, NULL)
-REPEAT_MACRO(USB_OTG_COUNT, __USB_DC_INTERFACE_DEF, NULL)
+const usrapp_usbd_common_const_t usrapp_usbd_common_const = {
+#if VSF_USE_USB_DEVICE_DCD_MUSB_FDRC == ENABLED
+    .musb_fdrc_dcd_param    = {
+        .op                 = &VSF_USB_DC0_IP,
+    },
 #endif
+#if VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
+    .dwcotg_dcd_param       = {
+        .op                 = &VSF_USB_DC0_IP,
+        .speed              = USRAPP_CFG_USBD_SPEED,
+    },
+#endif
+};
+
+usrapp_usbd_common_t usrapp_usbd_common = {
+#if VSF_USE_USB_DEVICE_DCD_USBIP == ENABLED
+    .usbip_dcd.param        = &usrapp_usbd_common_const.usbip_dcd_param,
+#endif
+#if VSF_USE_USB_DEVICE_DCD_MUSB_FDRC == ENABLED
+    .musb_fdrc_dcd.param    = &usrapp_usbd_common_const.musb_fdrc_dcd_param,
+#endif
+#if VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
+    .dwcotg_dcd.param       = &usrapp_usbd_common_const.dwcotg_dcd_param,
+#endif
+};
 
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 /*============================ IMPLEMENTATION ================================*/
 
-#if USB_OTG_COUNT > 0
-//REPEAT_MACRO(USB_OTG_COUNT, __USB_OTG_HC_IP_BODY, gd32f3x0_usbh)
-REPEAT_MACRO(USB_OTG_COUNT, __USB_OTG_DC_IP_BODY, gd32f3x0_usbd)
+#if VSF_USE_USB_DEVICE_DCD_USBIP == ENABLED
+VSF_USB_DC_FROM_USBIP_IP(0, usrapp_usbd_common.usbip_dcd, VSF_USB_DC0)
+#elif VSF_USE_USB_DEVICE_DCD_MUSB_FDRC == ENABLED
+VSF_USB_DC_FROM_MUSB_FDRC_IP(0, usrapp_usbd_common.musb_fdrc_dcd, VSF_USB_DC0)
+#elif VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
+VSF_USB_DC_FROM_DWCOTG_IP(0, usrapp_usbd_common.dwcotg_dcd, VSF_USB_DC0)
 #endif
+
+
+#endif      // VSF_USE_USB_DEVICE && VSF_USE_USB_DEVICE_DCD_[IP]
+/* EOF */

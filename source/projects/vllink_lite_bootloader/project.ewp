@@ -286,7 +286,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>11111110</state>
+                    <state>00000000</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -372,7 +372,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>3</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -381,7 +381,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>3</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CompilerMisraRules98</name>
@@ -775,7 +775,7 @@
                 </option>
                 <option>
                     <name>IlinkIcfFile</name>
-                    <state>$PROJ_DIR$\gd32f350x8_boot.icf</state>
+                    <state>$PROJ_DIR$\gd32f350x8_boot2.icf</state>
                 </option>
                 <option>
                     <name>IlinkIcfFileSlave</name>
@@ -1092,16 +1092,13 @@
             <name>$PROJ_DIR$\main.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\usb_device.c</name>
-            <excluded>
-                <configuration>vllink_lite_dfu</configuration>
-            </excluded>
+            <name>$PROJ_DIR$\usrapp_usbd_common.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\vsf_usbd_DFU.c</name>
+            <name>$PROJ_DIR$\usrapp_usbd_common.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\vsf_usbd_DFU.h</name>
+            <name>$PROJ_DIR$\vsf_dfu.c</name>
         </file>
     </group>
     <group>
