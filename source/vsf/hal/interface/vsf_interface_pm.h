@@ -21,6 +21,9 @@
 /*============================ INCLUDES ======================================*/
 #include "hal/vsf_hal_cfg.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*============================ MACROS ========================================*/
 #define DIV_(_N,_D)     DIV_##_N = (_N),
 
@@ -501,6 +504,8 @@ extern const i_pm_t VSF_PM;
 
 /*============================ PROTOTYPES ====================================*/
 
-
+#ifdef __cplusplus
+}
+#endif
 #endif
 /* EOF */

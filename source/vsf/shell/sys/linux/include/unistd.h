@@ -6,6 +6,10 @@
 #include <linux/limits.h>
 #include <sys/types.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define STDIN_FILENO        0
 #define STDOUT_FILENO       1
 #define STDERR_FILENO       2
@@ -31,8 +35,13 @@ unsigned sleep(unsigned seconds);
 pid_t getpid(void);
 pid_t getppid(void);
 
+#if defined(__WIN__) && defined(__CPU_X64__)
+intptr_t execl(const char *pathname, const char *arg, ...);
+intptr_t execv(const char *pathname, char const* const* argv);
+#else
 int execl(const char *pathname, const char *arg, ...);
 int execv(const char *pathname, char const* const* argv);
+#endif
 
 int creat(const char *pathname, mode_t mode);
 int open(const char *pathname, int flags, ...);
@@ -43,5 +52,9 @@ int mkdir(const char* pathname, mode_t mode);
 int close(int fd);
 ssize_t read(int fd, void *buf, size_t count);
 ssize_t write(int fd, void *buf, size_t count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

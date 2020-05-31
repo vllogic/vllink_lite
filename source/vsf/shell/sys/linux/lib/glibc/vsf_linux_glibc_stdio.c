@@ -75,7 +75,7 @@ FILE * fopen(const char *filename, const char *mode)
     if (fd < 0) {
         return NULL;
     }
-    return vsf_linux_get_fd(fd);
+    return (FILE *)vsf_linux_get_fd(fd);
 }
 
 int fclose(FILE *f)
@@ -143,7 +143,7 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *f)
     return (size_t)ret;
 }
 
-size_t fread(const void *ptr, size_t size, size_t nmemb, FILE *f)
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *f)
 {
     ssize_t ret;
     int fd = __get_fd(f);

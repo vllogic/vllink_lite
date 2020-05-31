@@ -43,6 +43,27 @@
 
 /*============================ MACROS ========================================*/
 
+// user configurations with default value
+#ifndef M480_PLL_FREQ_HZ
+#   define M480_PLL_FREQ_HZ                 (384 * 1000 * 1000)
+#endif
+
+#ifndef M480_HCLK_FREQ_HZ
+#   define M480_HCLK_FREQ_HZ                (192 * 1000 * 1000)
+#endif
+
+#ifndef M480_HXT_FREQ_HZ
+#   define M480_HXT_FREQ_HZ                 (12 * 1000 * 1000)
+#endif
+
+#ifndef M480_PCLK0_FREQ_HZ
+#   define M480_PCLK0_FREQ_HZ               (96 * 1000 * 1000)
+#endif
+
+#ifndef M480_PCLK1_FREQ_HZ
+#   define M480_PCLK1_FREQ_HZ               (96 * 1000 * 1000)
+#endif
+
 // bit0 - bit7  : __bit_offset  (0 .. 255)
 // bit8 - bit12 : __bit_len     (0 .. 31)
 // bit13        : __is_wprotect

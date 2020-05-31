@@ -90,14 +90,25 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)
     return 0;
 }
 
+#if __IS_COMPILER_LLVM__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wvisibility"
+#endif
+
 int getitimer(int which, struct itimerval *curr_value)
 {
     VSF_LINUX_ASSERT(false);
+    return -1;
 }
 
 int setitimer(int which, const struct itimerval *new_valie, struct itimerval *old_value)
 {
     VSF_LINUX_ASSERT(false);
+    return -1;
 }
+
+#if __IS_COMPILER_LLVM__
+#   pragma clang diagnostic pop
+#endif
 
 #endif      // VSF_USE_LINUX

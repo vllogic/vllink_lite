@@ -54,7 +54,9 @@
 #   include "kernel/lib/__kernel_lib_with_full_feature_set.h"
 #endif
 
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*============================ MACROS ========================================*/
 
 #ifndef VSF_USE_KERNEL
@@ -101,7 +103,9 @@ __VSF_HAL_SWI_NUM and its value must at least be 1.
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 /* EOF */
