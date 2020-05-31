@@ -14,36 +14,7 @@
  *  limitations under the License.                                           *
  *                                                                           *
  ****************************************************************************/
+#ifndef __VSF_DISP_H__
+#define __VSF_DISP_H__
 
-/*============================ INCLUDES ======================================*/
-#include "hal/vsf_hal_cfg.h"
-
-#undef VSF_GIGADEVICE_DRIVER_HEADER
-
-#if     defined(__GD32F330__) || defined(__GD32F350__)
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/driver.h"
-#elif   defined(__GD32VF103__)
-//  TODO
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32VF103/GD32VF103C8/driver.h"
-#else
-#   error No supported device found.
-#endif
-
-/* include specified device driver header file */
-#include VSF_GIGADEVICE_DRIVER_HEADER
-
-
-
-#ifndef __HAL_DRIVER_GIGADEVICE_H__
-#define __HAL_DRIVER_GIGADEVICE_H__
-
-/*============================ MACROS ========================================*/
-/*============================ MACROFIED FUNCTIONS ===========================*/
-/*============================ TYPES =========================================*/
-/*============================ GLOBAL VARIABLES ==============================*/
-/*============================ LOCAL VARIABLES ===============================*/
-/*============================ PROTOTYPES ====================================*/
-
-
-#endif
-/* EOF */
+#endif  // __VSF_DISP_H__

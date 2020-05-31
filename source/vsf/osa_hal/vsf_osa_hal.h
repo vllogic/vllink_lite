@@ -1,5 +1,5 @@
 /*****************************************************************************
- *   Copyright(C)2009-2019 by VSF Team                                       *
+ *   Copyright(C)2009-2020 by VSF Team                                       *
  *                                                                           *
  *  Licensed under the Apache License, Version 2.0 (the "License");          *
  *  you may not use this file except in compliance with the License.         *
@@ -15,28 +15,17 @@
  *                                                                           *
  ****************************************************************************/
 
+#ifndef __VSF_OSA_HAL_H__
+#define __VSF_OSA_HAL_H__
+
 /*============================ INCLUDES ======================================*/
-#include "hal/vsf_hal_cfg.h"
+#include "osa_hal/vsf_osa_hal_cfg.h"
+#include "./sw_peripheral/sw_peripheral.h"
+#include "./driver/driver.h"
 
-#undef VSF_GIGADEVICE_DRIVER_HEADER
-
-#if     defined(__GD32F330__) || defined(__GD32F350__)
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32F3X0/driver.h"
-#elif   defined(__GD32VF103__)
-//  TODO
-#   define  VSF_GIGADEVICE_DRIVER_HEADER    "./GD32VF103/GD32VF103C8/driver.h"
-#else
-#   error No supported device found.
+#ifdef __cplusplus
+extern "C" {
 #endif
-
-/* include specified device driver header file */
-#include VSF_GIGADEVICE_DRIVER_HEADER
-
-
-
-#ifndef __HAL_DRIVER_GIGADEVICE_H__
-#define __HAL_DRIVER_GIGADEVICE_H__
-
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
@@ -44,6 +33,16 @@
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 
+/*! \note initialize level 2 hardware abstract layer
+ *  \param none
+ *  \retval true initialization succeeded.
+ *  \retval false initialization failed
+ */  
+extern bool vsf_osa_hal_init(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 /* EOF */

@@ -11,7 +11,7 @@
             <name>C-SPY</name>
             <archiveVersion>2</archiveVersion>
             <data>
-                <version>30</version>
+                <version>32</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -88,7 +88,7 @@
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
-                    <state>8.32.3.20186</state>
+                    <state>8.40.2.22864</state>
                 </option>
                 <option>
                     <name>UseFlashLoader</name>
@@ -183,14 +183,6 @@
                     <state>1</state>
                 </option>
                 <option>
-                    <name>OCMulticoreMaster</name>
-                    <state>0</state>
-                </option>
-                <option>
-                    <name>OCMulticorePort</name>
-                    <state>53461</state>
-                </option>
-                <option>
                     <name>OCMulticoreWorkspace</name>
                     <state></state>
                 </option>
@@ -216,6 +208,18 @@
                 </option>
                 <option>
                     <name>OCMulticoreNrOfCoresSlave</name>
+                    <state>1</state>
+                </option>
+                <option>
+                    <name>OCMulticoreAMPConfigType</name>
+                    <state>0</state>
+                </option>
+                <option>
+                    <name>OCMulticoreSessionFile</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>OCTpiuBaseOption</name>
                     <state>1</state>
                 </option>
             </data>
@@ -1118,8 +1122,8 @@
                 </option>
                 <option>
                     <name>CCSTLinkProbeList</name>
-                    <version>0</version>
-                    <state>1</state>
+                    <version>1</version>
+                    <state>2</state>
                 </option>
             </data>
         </settings>
@@ -1433,6 +1437,10 @@
                 <loadFlag>0</loadFlag>
             </plugin>
             <plugin>
+                <file>$TOOLKIT_DIR$\plugins\rtos\RemedyRtosViewer\RemedyRtosViewer.ewplugin</file>
+                <loadFlag>0</loadFlag>
+            </plugin>
+            <plugin>
                 <file>$TOOLKIT_DIR$\plugins\rtos\SafeRTOS\SafeRTOSPlugin.ewplugin</file>
                 <loadFlag>0</loadFlag>
             </plugin>
@@ -1463,10 +1471,6 @@
             <plugin>
                 <file>$TOOLKIT_DIR$\plugins\rtos\uCOS-III\uCOS-III-KA-CSpy.ewplugin</file>
                 <loadFlag>0</loadFlag>
-            </plugin>
-            <plugin>
-                <file>$EW_DIR$\common\plugins\CodeCoverage\CodeCoverage.ENU.ewplugin</file>
-                <loadFlag>1</loadFlag>
             </plugin>
             <plugin>
                 <file>$EW_DIR$\common\plugins\Orti\Orti.ENU.ewplugin</file>

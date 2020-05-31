@@ -66,7 +66,7 @@
                 </option>
                 <option>
                     <name>OGLastSavedByProductVersion</name>
-                    <state>8.32.3.20186</state>
+                    <state>8.40.2.22864</state>
                 </option>
                 <option>
                     <name>GeneralEnableMisra</name>
@@ -355,6 +355,8 @@
                     <state>$PROJ_DIR$\..\..\vsf</state>
                     <state>$PROJ_DIR$\..\..\vsf\shell\sys\linux\include</state>
                     <state>$PROJ_DIR$\..\..\vsf\utilities\compiler\arm\CMSIS\Core\Include</state>
+                    <state>$PROJ_DIR$\..\..\vsf\utilities\compiler\arm\CMSIS\DSP\Include</state>
+                    <state>$PROJ_DIR$\..\..\vsf\utilities\compiler\arm\CMSIS\NN\Include</state>
                 </option>
                 <option>
                     <name>CCStdIncCheck</name>
@@ -692,7 +694,7 @@
             <name>ILINK</name>
             <archiveVersion>0</archiveVersion>
             <data>
-                <version>22</version>
+                <version>23</version>
                 <wantNonLocal>1</wantNonLocal>
                 <debug>1</debug>
                 <option>
@@ -1012,6 +1014,22 @@
                     <name>OILinkExtraOption</name>
                     <state>1</state>
                 </option>
+                <option>
+                    <name>IlinkRawBinaryFile2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinarySymbol2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinarySegment2</name>
+                    <state></state>
+                </option>
+                <option>
+                    <name>IlinkRawBinaryAlign2</name>
+                    <state></state>
+                </option>
             </data>
         </settings>
         <settings>
@@ -1068,7 +1086,7 @@
             <name>$PROJ_DIR$\compile_definitions.h</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\gd32f350x8_booted.icf</name>
+            <name>$PROJ_DIR$\gd32f350x8_boot.icf</name>
         </file>
         <file>
             <name>$PROJ_DIR$\main.c</name>
@@ -2256,6 +2274,18 @@
             </file>
         </group>
         <group>
+            <name>osa_hal</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\vsf\osa_hal\vsf_osa_hal.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\vsf\osa_hal\vsf_osa_hal.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\vsf\osa_hal\vsf_osa_hal_cfg.h</name>
+            </file>
+        </group>
+        <group>
             <name>osa_service</name>
             <group>
                 <name>msg_tree</name>
@@ -2756,6 +2786,12 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\vsf\utilities\language_extension\code_region.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\vsf\utilities\language_extension\delegate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\vsf\utilities\language_extension\delegate.h</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\vsf\utilities\language_extension\language_extension.h</name>
