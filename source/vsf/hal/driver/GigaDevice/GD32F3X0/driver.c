@@ -29,7 +29,6 @@ typedef void(*pFunc)(void);
 extern const pFunc __VECTOR_TABLE[];
 /*============================ IMPLEMENTATION ================================*/
 
-#ifndef PROJ_CFG_CORE_INIT_TINY
 static vsfhal_clk_info_t vsfhal_clk_info = {
 	.clken = CHIP_CLKEN,
 	.hclksrc = CHIP_HCLKSRC,
@@ -42,7 +41,6 @@ static vsfhal_clk_info_t vsfhal_clk_info = {
 	.apb1_freq_hz = CHIP_APB1_FREQ_HZ,
 	.apb2_freq_hz = CHIP_APB2_FREQ_HZ,
 };
-#endif
 
 static void clk_init(vsfhal_clk_info_t *info)
 {
@@ -187,21 +185,13 @@ bool vsf_driver_init(void)
 	NVIC_SetPriorityGrouping(3);
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
 
-#ifndef PROJ_CFG_CORE_INIT_TINY
 	clk_init(&vsfhal_clk_info);
-#else
-	clk_init(NULL);
-#endif
     return true;
 }
 
 vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 {
-#ifndef PROJ_CFG_CORE_INIT_TINY
 	return &vsfhal_clk_info;
-#else
-	return NULL;
-#endif
 }
 
 #if DMA_COUNT > 0

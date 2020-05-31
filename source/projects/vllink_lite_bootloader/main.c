@@ -6,7 +6,7 @@ int main(void)
     vsf_start_trace();
 #   endif
 
-    //extern void vsf_dfu_start(void);
-    //vsf_dfu_start();
+    extern void vsf_dfu_start(void);
+    vsf_dfu_start();
     return 0;
 }
