@@ -168,4 +168,9 @@
 #	define ADC0_CH17_ENABLE                 0
 #	define ADC0_CH18_ENABLE                 0
 
+#if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
+#   define APP_CFG_USBD_SPEED               USB_DC_SPEED_FULL
+#endif
+
+
 #endif // __BOARD_CFG_VLLINKLITE_GD32F350_H__
