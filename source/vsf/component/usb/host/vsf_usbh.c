@@ -25,6 +25,7 @@
 #define VSF_USBH_IMPLEMENT
 // TODO: use dedicated include
 #include "vsf.h"
+#include "hal/interface/vsf_interface_usb.h"
 
 /*============================ MACROS ========================================*/
 
@@ -113,20 +114,10 @@ static const uint8_t __vk_usbh_rh_config_descriptor[] = {
 /*============================ PROTOTYPES ====================================*/
 
 
-#if     defined(WEAK_VSF_USBH_ON_DEV_PARSED_EXTERN)                             \
-    &&  defined(WEAK_VSF_USBH_ON_DEV_PARSED)
-WEAK_VSF_USBH_ON_DEV_PARSED_EXTERN
-#endif
-
-#if     defined(WEAK_VSF_USBH_ON_MATCH_INTERFACE_EXTERN)                        \
-    &&  defined(WEAK_VSF_USBH_ON_MATCH_INTERFACE)
-WEAK_VSF_USBH_ON_MATCH_INTERFACE_EXTERN
-#endif
-
-#if     defined(WEAK_VSF_USBH_ON_REMOVE_INTERFACE_EXTERN)                       \
-    &&  defined(WEAK_VSF_USBH_ON_REMOVE_INTERFACE)
-WEAK_VSF_USBH_ON_REMOVE_INTERFACE_EXTERN
-#endif
+extern void vsf_usbh_on_dev_parsed(vk_usbh_dev_t *dev, vk_usbh_dev_parser_t *parser);
+extern vsf_err_t vsf_usbh_on_match_interface(
+        vk_usbh_dev_parser_t *parser, vk_usbh_ifs_parser_t *parser_ifs);
+extern void vsf_usbh_on_remove_interface(vk_usbh_ifs_t *ifs);
 
 /*============================ IMPLEMENTATION ================================*/
 
@@ -178,6 +169,11 @@ vk_usbh_pipe_t vk_usbh_get_pipe(vk_usbh_dev_t *dev,
                     |   (dev->devnum << 20)     /* 7-bit address */
                     |   (direction << 20);      /* 1-bit direction */
     return pipe;
+}
+
+uint_fast16_t vk_usbh_get_ep_size_from_pipe(vk_usbh_pipe_t pipe)
+{
+    return pipe.size + (pipe.type == USB_EP_TYPE_ISO ? 1 : 0);
 }
 
 vk_usbh_pipe_t vk_usbh_get_pipe_from_ep_desc(vk_usbh_dev_t *dev,
@@ -434,11 +430,7 @@ void vk_usbh_remove_interface(vk_usbh_t *usbh, vk_usbh_dev_t *dev,
     VSF_USB_ASSERT((usbh != NULL) && (dev != NULL) && (ifs != NULL));
     const vk_usbh_class_drv_t *drv = ifs->drv;
     if (drv) {
-#ifndef WEAK_VSF_USBH_ON_REMOVE_INTERFACE
         vsf_usbh_on_remove_interface(ifs);
-#else
-        WEAK_VSF_USBH_ON_REMOVE_INTERFACE(ifs);
-#endif
         drv->disconnect(usbh, dev, ifs->param);
         ifs->drv = NULL;
         ifs->param = NULL;
@@ -879,11 +871,7 @@ static vsf_err_t __vk_usbh_find_intrface_driver(vk_usbh_t *usbh,
             if (param != NULL) {
                 ifs->param = param;
                 ifs->drv = drv;
-#ifndef WEAK_VSF_USBH_ON_MATCH_INTERFACE
                 if (VSF_ERR_NONE != vsf_usbh_on_match_interface(parser, parser_ifs)) {
-#else
-                if (VSF_ERR_NONE != WEAK_VSF_USBH_ON_MATCH_INTERFACE(parser, parser_ifs)) {
-#endif
                     drv->disconnect(usbh, usbh->dev_new, param);
                     continue;
                 }
@@ -941,7 +929,7 @@ static vsf_err_t __vk_usbh_parse_config(vk_usbh_t *usbh, vk_usbh_dev_parser_t *p
     desc_header = (struct usb_descriptor_header_t *)((uint8_t *)desc_header + desc_header->bLength);
 
     parser_alt = NULL;
-    stage = desc_header->bDescriptorType == USB_DT_INTERFACE ? STAGE_ALLOC_ALT : STAGE_NONE;
+    stage = STAGE_ALLOC_ALT;
     ifs_no = 0;
     tmpsize = size;
     header_tmp = desc_header;
@@ -1014,11 +1002,7 @@ static vsf_err_t __vk_usbh_parse_config(vk_usbh_t *usbh, vk_usbh_dev_parser_t *p
         }
     }
 
-#ifndef WEAK_VSF_USBH_ON_DEV_PARSED
     vsf_usbh_on_dev_parsed(usbh->dev_new, parser);
-#else
-    WEAK_VSF_USBH_ON_DEV_PARSED(usbh->dev_new, parser);
-#endif
 
     // probe
     size = 0;

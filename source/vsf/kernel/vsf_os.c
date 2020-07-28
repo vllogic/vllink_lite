@@ -32,11 +32,6 @@
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
-#if     defined(WEAK___POST_VSF_KERNEL_INIT_EXTERN)                             \
-    &&  defined(WEAK___POST_VSF_KERNEL_INIT)
-WEAK___POST_VSF_KERNEL_INIT_EXTERN
-#endif
-
 struct __vsf_os_t {
 #if __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
 #   if defined(__VSF_OS_CFG_EVTQ_LIST)
@@ -58,22 +53,17 @@ typedef struct __vsf_os_t __vsf_os_t;
 static NO_INIT __vsf_os_t __vsf_os;
 /*============================ PROTOTYPES ====================================*/
 
-#if     defined(WEAK_VSF_KERNEL_ERR_REPORT_EXTERN)                              \
-    &&  defined(WEAK_VSF_KERNEL_ERR_REPORT)
-WEAK_VSF_KERNEL_ERR_REPORT_EXTERN
-#endif
+extern void vsf_kernel_err_report(vsf_kernel_error_t err);
+extern void vsf_plug_in_on_kernel_idle(void);
+extern void vsf_plug_in_for_kernel_diagnosis(void);
+extern void __post_vsf_kernel_init(void);
 
-#if     defined(WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE_EXTERN)                         \
-    &&  defined(WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE)
-WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE_EXTERN
-#endif
-
-extern vsf_err_t vk_kernel_start(void);
+extern vsf_err_t vsf_kernel_start(void);
 
 #if __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
 SECTION(".text.vsf.kernel.__vsf_set_cur_evtq")
-extern vsf_evtq_t *__vsf_set_cur_evtq(vsf_evtq_t *pnew);
-extern vsf_err_t vsf_evtq_poll(vsf_evtq_t *pthis);
+extern vsf_evtq_t *__vsf_set_cur_evtq(vsf_evtq_t *new_ptr);
+extern vsf_err_t vsf_evtq_poll(vsf_evtq_t *this_ptr);
 #endif
 
 extern const vsf_kernel_resource_t * vsf_kernel_get_resource_on_init(void);
@@ -146,8 +136,8 @@ static void vsf_kernel_os_init(void)
         END_VSF_POOL_PREPARE(vsf_eda_frame_pool)
     #else
         VSF_POOL_PREPARE(vsf_eda_frame_pool, &(__vsf_os.eda_frame_pool),
-            .pTarget = NULL,
-            .ptRegion = (code_region_t *)&VSF_SCHED_SAFE_CODE_REGION,
+            .target_ptr = NULL,
+            .region_ptr = (code_region_t *)&VSF_SCHED_SAFE_CODE_REGION,
         );
     #endif
     
@@ -194,8 +184,8 @@ static void vsf_kernel_os_init(void)
         END_VSF_POOL_PREPARE(vsf_evt_node_pool)
     #else
         VSF_POOL_PREPARE(vsf_evt_node_pool, (&__vsf_os.node_pool),
-            .pTarget = (uintptr_t)&__vsf_os,
-            .ptRegion = (code_region_t *)&DEFAULT_CODE_REGION_ATOM_CODE,
+            .target_ptr = (uintptr_t)&__vsf_os,
+            .region_ptr = (code_region_t *)&DEFAULT_CODE_REGION_ATOM_CODE,
         );
     #endif
         if  (   (NULL == __vsf_os.res_ptr->evt_queue.nodes_buf_ptr)
@@ -234,30 +224,26 @@ vsf_evtq_t *__vsf_os_evtq_get(vsf_prio_t priority)
     return NULL;
 }
 
-vsf_prio_t __vsf_os_evtq_get_prio(vsf_evtq_t *pthis)
+vsf_prio_t __vsf_os_evtq_get_prio(vsf_evtq_t *this_ptr)
 {
-    uint_fast8_t index = pthis - __vsf_os.res_ptr->evt_queue.queue_array;
-    VSF_KERNEL_ASSERT(      (pthis != NULL) 
+    uint_fast8_t index = this_ptr - __vsf_os.res_ptr->evt_queue.queue_array;
+    VSF_KERNEL_ASSERT(      (this_ptr != NULL) 
                         && (index < __vsf_os.res_ptr->evt_queue.queue_cnt));
 
     return (vsf_prio_t)index;
 }
 
-vsf_err_t __vsf_os_evtq_set_priority(vsf_evtq_t *pthis, vsf_prio_t priority)
+vsf_err_t __vsf_os_evtq_set_priority(vsf_evtq_t *this_ptr, vsf_prio_t priority)
 {
 #if defined(__VSF_OS_SWI_PRIORITY_BEGIN)
-    uint_fast8_t index = pthis - __vsf_os.res_ptr->evt_queue.queue_array;
-    VSF_KERNEL_ASSERT((     pthis != NULL) 
+    uint_fast8_t index = this_ptr - __vsf_os.res_ptr->evt_queue.queue_array;
+    VSF_KERNEL_ASSERT((     this_ptr != NULL) 
                         &&  (index < __vsf_os.res_ptr->evt_queue.queue_cnt));
 #endif
 
 #if VSF_OS_CFG_ADD_EVTQ_TO_IDLE == ENABLED
     if (vsf_prio_0 == priority) {
-#   ifndef WEAK_VSF_KERNEL_ERR_REPORT
         vsf_kernel_err_report(VSF_KERNEL_ERR_INVALID_USAGE);
-#   else
-        WEAK_VSF_KERNEL_ERR_REPORT(VSF_KERNEL_ERR_INVALID_USAGE);
-#   endif
     }
 #endif
 
@@ -268,7 +254,7 @@ vsf_err_t __vsf_os_evtq_set_priority(vsf_evtq_t *pthis, vsf_prio_t priority)
         return vsf_swi_init(
                 index,
                 __vsf_os.res_ptr->arch.os_swi_priorities_ptr[priority],
-                &__vsf_os_evtq_swi_handler, pthis);
+                &__vsf_os_evtq_swi_handler, this_ptr);
     }
 #endif
 
@@ -280,26 +266,26 @@ vsf_err_t __vsf_os_evtq_set_priority(vsf_evtq_t *pthis, vsf_prio_t priority)
 #pragma clang diagnostic ignored "-Wsign-compare"
 #endif
 
-vsf_err_t __vsf_os_evtq_init(vsf_evtq_t *pthis)
+vsf_err_t __vsf_os_evtq_init(vsf_evtq_t *this_ptr)
 {
 #if defined(__VSF_OS_SWI_PRIORITY_BEGIN)
-    uint_fast8_t index = pthis - __vsf_os.res_ptr->evt_queue.queue_array;
-    VSF_KERNEL_ASSERT(      (pthis != NULL) 
+    uint_fast8_t index = this_ptr - __vsf_os.res_ptr->evt_queue.queue_array;
+    VSF_KERNEL_ASSERT(      (this_ptr != NULL) 
                         &&  (index < __vsf_os.res_ptr->evt_queue.queue_cnt));
 
     if (index >= __vsf_os.res_ptr->arch.sched_prio.begin) {
-        __vsf_os_evtq_set_priority(pthis, (vsf_prio_t)index);
+        __vsf_os_evtq_set_priority(this_ptr, (vsf_prio_t)index);
     }
 #endif
 
     return VSF_ERR_NONE;
 }
 
-vsf_err_t __vsf_os_evtq_activate(vsf_evtq_t *pthis)
+vsf_err_t __vsf_os_evtq_activate(vsf_evtq_t *this_ptr)
 {
 #if defined(__VSF_OS_SWI_PRIORITY_BEGIN)
-    uint_fast8_t index = pthis - __vsf_os.res_ptr->evt_queue.queue_array;
-    VSF_KERNEL_ASSERT(      (pthis != NULL) 
+    uint_fast8_t index = this_ptr - __vsf_os.res_ptr->evt_queue.queue_array;
+    VSF_KERNEL_ASSERT(      (this_ptr != NULL) 
                         &&  (index < __vsf_os.res_ptr->evt_queue.queue_cnt));
 
     if (index >= __vsf_os.res_ptr->arch.sched_prio.begin) {
@@ -370,7 +356,7 @@ static const i_code_region_t __vsf_i_code_region_forced_sched_safe = {
 };
 
 const code_region_t VSF_FORCED_SCHED_SAFE_CODE_REGION = {
-    .pmethods = (i_code_region_t *)&__vsf_i_code_region_forced_sched_safe,
+    .methods_ptr = (i_code_region_t *)&__vsf_i_code_region_forced_sched_safe,
 };
 #endif
 
@@ -378,7 +364,16 @@ const code_region_t VSF_FORCED_SCHED_SAFE_CODE_REGION = {
 WEAK(vsf_plug_in_on_kernel_idle)
 void vsf_plug_in_on_kernel_idle(void)
 {
+#   if VSF_OS_CFG_ADD_EVTQ_TO_IDLE == ENABLED && __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
+    vsf_disable_interrupt();
+    if (!vsf_evtq_is_empty(&__vsf_os.res_ptr->evt_queue.queue_array[0])) {
+        // vsf_arch_sleep will enable interrupt
+        vsf_arch_sleep(0);
+    }
+    vsf_enable_interrupt();
+#   else
     vsf_arch_sleep(0);
+#   endif
 }
 #endif
 
@@ -406,11 +401,7 @@ void __vsf_kernel_os_run_priority(vsf_prio_t priority)
 
 void __vsf_kernel_os_start(void)
 {
-#ifndef WEAK_VSF_SERVICE_INIT
     vsf_service_init();
-#else
-    WEAK_VSF_SERVICE_INIT();
-#endif
     vsf_kernel_os_init();
 
 #if __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
@@ -438,18 +429,10 @@ void __vsf_kernel_os_start(void)
     }
 #endif
 
-    vk_kernel_start();
+    vsf_kernel_start();
 
-#ifndef WEAK_VSF_OSA_HAL_INIT
     vsf_osa_hal_init();
-#else
-    WEAK_VSF_OSA_HAL_INIT();
-#endif
-#ifndef WEAK___POST_VSF_KERNEL_INIT
     __post_vsf_kernel_init();
-#else
-    WEAK___POST_VSF_KERNEL_INIT();
-#endif
 }
 
 void __vsf_main_entry(void)
@@ -461,16 +444,8 @@ void __vsf_main_entry(void)
     #if VSF_OS_CFG_ADD_EVTQ_TO_IDLE == ENABLED
         __vsf_kernel_os_run_priority(vsf_prio_0);
     #endif
-    #ifndef WEAK_VSF_PLUG_IN_FOR_KERNEL_DIAGNOSIS
         vsf_plug_in_for_kernel_diagnosis(); //!< customised kernel diagnosis
-    #else
-        WEAK_VSF_PLUG_IN_FOR_KERNEL_DIAGNOSIS();
-    #endif
-    #ifndef WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE
         vsf_plug_in_on_kernel_idle();       //!< user defined idle task 
-    #else
-        WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE();
-    #endif
     }
 }
 

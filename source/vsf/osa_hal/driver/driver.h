@@ -14,3 +14,26 @@
  *  limitations under the License.                                           *
  *                                                                           *
  ****************************************************************************/
+
+#ifndef __VSF_OSA_HAL_DRIVER_H__
+#define __VSF_OSA_HAL_DRIVER_H__
+
+/*============================ INCLUDES ======================================*/
+#include "osa_hal/vsf_osa_hal_cfg.h"
+
+/* non standard customised lv2 driver */
+#include "./customised/driver.h"
+
+/* device specific drivers, including but not limited to lv0 and lv1 drivers */
+#include "./device_specific/driver.h"
+
+/*============================ MACROS ========================================*/
+/*============================ MACROFIED FUNCTIONS ===========================*/
+/*============================ TYPES =========================================*/
+/*============================ GLOBAL VARIABLES ==============================*/
+/*============================ LOCAL VARIABLES ===============================*/
+/*============================ PROTOTYPES ====================================*/
+
+
+#endif
+/* EOF */

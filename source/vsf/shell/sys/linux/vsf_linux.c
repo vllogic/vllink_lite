@@ -37,6 +37,11 @@
 #include <errno.h>
 #include <stdarg.h>
 
+#if __IS_COMPILER_IAR__
+//! statement is unreachable
+#   pragma diag_suppress=pe111
+#endif
+
 /*============================ MACROS ========================================*/
 
 #if VSF_KERNEL_CFG_EDA_SUPPORT_ON_TERMINATE != ENABLED
@@ -86,10 +91,7 @@ int errno;
 
 /*============================ PROTOTYPES ====================================*/
 
-#if     defined(WEAK_VSF_LINUX_CREATE_FHS_EXTERN)                               \
-    &&  defined(WEAK_VSF_LINUX_CREATE_FHS)
-WEAK_VSF_LINUX_CREATE_FHS_EXTERN
-#endif
+extern int vsf_linux_create_fhs(void);
 
 extern void vsf_linux_glibc_init(void);
 
@@ -146,11 +148,7 @@ int vsf_linux_create_fhs(void)
 
 static int __vsf_linux_init_thread(int argc, char *argv[])
 {
-#ifndef WEAK_VSF_LINUX_CREATE_FHS
     int err = vsf_linux_create_fhs();
-#else
-    int err = WEAK_VSF_LINUX_CREATE_FHS();
-#endif
     if (err) { return err; }
     return execl("/sbin/init", "init", NULL);
 }
@@ -159,6 +157,9 @@ static int __vsf_linux_kernel_thread(int argc, char *argv[])
 {
     __vsf_linux.kernel_process = vsf_linux_get_cur_process();
 
+#if VSF_LINUX_CFG_SUPPORT_SIG != ENABLED
+    __vsf_linux_init_thread(argc, argv);
+#else
     // create init process(pid1)
     vsf_linux_start_process_internal(0, __vsf_linux_init_thread, VSF_LINUX_CFG_PRIO_HIGHEST);
 
@@ -203,6 +204,9 @@ static int __vsf_linux_kernel_thread(int argc, char *argv[])
             }
         }
     }
+#endif
+    // actually will not return, just make compiler happy
+    return 0;
 }
 
 vsf_err_t vsf_linux_init(vsf_linux_stdio_stream_t *stdio_stream)
@@ -254,9 +258,8 @@ vsf_linux_thread_t * vsf_linux_create_thread(vsf_linux_process_t *process, int s
 
 int vsf_linux_start_thread(vsf_linux_thread_t *thread)
 {
-    vk_thread_start(   &thread->use_as__vsf_thread_t,
-                        &thread->use_as__vsf_thread_cb_t,
-                        thread->process->prio);
+    vk_thread_start(&thread->use_as__vsf_thread_t,
+        &thread->use_as__vsf_thread_cb_t, thread->process->prio);
     return 0;
 }
 
@@ -273,7 +276,7 @@ vsf_linux_process_t * vsf_linux_create_process(int stack_size)
             return NULL;
         }
 
-        vsf_linux_main_priv_t *priv = (vsf_linux_main_priv_t *)&thread[1];
+        vsf_linux_main_priv_t *priv = vsf_linux_thread_get_priv(thread);
         priv->ctx = &process->ctx;
 
         vsf_protect_t orig = vsf_protect_sched();
@@ -352,7 +355,7 @@ static void __vsf_linux_main_on_run(vsf_thread_cb_t *cb)
 {
     vsf_linux_thread_t *thread = container_of(cb, vsf_linux_thread_t, use_as__vsf_thread_cb_t);
     vsf_linux_process_t *process = thread->process;
-    vsf_linux_main_priv_t *priv = (vsf_linux_main_priv_t *)&thread[1];
+    vsf_linux_main_priv_t *priv = vsf_linux_thread_get_priv(thread);
     vsf_linux_process_ctx_t *ctx = priv->ctx;
 
     vsf_linux_fd_t *sfd;
@@ -485,6 +488,7 @@ int system(const char * cmd)
 
 int kill(pid_t pid, int sig)
 {
+#if VSF_LINUX_CFG_SUPPORT_SIG == ENABLED
     vsf_linux_process_t *process = vsf_linux_get_process(pid);
     if (process != NULL) {
         if (!process->id.pid) {
@@ -500,7 +504,9 @@ int kill(pid_t pid, int sig)
         // TODO: avoid posting event/message to thread,
         //  if the thread is not waiting for the dedicated event/message
         vsf_eda_post_msg(&thread->use_as__vsf_eda_t, process);
+        return 0;
     }
+#endif
     return -1;
 }
 
@@ -806,9 +812,17 @@ int vsf_linux_fd_rx_trigger(int fd)
 }
 
 #ifndef __WIN__
-// conflict with select in winsock.h
+// conflicts with select in winsock.h
 int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *execeptfds, struct timeval *timeout)
 {
+    VSF_LINUX_ASSERT(false);
+    return -1;
+}
+
+// conflicts with remove in ucrt
+int remove(const char * pathname)
+{
+    // TODO: remove file by unlink, remove directory by rmdir
     VSF_LINUX_ASSERT(false);
     return -1;
 }
@@ -1031,6 +1045,28 @@ ssize_t write(int fd, void *buf, size_t count)
     return sfd->op->write(sfd, buf, count);
 }
 
+off_t lseek(int fd, off_t offset, int whence)
+{
+    vsf_linux_fd_t *sfd = vsf_linux_get_fd(fd);
+    VSF_LINUX_ASSERT(sfd->op == &__vsf_linux_fs_fdop);
+    vsf_linux_fs_priv_t *priv = (vsf_linux_fs_priv_t *)sfd->priv;
+    uint_fast64_t new_pos;
+
+    switch (whence) {
+    case SEEK_SET:  new_pos = 0;                break;
+    case SEEK_CUR:  new_pos = priv->pos;        break;
+    case SEEK_END:  new_pos = priv->file->size; break;
+    default:        return -1;
+    }
+
+    new_pos += offset;
+    if (new_pos > priv->file->size) {
+        return -1;
+    }
+    priv->pos = new_pos;
+    return 0;
+}
+
 int stat(const char *pathname, struct stat *buf)
 {
     VSF_LINUX_ASSERT(false);
@@ -1232,6 +1268,26 @@ int tcsetattr(int fd, int optional_actions, const struct termios *termios)
     return 0;
 }
 
+#if VSF_KERNEL_CFG_EDA_SUPPORT_TIMER == ENABLED
+void usleep(int usec)
+{
+    vsf_teda_set_timer_us(usec);
+    vsf_thread_wfe(VSF_EVT_TIMER);
+}
+
+// TODO: wakeup after signal
+unsigned sleep(unsigned sec)
+{
+    vsf_teda_set_timer_ms(sec * 1000);
+    vsf_thread_wfe(VSF_EVT_TIMER);
+    return 0;
+}
+#endif
+
+void * memalign(size_t alignment, size_t size)
+{
+    return vsf_heap_malloc_aligned(size, alignment);
+}
 
 #if __IS_COMPILER_LLVM__
 #   pragma clang diagnostic pop

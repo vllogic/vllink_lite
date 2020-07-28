@@ -14,3 +14,32 @@
  *  limitations under the License.                                           *
  *                                                                           *
  ****************************************************************************/
+
+
+
+/*============================ INCLUDES ======================================*/
+#include "./sw_periperhal_cfg.h"
+
+#ifndef __OSA_HAL_DRIVER_COMMON_SW_PERIPHERAL_H__
+#define __OSA_HAL_DRIVER_COMMON_SW_PERIPHERAL_H__
+
+#if VSF_USE_IO_HAL == ENABLED
+#   include "./io_peripheral/io_peripheral.h"
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+/*============================ MACROS ========================================*/
+/*============================ MACROFIED FUNCTIONS ===========================*/
+/*============================ TYPES =========================================*/
+/*============================ GLOBAL VARIABLES ==============================*/
+/*============================ LOCAL VARIABLES ===============================*/
+/*============================ PROTOTYPES ====================================*/
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
+/* EOF */

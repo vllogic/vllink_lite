@@ -19,7 +19,7 @@
 
 /*============================ INCLUDES ======================================*/
 #include "hal/vsf_hal_cfg.h"
-
+#include "utilities/vsf_utilities.h"
 /*! \note User can define VSF_DRIVER_HEADER to specify the targer device driver 
  *!       header file. If it is not specified, this driver abstraction header 
  *!       file will use predefined device-specific macros to decide which device
@@ -49,6 +49,8 @@
 #       define  VSF_DRIVER_HEADER       "./ST/driver.h"
 #   elif    defined(__WCH__)
 #       define  VSF_DRIVER_HEADER       "./WCH/driver.h"
+#   elif    defined(__Allwinner__)
+#       define  VSF_DRIVER_HEADER       "./Allwinner/driver.h"
 /* example
 #   elif    defined(__COMPANY_NAME_A__)
 #       define  VSF_DRIVER_HEADER       "./company_name_a/driver.h"
@@ -88,6 +90,13 @@ extern "C" {
  *  \retval false initialization failed
  */
 extern bool vsf_driver_init(void);
+
+/*! \note common entry for upper layer to poll driver servcie 
+ *  \param none
+ *  \retval true it is safe to enter sleep mode
+ *  \retval false polling work is on going, please keep calling the function
+ */
+extern bool vsf_driver_poll(void);
 
 #ifdef __cplusplus
 }

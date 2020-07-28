@@ -19,7 +19,7 @@
 
 #include "../../vsf_linux_cfg.h"
 
-#if VSF_USE_LINUX == ENABLED
+#if VSF_USE_LINUX == ENABLED && VSF_LINUX_USE_SIMPLE_TIME == ENABLED
 
 #include <unistd.h>
 #include <sys/time.h>
@@ -31,21 +31,6 @@
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 /*============================ IMPLEMENTATION ================================*/
-
-// TODO: wakeup after signal
-
-void usleep(int usec)
-{
-    vsf_teda_set_timer_us(usec);
-    vsf_thread_wfe(VSF_EVT_TIMER);
-}
-
-unsigned sleep(unsigned sec)
-{
-    vsf_teda_set_timer_ms(sec * 1000);
-    vsf_thread_wfe(VSF_EVT_TIMER);
-    return 0;
-}
 
 int nanosleep(const struct timespec *requested_time, struct timespec *remaining)
 {
@@ -64,14 +49,14 @@ int nanosleep(const struct timespec *requested_time, struct timespec *remaining)
 
 clock_t clock(void)
 {
-    return vsf_systimer_tick_to_us(vsf_timer_get_tick());
+    return vsf_systimer_get_us();
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec *tp)
 {
     switch (clk_id) {
     case CLOCK_MONOTONIC: {
-            uint_fast32_t us = vsf_systimer_tick_to_us(vsf_timer_get_tick());
+            uint_fast32_t us = vsf_systimer_get_us();
             tp->tv_sec = us / 1000000;
             tp->tv_nsec = us * 1000;
         }

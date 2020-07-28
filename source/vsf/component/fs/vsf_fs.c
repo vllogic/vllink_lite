@@ -169,7 +169,7 @@ void vk_file_free(vk_file_t *file)
 
 char * vk_file_getfileext(char *fname)
 {
-    char *ext = strrchr(fname, '.');
+    char *ext = (char *)strrchr(fname, '.');
     if (ext != NULL) {
         ext++;
     }
@@ -178,8 +178,8 @@ char * vk_file_getfileext(char *fname)
 
 char * vk_file_getfilename(char *path)
 {
-    char *name0 = strrchr(path, '\\');
-    char *name1 = strrchr(path, '/');
+    char *name0 = (char *)strrchr(path, '\\');
+    char *name1 = (char *)strrchr(path, '/');
     char *name = (char *)max((uintptr_t)name0, (uintptr_t)name1);
     if ((name != NULL) && (vk_file_is_div(*name))) {
         name++;

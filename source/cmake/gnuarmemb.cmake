@@ -13,11 +13,11 @@ set(CMAKE_SIZE arm-none-eabi-size CACHE INTERNAL "size")
 
 set(CMAKE_C_FLAGS 
   "-mthumb -mcpu=${VSFHAL_ARCH_NAME} -mfloat-abi=${ARM_FLOATING_ABI} ${ARM_FLOATING_HARDWARE} \
-    -std=c99 -Wall -fno-builtin -fdata-sections -fms-extensions -ffunction-sections"
+    -std=gnu99 -Wall -fno-builtin -fno-strict-aliasing -fdata-sections -fms-extensions -ffunction-sections"
   CACHE INTERNAL "c compiler flags")
 set(CMAKE_CXX_FLAGS 
   "-mthumb -mcpu=${VSFHAL_ARCH_NAME} -mfloat-abi=${ARM_FLOATING_ABI} ${ARM_FLOATING_HARDWARE} \
-    -Wall -fno-builtin -fdata-sections -fms-extensions -ffunction-sections"
+    -Wall -fno-builtin -fno-strict-aliasing -fdata-sections -fms-extensions -ffunction-sections"
   CACHE INTERNAL "cxx compiler flags")
 set(CMAKE_ASM_FLAGS "-mthumb -mcpu=${VSFHAL_ARCH_NAME}" CACHE INTERNAL "asm compiler flags")
 

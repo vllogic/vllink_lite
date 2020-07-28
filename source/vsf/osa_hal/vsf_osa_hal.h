@@ -20,6 +20,7 @@
 
 /*============================ INCLUDES ======================================*/
 #include "osa_hal/vsf_osa_hal_cfg.h"
+#include "utilities/vsf_utilities.h"
 #include "./sw_peripheral/sw_peripheral.h"
 #include "./driver/driver.h"
 

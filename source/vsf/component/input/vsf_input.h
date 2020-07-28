@@ -20,6 +20,7 @@
 
 /*============================ INCLUDES ======================================*/
 #include "./vsf_input_cfg.h"
+#include "utilities/vsf_utilities.h"
 
 #if VSF_USE_INPUT == ENABLED
 

@@ -1,3 +1,3 @@
 # CMakeLists head
 
-# NULL
+add_subdirectory(hal)

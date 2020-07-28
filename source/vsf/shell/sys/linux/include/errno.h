@@ -1,6 +1,11 @@
 #ifndef __ERRNO_H__
 #define __ERRNO_H__
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winconsistent-dllimport"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -142,6 +147,10 @@ extern int errno;
 
 #ifdef __cplusplus
 }
+#endif
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
 #endif
 
 #endif

@@ -34,26 +34,6 @@
 /* do not modify this */
 #include "vsf_usr_cfg.h"
 
-/* compiler abstraction, supports GCC, IAR, Arm Compiler 5, Arm Compiler 6 */
-#include "utilities/compiler.h"
-
-/* minimal OO support for interface definie only, no class support */
-#include "utilities/3rd-party/PLOOC/raw/plooc.h"
-
-/* definition for communication pipe and memory block */
-#include "utilities/communicate.h"       
-
-/* template for abstraction data type */
-#include "utilities/template/template.h"
-
-/* other high level language externsion for OOPC */
-#include "utilities/language_extension/language_extension.h"
-
-/*! \note please do not move this including */
-#if VSF_KERNEL_CFG_DEPLOY_IN_LIB_WITH_FULL_FEATURE_SET == ENABLED
-#   include "kernel/lib/__kernel_lib_with_full_feature_set.h"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

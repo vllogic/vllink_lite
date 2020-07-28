@@ -7,6 +7,8 @@
 extern "C" {
 #endif
 
+#define S_IFDIR         1
+
 struct stat {
     mode_t     st_mode;
 };

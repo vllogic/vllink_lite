@@ -19,7 +19,7 @@
 
 #include "../../vsf_linux_cfg.h"
 
-#if VSF_USE_LINUX == ENABLED
+#if VSF_USE_LINUX == ENABLED && VSF_LINUX_USE_SIMPLE_STRING == ENABLED
 
 #include <unistd.h>
 
@@ -31,6 +31,13 @@
 /*============================ PROTOTYPES ====================================*/
 /*============================ IMPLEMENTATION ================================*/
 
-
+char * strdup(const char *str)
+{
+    char *newstr = malloc(strlen(str) + 1);
+    if (newstr != NULL) {
+        strcpy(newstr, str);
+    }
+    return newstr;
+}
 
 #endif      // VSF_USE_LINUX

@@ -5,6 +5,7 @@
 #include "../vsf_linux.h"
 #include <linux/limits.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,8 +27,7 @@ enum {
     DT_EXE,
 };
 
-ssize_t read(int fd, void *buf, size_t count);
-ssize_t write(int fd, void *buf, size_t count);
+char * getcwd(char *buffer, int maxlen);
 
 void usleep(int micro_seconds);
 unsigned sleep(unsigned seconds);
@@ -47,9 +47,11 @@ int creat(const char *pathname, mode_t mode);
 int open(const char *pathname, int flags, ...);
 int access(const char *pathname, int mode);
 int unlink(const char *pathname);
+int remove(const char *pathname);
 int mkdir(const char* pathname, mode_t mode);
 
 int close(int fd);
+off_t lseek(int fd, off_t offset, int whence);
 ssize_t read(int fd, void *buf, size_t count);
 ssize_t write(int fd, void *buf, size_t count);
 

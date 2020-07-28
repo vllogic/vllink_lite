@@ -1,5 +1,5 @@
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#ifndef __LINUX_TYPES_H__
+#define __LINUX_TYPES_H__
 
 #ifdef __cplusplus
 extern "C" {

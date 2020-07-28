@@ -22,12 +22,13 @@
 #ifndef __VSF_H__
 #define __VSF_H__
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(__IAR_SYSTEMS_ICC__)
 #   define __STDC_VERSION__   201112L
 #endif
 
 /*============================ INCLUDES ======================================*/
 #include "vsf_cfg.h"
+#include "utilities/vsf_utilities.h"
 #include "hal/vsf_hal.h"
 #include "service/vsf_service.h"
 

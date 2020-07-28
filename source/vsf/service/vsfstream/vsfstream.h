@@ -23,6 +23,7 @@
 /*============================ INCLUDES ======================================*/
 
 #include "service/vsf_service_cfg.h"
+#include "utilities/vsf_utilities.h"
 
 #if VSF_USE_SERVICE_VSFSTREAM == ENABLED
 
