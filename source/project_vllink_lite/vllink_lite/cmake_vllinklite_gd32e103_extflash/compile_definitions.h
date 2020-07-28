@@ -1,0 +1,10 @@
+// Auto Generate
+
+#ifndef PROJ_CFG_VLLINKLITE_EXTFLASH
+#   define PROJ_CFG_VLLINKLITE_EXTFLASH
+#endif
+
+#ifndef BRD_CFG_VLLINKLITE_GD32E103
+#   define BRD_CFG_VLLINKLITE_GD32E103
+#endif
+
