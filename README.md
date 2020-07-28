@@ -2,13 +2,21 @@
 
 ## 简介
 
-Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350制作，最小封装为QFN28，标准版本使用GD32F350G8U6（8K RAM / 64K ROM），亦可在精简缓冲后换用GD32F350G6U6（6K RAM / 32K ROM）。
+Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350/GD32E103制作，此两款MCU的所有规格型号都可用于调试器主控，区别主要在于RAM、ROM的大小对于性能及功能的影响。推荐使用GD32E103TB，以获得最佳体验。
 
 ## 硬件
 
-当前最新版本为：[Vllink Lite.R3](https://github.com/vllogic/vllink_lite/tree/000b3bc6477d7fd816e0debf9087d155adbe143d/hardware/vllink_lite.r3)，板上集成8MB SPI Flash。
-![3D](./hardware/vllink_lite.r3/vllink_lite.r3.top_rotate.png)
+#### 目前提供三套原理图，分别是：
 
+* [Vllink Lite.R4.GD32F350xx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32f350xx) 此方案除适合作为成本敏感的集成式调试器。
+![3D](./hardware/vllink_lite.r4.gd32f350xx/vllink_lite.r4.gd32f350xx.top45.png)
+![BOTTOM](./hardware/vllink_lite.r4.gd32f350xx/vllink_lite.r4.gd32f350xx.bottom.png)
+
+* [Vllink Lite.R4.GD32E103Tx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103tx) 相比GD32F350，提供更大RAM与ROM，可外扩SPI FLASH **[IO模拟]** ，用于离线编程。
+
+* [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103Cx) 相比GD32E103Tx，换用LQFP封装，并支持硬件SPI连接SPI FLASH。
+
+#### 旧版硬件实拍图
 ![PCBA](./hardware/vllink_lite.r3/vllink_lite.r3.pcba.png)
 
 ## 功能
@@ -31,8 +39,8 @@ Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350制作，�
 ## 开发平台
 
 * KiCAD
-* IAR for ARM 8.32.3
-* [GD32F3x0 AddOn](http://gd32mcu.21ic.com/documents)
+* IAR for ARM 8.40.2 + [GD32F3x0/GD32E10x AddOn](http://www.gd32mcu.com/cn/download)
+* GNU Arm Embedded Toolchain + Cmake + Ninja
 
 ## 授权
 
@@ -43,7 +51,7 @@ GPLv3，随便玩
 欢迎加入QQ群：512256420
 
 ## 购买渠道
-* [Taobao](https://shop216739170.taobao.com/)
+* 5元打样 + 淘宝买MCU
 
 ## TODO List
 
