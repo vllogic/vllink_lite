@@ -2430,24 +2430,6 @@
                             <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\hash\crc\vsf_crc.h</name>
                         </file>
                     </group>
-                    <group>
-                        <name>tiny-AES-c</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\tiny-AES-c\aes.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\tiny-AES-c\aes.h</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>xxtea</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\xxtea\xxtea.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\xxtea\xxtea.h</name>
-                        </file>
-                    </group>
                 </group>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\vsf_crypto_cfg.h</name>
@@ -3711,6 +3693,12 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\code_region.h</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\delegate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\delegate.h</name>
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\language_extension.h</name>
