@@ -351,6 +351,7 @@
                 <option>
                     <name>CCIncludePath2</name>
                     <state>$PROJ_DIR$</state>
+                    <state>$PROJ_DIR$\..</state>
                     <state>$PROJ_DIR$\..\config</state>
                     <state>$PROJ_DIR$\..\..\..\vsf</state>
                     <state>$PROJ_DIR$\..\..\..\vsf\shell\sys\linux\include</state>
@@ -2152,7 +2153,16 @@
             <name>$PROJ_DIR$\..\main.c</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\usrapp_usbd_common.c</name>
+            <excluded>
+                <configuration>VllinkLite_GD32F350</configuration>
+            </excluded>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\vsf_dfu.c</name>
+            <excluded>
+                <configuration>VllinkLite_GD32F350</configuration>
+            </excluded>
         </file>
     </group>
     <group>

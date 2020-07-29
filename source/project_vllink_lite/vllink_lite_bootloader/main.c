@@ -8,7 +8,11 @@
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
+
 /*============================ IMPLEMENTATION ================================*/
+
+#include "usrapp_usbd_common.c"
+#include "vsf_dfu.c"
 
 int main(void)
 {
@@ -26,8 +30,7 @@ int main(void)
     vsfhal_gpio_set(GPIOB_IDX, 0x1 << 0);
 #endif
 
-    
-    extern void vsf_dfu_start(void);
+
     vsf_dfu_start();
     return 0;
 }

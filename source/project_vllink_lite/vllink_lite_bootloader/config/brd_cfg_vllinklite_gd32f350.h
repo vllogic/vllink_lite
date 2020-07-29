@@ -69,9 +69,5 @@
 #	define SPI1_MOSI_IO_PIN     0
 #	define SPI1_MOSI_IO_AF      0
 
-#if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
-#   define APP_CFG_USBD_SPEED               USB_DC_SPEED_FULL
-#endif
-
 
 #endif // __BOARD_CFG_VLLINKLITE_GD32F350_H__

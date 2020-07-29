@@ -66,7 +66,7 @@ project(${PROJ_NAME} C CXX ASM)
 #message(STATUS "${PROJECT_BINARY_DIR}")
 
 set(SOURCE_FILES ../main.c)
-list(APPEND SOURCE_FILES ../vsf_dfu.c)
+#list(APPEND SOURCE_FILES ../vsf_dfu.c)
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})
 

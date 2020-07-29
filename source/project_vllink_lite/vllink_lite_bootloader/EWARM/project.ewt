@@ -2410,6 +2410,9 @@
             <name>$PROJ_DIR$\..\main.c</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\..\usrapp_usbd_common.c</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\vsf_dfu.c</name>
         </file>
     </group>
