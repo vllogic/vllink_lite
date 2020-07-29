@@ -79,7 +79,7 @@ void vk_dwcotg_phy_init(vk_dwcotg_t *dwcotg,
 
         vk_dwcotg_reset(dwcotg);
 
-        global_regs->gccfg = USB_OTG_GCCFG_PWRDWN | USB_OTG_GCCFG_VBUSACEN | USB_OTG_GCCFG_VBUSBCEN;
+        global_regs->gccfg |= USB_OTG_GCCFG_PWRDWN | USB_OTG_GCCFG_VBUSACEN | USB_OTG_GCCFG_VBUSBCEN;
         if (!param->vbus_en) {
             global_regs->gccfg |= USB_OTG_GCCFG_VBDEN;
         }

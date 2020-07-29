@@ -39,7 +39,6 @@ vsf_err_t gd32f3x0_usb_init(gd32f3x0_usb_t *usb, vsf_arch_prio_t priority)
     RCU_ADDAPB1EN |= RCU_ADDAPB1EN_CTCEN;
     CTC_CTL1 = (0x2ul << 28) | (0x1cul << 16) | (48000 - 1);
     CTC_CTL0 |= CTC_CTL0_AUTOTRIM | CTC_CTL0_CNTEN;
-    RCU_ADDCTL |= RCU_ADDCTL_CK48MSEL;
 #elif CHIP_USBSRC == GD32F3X0_USBSRC_PLL
 #   if CHIP_PLL_FREQ_HZ == 48000000
     RCU_CFG0 &= ~RCU_CFG0_USBFSPSC;
@@ -74,6 +73,11 @@ RCU_CFG0 &= ~RCU_CFG0_USBFSPSC;
 
     global_regs->gahbcfg &= ~USB_OTG_GAHBCFG_GINT;
 
+#if CHIP_USBSRC == GD32F3X0_USBSRC_HSI48M
+#   define GCCFG_SOFOEN     (0x1ul << 20)
+    global_regs->gccfg = GCCFG_SOFOEN;
+#endif
+    
     if (priority >= 0) {
         NVIC_SetPriority(param->irq, priority);
         NVIC_EnableIRQ(param->irq);
