@@ -56,8 +56,8 @@ enum gpio_mode_t{
     IO_AF                   = (0x2 << 0),
     IO_ANALOG               = (0x3 << 0),
     
-    IO_OD_OUT               = (0x0 << 2),
-    IO_PP_OUT               = (0x1 << 2),
+    IO_PP_OUT               = (0x0 << 2),
+    IO_OD_OUT               = (0x1 << 2),
     
     IO_SPEED_2M             = (0x0 << 3),
     IO_SPEED_10M            = (0x1 << 3),

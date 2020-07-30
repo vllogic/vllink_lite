@@ -2408,6 +2408,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\main.c</name>
+            <configuration>
+                <name>VllinkLite_GD32F350</name>
+            </configuration>
         </file>
         <file>
             <name>$PROJ_DIR$\..\usrapp_usbd_common.c</name>

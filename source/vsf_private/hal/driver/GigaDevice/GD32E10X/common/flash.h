@@ -47,9 +47,9 @@ enum flash_op_t {
 #if FLASH_COUNT
 vsf_err_t vsfhal_flash_security_config(enum flash_idx_t idx, uint32_t config);
 uint32_t vsfhal_flash_opsize(enum flash_idx_t idx, uint32_t addr, enum flash_op_t op);
-vsf_err_t vsfhal_flash_read(enum flash_idx_t idx, uint32_t addr, uint32_t size, uint8_t *buff);
-vsf_err_t vsfhal_flash_write(enum flash_idx_t idx, uint32_t addr, uint32_t size, uint8_t *buff);
-vsf_err_t vsfhal_flash_erase(enum flash_idx_t idx, uint8_t index, uint32_t addr, uint32_t size);
+uint32_t vsfhal_flash_read(enum flash_idx_t idx, uint32_t addr, uint32_t size, uint8_t *buff);
+uint32_t vsfhal_flash_write(enum flash_idx_t idx, uint32_t addr, uint32_t size, uint8_t *buff);
+uint32_t vsfhal_flash_erase(enum flash_idx_t idx, uint32_t addr, uint32_t size);
 #endif
 
 #endif

@@ -277,6 +277,10 @@ vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
                     }
                     break;
                 case DFU_UPLOAD:
+                    buffer = (uint8_t *)&__usbd_dfu_buffer;
+                    size = usrapp_flash_read(__usbd_dfu_buffer,
+                            FIRMWARE_AREA_ADDR + request->wValue * sizeof(__usbd_dfu_buffer),
+                            min(request->wLength, sizeof(__usbd_dfu_buffer)));
                     break;
                 case DFU_GETSTATUS:
                     buffer = (uint8_t *)&__usbd_dfu_status;
@@ -340,8 +344,8 @@ vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
                 case DFU_GETSTATUS:
                     switch (__usbd_dfu_status.bState) {
                     case DFU_dfuDNLOAD_SYNC:
-                        // TODO: process data
-//                        __usbd_dfu_status.bStatus = usrapp_download(__usbd_dfu_addr, __usbd_dfu_buffer, __usbd_dfu_buffer_size);
+                        usrapp_flash_erase_write(__usbd_dfu_buffer, FIRMWARE_AREA_ADDR + __usbd_dfu_addr,
+                                min(__usbd_dfu_buffer_size, sizeof(__usbd_dfu_buffer)));
 
                         __usbd_dfu_addr += __usbd_dfu_buffer_size;
                         __usbd_dfu_block_idx++;

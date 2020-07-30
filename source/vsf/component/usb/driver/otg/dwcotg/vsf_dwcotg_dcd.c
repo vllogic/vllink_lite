@@ -26,10 +26,10 @@
 #include "vsf.h"
 
 /*============================ MACROS ========================================*/
-#define DWCOTG_DEBUG
-#define DWCOTG_DEBUG_DUMP_USB_ON
-#define DWCOTG_DEBUG_DUMP_FUNC_CALL
-#define DWCOTG_DEBUG_DUMP_DATA
+//#define DWCOTG_DEBUG
+//#define DWCOTG_DEBUG_DUMP_USB_ON
+//#define DWCOTG_DEBUG_DUMP_FUNC_CALL
+//#define DWCOTG_DEBUG_DUMP_DATA
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 enum __usb_evt_t {
@@ -91,13 +91,12 @@ uint16_t evt_index = 0;
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
 
+#ifdef DWCOTG_DEBUG
 static void debug_add(uint32_t data)
 {
-#ifdef DWCOTG_DEBUG
     if (evt_index < dimof(evt_buf)) {
         evt_buf[evt_index++] = (enum __usb_evt_t)data;
     }
-#endif
 }
 
 static void debug_add_data(uint32_t data)
@@ -119,6 +118,10 @@ static void debug_add_evt(uint32_t evt)
 
     debug_add_data(evt);
 }
+#else
+#   define debug_add_data(data)
+#   define debug_add_evt(data)
+#endif
 
 
 static void vk_dwcotg_usbd_init_regs(vk_dwcotg_dcd_t *usbd, void *regbase, uint_fast8_t ep_num)
