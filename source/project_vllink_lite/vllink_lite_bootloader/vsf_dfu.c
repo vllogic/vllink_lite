@@ -181,8 +181,10 @@ static const char * __usbd_dev_debug_info[] = {
 };
 #endif
 
-void vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
+vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
 {
+    vsf_err_t err = VSF_ERR_NONE;
+
     VSF_USBD_DRV_PREPARE(dev);
 #if VSF_DFU_CFG_DEBUG_EN == ENABLED
     vsf_trace(VSF_TRACE_DEBUG, "usbd: %s" VSF_TRACE_CFG_LINEEND, __usbd_dev_debug_info[evt]);
@@ -258,6 +260,9 @@ void vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
                                 break;
                             }
                         }
+                        break;
+                    default:
+                        err = VSF_ERR_NOT_SUPPORT;
                         break;
                     }
                     break;
@@ -362,6 +367,8 @@ void vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
         }
         break;
     }
+    
+    return err;
 }
 
 void vsf_dfu_start(void)

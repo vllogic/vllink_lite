@@ -148,18 +148,33 @@ static void clk_init(vsfhal_clk_info_t *info)
 
 	RCU_CTL0 &= ~RCU_CTL0_PLLEN;
 
+#   if defined(PROJ_CFG_GD32F3X0_HSI48M_USB_PLL_108M)
 	RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
-	RCU_CFG1 |= RCU_CFG1_PLLPRESEL | 11;
+	RCU_CFG1 |= RCU_CFG1_PLLPRESEL | 11;    // 48M / 12 = 4M
 	RCU_CFG0 |= RCU_CFG0_PLLSEL;
 
 	RCU_CFG0 &= ~RCU_CFG0_PLLMF;
 	RCU_CFG1 &= ~RCU_CFG1_PLLMF5;
-	RCU_CFG0 |= ((31 & 0xf) << 18) | ((31 & 0x10) << 23);
-	RCU_CFG1 |= (31 & 0x20) << 26;
+	RCU_CFG0 |= (((27 - 1) & 0xf) << 18) | (((27 - 1) & 0x10) << 23);    // 4M * 27 = 108M
+	RCU_CFG1 |= ((27 - 1) & 0x20) << 26;
 
 	RCU_CTL0 |= RCU_CTL0_PLLEN;
 	while(!(RCU_CTL0 & RCU_CTL0_PLLSTB));
-	
+#   elif defined(PROJ_CFG_GD32F3X0_HSI48M_USB_PLL_72M)
+	RCU_CFG1 &= RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV;
+	RCU_CFG1 |= RCU_CFG1_PLLPRESEL | 11;    // 48M / 12 = 4M
+	RCU_CFG0 |= RCU_CFG0_PLLSEL;
+
+	RCU_CFG0 &= ~RCU_CFG0_PLLMF;
+	RCU_CFG1 &= ~RCU_CFG1_PLLMF5;
+	RCU_CFG0 |= (((18 - 1) & 0xf) << 18) | (((18 - 1) & 0x10) << 23);    // 4M * 18 = 72M
+	RCU_CFG1 |= ((18 - 1) & 0x20) << 26;
+
+	RCU_CTL0 |= RCU_CTL0_PLLEN;
+	while(!(RCU_CTL0 & RCU_CTL0_PLLSTB));
+#   else
+#       error "Not Support!"
+#   endif
 	// config ahb apb1 apb2
 	RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
 	RCU_CFG0 |= BIT(10);

@@ -86,7 +86,7 @@ enum __usb_evt_t {
 /*============================ GLOBAL VARIABLES ==============================*/
 #ifdef DWCOTG_DEBUG
 ROOT enum __usb_evt_t evt_buf[1024 * 2];
-uint16_t evt_index;
+uint16_t evt_index = 0;
 #endif
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
@@ -396,8 +396,8 @@ uint_fast16_t vk_dwcotg_usbd_ep_get_size(vk_dwcotg_dcd_t *usbd, uint_fast8_t ep)
 
 vsf_err_t vk_dwcotg_usbd_ep_set_stall(vk_dwcotg_dcd_t *usbd, uint_fast8_t ep)
 {
-    volatile uint32_t *ep_ctrl = ep & 0x80 ?
-        &usbd->reg.dev.ep.in_regs[ep].diepctl : &usbd->reg.dev.ep.out_regs[ep].doepctl;
+    volatile uint32_t *ep_ctrl = dwcotg_usbd_get_ep_ctrl(usbd, ep);
+
     ep &= 0x0F;
     VSF_USB_ASSERT(ep < usbd->ep_num);
 
@@ -407,8 +407,8 @@ vsf_err_t vk_dwcotg_usbd_ep_set_stall(vk_dwcotg_dcd_t *usbd, uint_fast8_t ep)
 
 bool vk_dwcotg_usbd_ep_is_stalled(vk_dwcotg_dcd_t *usbd, uint_fast8_t ep)
 {
-    volatile uint32_t *ep_ctrl = ep & 0x80 ?
-        &usbd->reg.dev.ep.in_regs[ep].diepctl : &usbd->reg.dev.ep.out_regs[ep].doepctl;
+    volatile uint32_t *ep_ctrl = dwcotg_usbd_get_ep_ctrl(usbd, ep);
+
     ep &= 0x0F;
     VSF_USB_ASSERT(ep < usbd->ep_num);
 
@@ -417,8 +417,8 @@ bool vk_dwcotg_usbd_ep_is_stalled(vk_dwcotg_dcd_t *usbd, uint_fast8_t ep)
 
 vsf_err_t vk_dwcotg_usbd_ep_clear_stall(vk_dwcotg_dcd_t *usbd, uint_fast8_t ep)
 {
-    volatile uint32_t *ep_ctrl = ep & 0x80 ?
-        &usbd->reg.dev.ep.in_regs[ep].diepctl : &usbd->reg.dev.ep.out_regs[ep].doepctl;
+    volatile uint32_t *ep_ctrl = dwcotg_usbd_get_ep_ctrl(usbd, ep);
+
     ep &= 0x0F;
     VSF_USB_ASSERT(ep < usbd->ep_num);
 

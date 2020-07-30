@@ -29,7 +29,9 @@ int main(void)
     vsfhal_gpio_set(GPIOA_IDX, 0x1 << 7);
     vsfhal_gpio_set(GPIOB_IDX, 0x1 << 0);
 #endif
-
+    
+    static bool ggg = false;
+    while (ggg == false);
 
     vsf_dfu_start();
     return 0;

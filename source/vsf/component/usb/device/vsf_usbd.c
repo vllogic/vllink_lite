@@ -42,7 +42,7 @@ static void __vk_usbd_hal_evthandler(void *, usb_evt_t, uint_fast8_t);
 extern vsf_err_t vsf_usbd_vendor_prepare(vk_usbd_dev_t *dev);
 extern void vsf_usbd_vendor_process(vk_usbd_dev_t *dev);
 
-extern void vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param);
+extern vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param);
 
 /*============================ IMPLEMENTATION ================================*/
 
@@ -625,7 +625,7 @@ static void __vk_usbd_setup_status_callback(void *param)
 
 #ifndef WEAK_VSF_USBD_NOTIFY_USER
 WEAK(vsf_usbd_notify_user)
-void vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
+vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
 {
     
 }
@@ -736,9 +736,16 @@ static void __vk_usbd_evthandler(vsf_eda_t *eda, vsf_evt_t evt_eda)
             vk_usbd_trans_t *trans = &ctrl_handler->trans;
 
             vk_usbd_drv_get_setup(request);
-            vsf_usbd_notify_user(dev, evt, request);
 #if VSF_USBD_CFG_RAW_MODE != ENABLED
+            vsf_usbd_notify_user(dev, evt, request);
             if (VSF_ERR_NONE != __vk_usbd_ctrl_prepare(dev)) {
+                // fail to get setup request data
+                vk_usbd_drv_ep_set_stall(0 | USB_DIR_OUT);
+                vk_usbd_drv_ep_set_stall(0 | USB_DIR_IN);
+                break;
+            }
+#else
+            if (VSF_ERR_NONE != vsf_usbd_notify_user(dev, evt, request)) {
                 // fail to get setup request data
                 vk_usbd_drv_ep_set_stall(0 | USB_DIR_OUT);
                 vk_usbd_drv_ep_set_stall(0 | USB_DIR_IN);
