@@ -33,11 +33,13 @@ set(CMAKE_C_FLAGS_DEBUG "-Og -g3 -gstabs+" CACHE INTERNAL "c debug compiler flag
 set(CMAKE_CXX_FLAGS_DEBUG "-Og -g3 -gstabs+" CACHE INTERNAL "cxx debug compiler flags")
 set(CMAKE_ASM_FLAGS_DEBUG "-g -gstabs+" CACHE INTERNAL "asm debug compiler flags")
 
-set(CMAKE_C_FLAGS_RELEASE "-Os" CACHE INTERNAL "c release compiler flags")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os" CACHE INTERNAL "cxx release compiler flags")
+set(CMAKE_C_FLAGS_RELEASE "-Os -flto" CACHE INTERNAL "c release compiler flags")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -flto" CACHE INTERNAL "cxx release compiler flags")
 set(CMAKE_ASM_FLAGS_RELEASE "" CACHE INTERNAL "asm release compiler flags")
 
-set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections --specs=nosys.specs"
+#set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections --specs=nosys.specs"
+#  CACHE INTERNAL "exe link flags")
+set(CMAKE_EXE_LINKER_FLAGS "-Wl,--gc-sections -flto --specs=nano.specs"
   CACHE INTERNAL "exe link flags")
 
 set(CMAKE_C_COMPILER_WORKS ON)
