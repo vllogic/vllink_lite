@@ -1,15 +1,15 @@
 #ifndef __BOARD_CFG_VLLINKLITE_GD32F350_H__
 #define __BOARD_CFG_VLLINKLITE_GD32F350_H__
 
-#define DMA0_ENABLE             1
+#define DMA0_ENABLE             0
 
 #define FLASH0_ENABLE           1
 
 #define GPIOA_ENABLE            1
 #define GPIOB_ENABLE            1
-#define GPIOC_ENABLE            1
-#define GPIOD_ENABLE            1
-#define GPIOF_ENABLE            1
+#define GPIOC_ENABLE            0
+#define GPIOD_ENABLE            0
+#define GPIOF_ENABLE            0
 
 #define USART0_ENABLE           0
 #   define USART0_DMA_ENABLE    1
@@ -40,7 +40,7 @@
 #	define USART1_RTS_IO_PIN    1
 #	define USART1_RTS_IO_AF     2
 
-#define SPI0_ENABLE             1
+#define SPI0_ENABLE             0
 #   define SPI0_DMA_ENABLE      1
 #	define SPI0_NSS_IO_IDX      GPIO_INVALID_IDX 
 #	define SPI0_NSS_IO_PIN      0
@@ -54,7 +54,7 @@
 #	define SPI0_MOSI_IO_IDX     GPIO_INVALID_IDX 
 #	define SPI0_MOSI_IO_PIN     0
 #	define SPI0_MOSI_IO_AF      0
-#define SPI1_ENABLE             1
+#define SPI1_ENABLE             0
 #   define SPI1_DMA_ENABLE      1
 #	define SPI1_NSS_IO_IDX      GPIO_INVALID_IDX 
 #	define SPI1_NSS_IO_PIN      0
@@ -71,7 +71,7 @@
 
 
 // KEY
-#define PERIPHERAL_KEY_IDX                  0
+#define PERIPHERAL_KEY_IDX                  GPIOA_IDX
 #define PERIPHERAL_KEY_PIN                  4
 #define PERIPHERAL_KEY_VALID_LVL            1
 
@@ -82,7 +82,6 @@
 #define PERIPHERAL_LED_GREEN_IDX            GPIOB_IDX
 #define PERIPHERAL_LED_GREEN_PIN            7
 #define PERIPHERAL_LED_GREEN_VALID_LVL      1
-
 
 
 #endif // __BOARD_CFG_VLLINKLITE_GD32F350_H__

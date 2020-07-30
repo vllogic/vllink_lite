@@ -91,4 +91,18 @@
 #	define SPI2_MOSI_IO_PIN     0
 
 
+// KEY
+#define PERIPHERAL_KEY_IDX                  GPIOA_IDX
+#define PERIPHERAL_KEY_PIN                  4
+#define PERIPHERAL_KEY_VALID_LVL            1
+
+// LED
+#define PERIPHERAL_LED_RED_IDX              GPIOB_IDX
+#define PERIPHERAL_LED_RED_PIN              6
+#define PERIPHERAL_LED_RED_VALID_LVL        1
+#define PERIPHERAL_LED_GREEN_IDX            GPIOB_IDX
+#define PERIPHERAL_LED_GREEN_PIN            7
+#define PERIPHERAL_LED_GREEN_VALID_LVL      1
+
+
 #endif // __BOARD_CFG_VLLINKLITE_GD32F350_H__
