@@ -271,6 +271,12 @@ vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
             case USB_TYPE_CLASS:
                 switch (request->bRequest) {
                 case DFU_DNLOAD:
+                    if (request->wValue == 0) {
+                        memset(&__usbd_dfu_status, 0, sizeof(__usbd_dfu_status));
+                        __usbd_dfu_status.bState = DFU_dfuIDLE;
+                        __usbd_dfu_block_idx = 0;
+                        __usbd_dfu_addr = 0;
+                    }
                     if (request->wValue == __usbd_dfu_block_idx) {
                         buffer = (uint8_t *)&__usbd_dfu_buffer;
                         size = sizeof(__usbd_dfu_buffer);
