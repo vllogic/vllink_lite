@@ -162,6 +162,15 @@ typedef enum {
 
 #endif
 
+#if __IS_COMPILER_GCC__         //!< some version of gcc misses uchar.h
+
+/*! \note if your compiler raises warning about "redefine" type, 
+ *!       please ignore and suppress the warning
+ */
+typedef uint_least32_t char32_t;
+typedef uint_least16_t char16_t;
+#endif
+
 
 #ifndef __REG_TYPE__
 #define __REG_TYPE__

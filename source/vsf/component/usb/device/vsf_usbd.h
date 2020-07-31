@@ -37,10 +37,6 @@
 #   include "./vsf_usbd_drv_ifs.h"
 #endif
 
-#if __STDC_VERSION__ >= 201112L
-#   include <uchar.h>
-#endif
-
 #if     defined(VSF_USBD_IMPLEMENT)
 #   define __PLOOC_CLASS_IMPLEMENT
 #elif   defined(VSF_USBD_INHERIT)
