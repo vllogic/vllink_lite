@@ -48,7 +48,6 @@ static void clk_init(vsfhal_clk_info_t *info)
 
     RCU_CTL0 &= ~RCU_CTL0_PLLEN;
     if (info->clken & GD32F3X0_CLKEN_PLL) {
-        
 		if (info->pllsrc == GD32F3X0_PLLSRC_HSI8M_D2) {
 			RCU_CFG0 &= RCU_CFG0_PLLSEL;
 		} else if (info->pllsrc == GD32F3X0_PLLSRC_HSE) {
@@ -81,23 +80,23 @@ static void clk_init(vsfhal_clk_info_t *info)
 
 	RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
 	tmp32 = info->ahb_freq_hz / info->apb1_freq_hz;
-	if (tmp32 == 2)
-		RCU_CFG0 |= BIT(10);
-	else if (tmp32 == 4)
-		RCU_CFG0 |= BIT(10) | BIT(8);
-	else if (tmp32 == 8)
-		RCU_CFG0 |= BITS(9, 10);
-	else
-		RCU_CFG0 |= BITS(8, 10);
+    if (tmp32 == 2)
+        RCU_CFG0 |= RCU_APB1_CKAHB_DIV2;
+    else if (tmp32 == 4)
+        RCU_CFG0 |= RCU_APB1_CKAHB_DIV4;
+    else if (tmp32 == 8)
+        RCU_CFG0 |= RCU_APB1_CKAHB_DIV8;
+    else if (tmp32 > 8)
+        RCU_CFG0 |= RCU_APB1_CKAHB_DIV16;
 	tmp32 = info->ahb_freq_hz / info->apb2_freq_hz;
-	if (tmp32 == 2)
-		RCU_CFG0 |= BIT(13);
-	else if (tmp32 == 4)
-		RCU_CFG0 |= BIT(13) | BIT(11);
-	else if (tmp32 == 8)
-		RCU_CFG0 |= BITS(12, 13);
-	else
-		RCU_CFG0 |= BITS(11, 13);
+    if (tmp32 == 2)
+        RCU_CFG0 |= RCU_APB2_CKAHB_DIV2;
+    else if (tmp32 == 4)
+        RCU_CFG0 |= RCU_APB2_CKAHB_DIV4;
+    else if (tmp32 == 8)
+        RCU_CFG0 |= RCU_APB2_CKAHB_DIV8;
+    else if (tmp32 > 8)
+        RCU_CFG0 |= RCU_APB2_CKAHB_DIV16;
 	if (info->hclksrc == GD32F3X0_HCLKSRC_HSE)
 		tmp32 = info->hse_freq_hz;
 	else if (info->hclksrc == GD32F3X0_HCLKSRC_PLL)
@@ -105,9 +104,7 @@ static void clk_init(vsfhal_clk_info_t *info)
 	else
 		tmp32 = 8000000;
 	tmp32 = tmp32 / info->ahb_freq_hz;
-	if (tmp32 == 1)
-		RCU_CFG0 |= RCU_AHB_CKSYS_DIV1;
-	else if (tmp32 == 2)
+	if (tmp32 == 2)
 		RCU_CFG0 |= RCU_AHB_CKSYS_DIV2;
 	else if (tmp32 == 4)
 		RCU_CFG0 |= RCU_AHB_CKSYS_DIV4;
@@ -121,7 +118,7 @@ static void clk_init(vsfhal_clk_info_t *info)
 		RCU_CFG0 |= RCU_AHB_CKSYS_DIV128;
 	else if (tmp32 == 256)
 		RCU_CFG0 |= RCU_AHB_CKSYS_DIV256;
-	else
+	else if (tmp32 > 256)
 		RCU_CFG0 |= RCU_AHB_CKSYS_DIV512;
 
     if (info->hclksrc == GD32F3X0_HCLKSRC_HSE) {
@@ -175,14 +172,15 @@ static void clk_init(vsfhal_clk_info_t *info)
 #   else
 #       error "Not Support!"
 #   endif
+
 	// config ahb apb1 apb2
 	RCU_CFG0 &= ~(RCU_CFG0_AHBPSC | RCU_CFG0_APB1PSC | RCU_CFG0_APB2PSC);
-	RCU_CFG0 |= BIT(10);
-	RCU_CFG0 |= BIT(13);
-	RCU_CFG0 |= RCU_AHB_CKSYS_DIV1;
+	RCU_CFG0 |= RCU_AHB_CKSYS_DIV1 | RCU_APB1_CKAHB_DIV2 | RCU_APB2_CKAHB_DIV2;
 
 	RCU_CFG0 |= RCU_CKSYSSRC_PLL;
 	while((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
+
+	RCU_CTL0 &= ~RCU_CTL0_IRC8MEN;
 #endif
 
 	RCU_AHBEN |= RCU_AHBEN_DMAEN;

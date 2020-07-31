@@ -84,6 +84,12 @@ OF SUCH DAMAGE.
 #define CTC_INTC_EREFIC              BIT(3)                    /*!< EREFIF interrupt clear bit */
 
 /* constants definitions */
+#define CTL0_TRIMVALUE(regval)                           (BITS(8,13) & ((uint32_t)(regval) << 8))
+#define CTL1_CKLIM(regval)                               (BITS(16,23) & ((uint32_t)(regval) << 16))
+#define GET_STAT_REFCAP(regval)                          GET_BITS((regval),16,31)
+#define GET_CTL0_TRIMVALUE(regval)                       GET_BITS((regval),8,13)
+
+/* constants definitions */
 /* hardware automatically trim mode definitions */
 #define CTC_HARDWARE_TRIM_MODE_ENABLE                    CTC_CTL0_AUTOTRIM            /*!< hardware automatically trim mode enable*/
 #define CTC_HARDWARE_TRIM_MODE_DISABLE                   ((uint32_t)0x00000000U)      /*!< hardware automatically trim mode disable*/

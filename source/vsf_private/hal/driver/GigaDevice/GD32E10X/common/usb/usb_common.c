@@ -34,32 +34,44 @@ vsf_err_t gd32e10x_usb_init(gd32e10x_usb_t *usb, vsf_arch_prio_t priority)
 {
     const gd32e10x_usb_const_t *param = usb->param;
     struct dwcotg_core_global_regs_t *global_regs = param->reg;
-    struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
-    
-    if (info->usbsrc == GD32E10X_USBSRC_PLL) {
-        RCU_ADDAPB1EN |= RCU_ADDAPB1EN_CTCEN;
-        CTC_CTL1 = (0x2ul << 28) | (0x1cul << 16) | (48000 - 1);
-        CTC_CTL0 |= CTC_CTL0_AUTOTRIM | CTC_CTL0_CNTEN;
-        RCU_ADDCTL |= RCU_ADDCTL_CK48MSEL;
-    } else {
-        RCU_CFG0 &= ~RCU_CFG0_USBFSPSC;
-        if (info->pll_freq_hz == 48000000) {
-            RCU_CFG0 |= BIT(22);
-        } else if (info->pll_freq_hz == 72000000) {
-            NOP();
-        } else if (info->pll_freq_hz == 96000000) {
-            RCU_CFG0 |= BITS(22,23);
-        } else if (info->pll_freq_hz == 120000000) {
-            RCU_CFG0 |= BIT(23);
-        } else {
-            VSF_HAL_ASSERT(0);
-        }
-        RCU_ADDCTL &= ~RCU_ADDCTL_CK48MSEL;
-    }
+
+#if CHIP_USBSRC == GD32E10X_USBSRC_HSI48M
+    RCU_ADDAPB1EN |= RCU_ADDAPB1EN_CTCEN;
+    CTC_CTL1 = CTC_REFSOURCE_USBSOF | CTL1_CKLIM(28) | (48000 - 1);
+    CTC_CTL0 |= CTC_CTL0_AUTOTRIM | CTC_CTL0_CNTEN;
+    RCU_ADDCTL |= RCU_ADDCTL_CK48MSEL;
+#elif CHIP_USBSRC == GD32E10X_USBSRC_PLL
+    RCU_CFG0 &= ~(RCU_CFG0_USBFSPSC | RCU_CFG0_USBFSPSC_2);
+#   if CHIP_PLL_FREQ_HZ == 48000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV1;
+#   elif CHIP_PLL_FREQ_HZ == 72000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV1_5;
+#   elif CHIP_PLL_FREQ_HZ == 96000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV2;
+#   elif CHIP_PLL_FREQ_HZ == 120000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV2_5;
+#   elif CHIP_PLL_FREQ_HZ == 144000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV3;
+#   elif CHIP_PLL_FREQ_HZ == 168000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV3_5;
+#   elif CHIP_PLL_FREQ_HZ == 192000000
+    RCU_CFG0 |= RCU_CKUSB_CKPLL_DIV4;
+#   else
+#       error "Invaild CHIP_PLL_FREQ_HZ"
+#   endif
+    RCU_ADDCTL &= ~RCU_ADDCTL_CK48MSEL;
+#else
+#   error "Invaild CHIP_USBSRC"
+#endif
 
     RCU_AHBEN |= RCU_AHBEN_USBFSEN;
 
     global_regs->gahbcfg &= ~USB_OTG_GAHBCFG_GINT;
+
+#if CHIP_USBSRC == GD32E10X_USBSRC_HSI48M
+#   define GCCFG_SOFOEN     (0x1ul << 20)
+    global_regs->gccfg = GCCFG_SOFOEN;
+#endif
 
     if (priority >= 0) {
         NVIC_SetPriority(param->irq, priority);

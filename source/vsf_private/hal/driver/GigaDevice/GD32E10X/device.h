@@ -43,6 +43,7 @@
 /*============================ TYPES =========================================*/
 
 #ifndef CHIP_CLKEN
+#WARNING "Using Default Chip CLK Config"
 #define GD32E10X_CLKEN_LSI              (1UL << 0)
 #define GD32E10X_CLKEN_HSI              (1UL << 1)
 #define GD32E10X_CLKEN_HSI48M           (1UL << 2)
