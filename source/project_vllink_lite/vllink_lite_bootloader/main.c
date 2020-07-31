@@ -47,7 +47,7 @@ uint32_t usrapp_flash_erase_write(uint8_t *buf, uint32_t addr, uint32_t size)
         
         if (!(addr % erase_op))
             vsfhal_flash_erase(FLASH0_IDX, addr, max(erase_op, size));
-        vsfhal_flash_write(FLASH0_IDX, addr, max(write_op, size), buf);
+        return vsfhal_flash_write(FLASH0_IDX, addr, max(write_op, size), buf);
     } else {
         return 0;
     }

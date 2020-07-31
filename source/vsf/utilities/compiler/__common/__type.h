@@ -162,7 +162,7 @@ typedef enum {
 
 #endif
 
-#if __IS_COMPILER_GCC__         //!< some version of gcc misses uchar.h
+#if __IS_COMPILER_IAR__ || __IS_COMPILER_GCC__         //!< some version of gcc misses uchar.h
 
 /*! \note if your compiler raises warning about "redefine" type, 
  *!       please ignore and suppress the warning

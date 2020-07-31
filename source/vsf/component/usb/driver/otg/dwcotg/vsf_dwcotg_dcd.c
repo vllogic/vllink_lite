@@ -543,7 +543,7 @@ static vsf_err_t vk_dwcotg_usbd_ep_out_transfer(vk_dwcotg_dcd_t *usbd, uint_fast
     vk_dwcotg_dcd_trans_t *trans = &usbd->trans[ep_idx];
     uint_fast32_t size = trans->remain, max_size;
     if (0 == ep_idx) {
-        max_size = (1 << 7) - 1;
+        max_size = 64;
     } else {
         max_size = (1 << 19) - 1;
     }
