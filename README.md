@@ -8,11 +8,11 @@ Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350/GD32E103�
 
 #### 目前提供三套原理图，分别是：
 
-* [Vllink Lite.R4.GD32F350xx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32f350xx) 此方案除适合作为成本敏感的集成式调试器。
+* [Vllink Lite.R4.GD32F350xx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32f350xx) 此方案适合作为成本敏感的集成式调试器。
 ![3D](./hardware/vllink_lite.r4.gd32f350xx/vllink_lite.r4.gd32f350xx.top45.png)
 ![BOTTOM](./hardware/vllink_lite.r4.gd32f350xx/vllink_lite.r4.gd32f350xx.bottom.png)
 
-* [Vllink Lite.R4.GD32E103Tx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103tx) 相比GD32F350，提供更大RAM与ROM，可外扩SPI FLASH **[IO模拟]** ，用于离线编程。
+* [Vllink Lite.R4.GD32E103Tx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103tx) 相比GD32F350，提供更大RAM与ROM，可外扩SPI FLASH **[IO模拟方式]** ，用于离线编程。
 
 * [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103Cx) 相比GD32E103Tx，换用LQFP封装，并支持硬件SPI连接SPI FLASH。
 
