@@ -1,5 +1,5 @@
-#ifndef __CHIP_CFG_GD32E10X_H__
-#define __CHIP_CFG_GD32E10X_H__
+#ifndef __CHIP_CFG_XXX_H__
+#define __CHIP_CFG_XXX_H__
 
 #define __GigaDevice__
 #define __GD32E10X__
@@ -104,4 +104,4 @@ enum gd32e10x_usbsrc_t
 #endif
 
 
-#endif // __CHIP_CFG_GD32E10X_H__
+#endif // __CHIP_CFG_XXX_H__

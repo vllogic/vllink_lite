@@ -1,5 +1,5 @@
-#ifndef __CHIP_CFG_GD32F3X0_H__
-#define __CHIP_CFG_GD32F3X0_H__
+#ifndef __CHIP_CFG_XXX_H__
+#define __CHIP_CFG_XXX_H__
 
 #define __GigaDevice__
 //#define __GD32F330__
@@ -70,4 +70,4 @@ enum gd32f3x0_usbsrc_t
 #endif
 
 
-#endif // __CHIP_CFG_GD32F3X0_H__
+#endif // __CHIP_CFG_XXX_H__

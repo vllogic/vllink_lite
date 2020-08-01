@@ -1,5 +1,5 @@
-#ifndef __PROJ_CFG_VLLINKLITE_H__
-#define __PROJ_CFG_VLLINKLITE_H__
+#ifndef __PROJ_CFG_LVL2_H__
+#define __PROJ_CFG_LVL2_H__
 
 #define VSF_SYSTIMER_FREQ                   (CHIP_AHB_FREQ_HZ)
 
@@ -32,4 +32,4 @@
 #endif
 
 
-#endif // __PROJ_CFG_VLLINKLITE_H__
+#endif // __PROJ_CFG_LVL2_H__

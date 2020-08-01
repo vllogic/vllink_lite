@@ -1,5 +1,5 @@
-#ifndef __BOARD_CFG_VLLINKLITE_GD32F350_H__
-#define __BOARD_CFG_VLLINKLITE_GD32F350_H__
+#ifndef __BOARD_CFG_LVL2_H__
+#define __BOARD_CFG_LVL2_H__
 
 #define DMA0_ENABLE             0
 
@@ -84,4 +84,4 @@
 #define PERIPHERAL_LED_GREEN_VALID_LVL      1
 
 
-#endif // __BOARD_CFG_VLLINKLITE_GD32F350_H__
+#endif // __BOARD_CFG_LVL2_H__
