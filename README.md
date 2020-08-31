@@ -16,8 +16,9 @@ Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350/GD32E103�
 
 * [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103Cx) 相比GD32E103Tx，换用LQFP封装，并支持硬件SPI连接SPI FLASH。
 
-#### 旧版硬件实拍图
+#### 硬件实拍图
 ![PCBA](./hardware/vllink_lite.r3/vllink_lite.r3.pcba.png)
+![PCBA](./hardware/vllink_lite.r4.gd32e103tx/vllink_lite.r4.gd32e103tx.pcba.png)
 
 ## 功能
 
