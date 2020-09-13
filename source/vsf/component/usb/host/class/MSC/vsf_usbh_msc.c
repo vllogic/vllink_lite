@@ -21,11 +21,14 @@
 
 #if VSF_USE_USB_HOST == ENABLED && VSF_USE_USB_HOST_MSC == ENABLED
 
-#define VSF_EDA_CLASS_INHERIT
-#define VSF_USBH_IMPLEMENT_CLASS
-#define VSF_USBH_MSC_IMPLEMENT
-#define VSF_SCSI_INHERIT
-#include "vsf.h"
+#define __VSF_EDA_CLASS_INHERIT__
+#define __VSF_USBH_CLASS_IMPLEMENT_CLASS__
+#define __VSF_SCSI_CLASS_INHERIT__
+
+#include "kernel/vsf_kernel.h"
+#include "../../vsf_usbh.h"
+#include "./vsf_usbh_msc.h"
+#include "component/scsi/vsf_scsi.h"
 
 /*============================ MACROS ========================================*/
 
@@ -36,7 +39,7 @@
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
-struct vk_usbh_msc_t {
+typedef struct vk_usbh_msc_t {
     vk_usbh_t *usbh;
     vk_usbh_dev_t *dev;
     vk_usbh_ifs_t *ifs;
@@ -63,8 +66,7 @@ struct vk_usbh_msc_t {
         VSF_USBH_MSC_STATE_DATA,
         VSF_USBH_MSC_STATE_REPLY,
     } state;
-};
-typedef struct vk_usbh_msc_t vk_usbh_msc_t;
+} vk_usbh_msc_t;
 
 /*============================ PROTOTYPES ====================================*/
 
@@ -138,6 +140,12 @@ __vsf_component_peda_ifs_entry(__vk_usbh_msc_scsi_fini, vk_scsi_fini)
     vsf_peda_end();
 }
 
+#if __IS_COMPILER_IAR__
+//! transfer of control bypasses initialization of variables
+//! integer conversion resulted in a change of sign
+#   pragma diag_suppress=pe546,pe068
+#endif
+
 static void __vk_usbh_msc_scsi_execute_do(vk_usbh_msc_t *msc, vsf_evt_t evt, uint8_t *cbd, bool is_stream, void *mem_stream)
 {
     switch (evt) {
@@ -154,7 +162,7 @@ static void __vk_usbh_msc_scsi_execute_do(vk_usbh_msc_t *msc, vsf_evt_t evt, uin
             if (is_stream) {
                 VSF_USB_ASSERT(is_rw);
             } else {
-                msc->total_size = ((vsf_mem_t *)mem_stream)->nSize;
+                msc->total_size = ((vsf_mem_t *)mem_stream)->size;
             }
             msc->remain_size = msc->total_size;
             msc->buffer.cbw.dCBWDataTransferLength = cpu_to_le32(msc->total_size);
@@ -185,9 +193,9 @@ static void __vk_usbh_msc_scsi_execute_do(vk_usbh_msc_t *msc, vsf_evt_t evt, uin
                     // TODO: add stream support
                     VSF_USB_ASSERT(false);
                 } else {
-                    if (((vsf_mem_t *)mem_stream)->nSize > 0) {
+                    if (((vsf_mem_t *)mem_stream)->size > 0) {
                         vk_usbh_urb_t * urb = (msc->buffer.cbw.bmCBWFlags & 0x80) ? &msc->urb_in : &msc->urb_out;
-                        vk_usbh_urb_set_buffer(urb, ((vsf_mem_t *)mem_stream)->pchBuffer, ((vsf_mem_t *)mem_stream)->nSize);
+                        vk_usbh_urb_set_buffer(urb, ((vsf_mem_t *)mem_stream)->buffer, ((vsf_mem_t *)mem_stream)->size);
                         vk_usbh_submit_urb(msc->usbh, urb);
                     } else {
                         goto reply_stage;
@@ -226,6 +234,12 @@ static void __vk_usbh_msc_scsi_execute_do(vk_usbh_msc_t *msc, vsf_evt_t evt, uin
         break;
     }
 }
+
+#if __IS_COMPILER_IAR__
+//! transfer of control bypasses initialization of variables
+//! integer conversion resulted in a change of sign
+#   pragma diag_warning=pe546,pe068
+#endif
 
 __vsf_component_peda_ifs_entry(__vk_usbh_msc_scsi_execute, vk_scsi_execute)
 {
@@ -295,7 +309,7 @@ static void __vk_usbh_msc_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
 static void __vk_usbh_msc_on_eda_terminate(vsf_eda_t *eda)
 {
     vk_usbh_msc_t *msc = container_of(eda, vk_usbh_msc_t, eda);
-    VSF_USBH_FREE(msc);
+    vsf_usbh_free(msc);
 }
 
 static void * __vk_usbh_msc_probe(vk_usbh_t *usbh, vk_usbh_dev_t *dev, vk_usbh_ifs_parser_t *parser_ifs)
@@ -308,7 +322,7 @@ static void * __vk_usbh_msc_probe(vk_usbh_t *usbh, vk_usbh_dev_t *dev, vk_usbh_i
     vk_usbh_msc_t *msc;
 
     if (desc_ifs->bNumEndpoints != 2) { return NULL; }
-    msc = VSF_USBH_MALLOC(sizeof(vk_usbh_msc_t));
+    msc = vsf_usbh_malloc(sizeof(vk_usbh_msc_t));
     if (NULL == msc) { return NULL; }
     memset(msc, 0, sizeof(*msc));
 
@@ -340,7 +354,7 @@ static void * __vk_usbh_msc_probe(vk_usbh_t *usbh, vk_usbh_dev_t *dev, vk_usbh_i
 
 free_all:
     __vk_usbh_msc_free_urb(msc);
-    VSF_USBH_FREE(msc);
+    vsf_usbh_free(msc);
     return NULL;
 }
 

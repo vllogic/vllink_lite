@@ -78,7 +78,7 @@
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
-                    <state>GD32F350x6	GD GD32F350x6</state>
+                    <state>GD32F350x8	GD GD32F350x8</state>
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
@@ -138,7 +138,7 @@
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>GD32F350x6	GD GD32F350x6</state>
+                    <state>GD32F350x8	GD GD32F350x8</state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -2195,15 +2195,6 @@
                 <group>
                     <name>nulink</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole.h</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole_Config.h</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole_stream.c</name>
                     </file>
                     <file>
@@ -2212,24 +2203,6 @@
                 </group>
                 <group>
                     <name>segger_rtt</name>
-                    <group>
-                        <name>RTT</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT.h</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT_ASM_ARMv7M.S</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT_Conf.h</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT_printf.c</name>
-                        </file>
-                    </group>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\segger_rtt_stream.c</name>
                     </file>
@@ -2856,10 +2829,10 @@
                         <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple.h</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmevt.c</name>
+                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmpevt.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmevt.h</name>
+                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmpevt.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_task.c</name>

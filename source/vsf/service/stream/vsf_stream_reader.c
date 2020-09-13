@@ -26,7 +26,7 @@
 
 /*============================ MACROS ========================================*/
 #undef  this
-#define this        (*ptThis)
+#define this        (*this_ptr)
 
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
@@ -57,33 +57,33 @@ const i_stream_reader_t  VSF_STREAM_READER = {
  *----------------------------------------------------------------------------*/
 
  
-vsf_err_t vsf_stream_reader_init(   vsf_stream_reader_t *ptObj, 
-                                    const vsf_stream_reader_cfg_t *ptCFG)
+vsf_err_t vsf_stream_reader_init(   vsf_stream_reader_t *obj_ptr, 
+                                    const vsf_stream_reader_cfg_t *cfg_ptr)
 {
-    class_internal(ptObj, ptThis, vsf_stream_reader_t);
-    VSF_SERVICE_ASSERT(NULL != ptObj);
+    class_internal(obj_ptr, this_ptr, vsf_stream_reader_t);
+    VSF_SERVICE_ASSERT(NULL != obj_ptr);
 
-    memset(ptObj, 0, sizeof(vsf_stream_reader_t));
-    return vsf_stream_usr_init(&this.use_as__vsf_stream_usr_t, ptCFG);
+    memset(obj_ptr, 0, sizeof(vsf_stream_reader_t));
+    return vsf_stream_usr_init(&this.use_as__vsf_stream_usr_t, cfg_ptr);
 }
 
-vsf_pbuf_t *vsf_stream_reader_fetch_pbuf ( vsf_stream_reader_t *ptObj)
+vsf_pbuf_t *vsf_stream_reader_fetch_pbuf ( vsf_stream_reader_t *obj_ptr)
 {
-    class_internal(ptObj, ptThis, vsf_stream_reader_t);
+    class_internal(obj_ptr, this_ptr, vsf_stream_reader_t);
     vsf_pbuf_t *pbuf;
-    VSF_SERVICE_ASSERT(NULL != ptObj);
+    VSF_SERVICE_ASSERT(NULL != obj_ptr);
     
     __SAFE_ATOM_CODE(
         pbuf = vsf_stream_usr_fetch_pbuf(&this.use_as__vsf_stream_usr_t);
-        if (NULL == this.ptCurrent) {
-            this.ptCurrent = vsf_stream_usr_fetch_pbuf(&this.use_as__vsf_stream_usr_t);
+        if (NULL == this.current_ptr) {
+            this.current_ptr = vsf_stream_usr_fetch_pbuf(&this.use_as__vsf_stream_usr_t);
         } else {
             vsf_pbuf_t *temp_ptr = pbuf;
-            pbuf = this.ptCurrent;
-            this.ptCurrent = temp_ptr;
+            pbuf = this.current_ptr;
+            this.current_ptr = temp_ptr;
         }
 
-        if (NULL != this.ptCurrent) {
+        if (NULL != this.current_ptr) {
             this.hwOffset = 0;
             this.hwBufferSize = 0;
         } 
@@ -93,41 +93,41 @@ vsf_pbuf_t *vsf_stream_reader_fetch_pbuf ( vsf_stream_reader_t *ptObj)
 }
  
 
-int_fast32_t vsf_stream_reader_read(vsf_stream_reader_t *ptObj,
-                                    uint8_t *pchBuffer,
-                                    uint_fast16_t hwSize)
+int_fast32_t vsf_stream_reader_read(vsf_stream_reader_t *obj_ptr,
+                                    uint8_t *buffer_ptr,
+                                    uint_fast16_t u16_size)
 {
-    class_internal(ptObj, ptThis, vsf_stream_reader_t);
+    class_internal(obj_ptr, this_ptr, vsf_stream_reader_t);
     int_fast32_t nReadSize = -1;
-    VSF_SERVICE_ASSERT(NULL != ptObj);
+    VSF_SERVICE_ASSERT(NULL != obj_ptr);
     
     do {
-        if (NULL == pchBuffer || 0 == hwSize) {
+        if (NULL == buffer_ptr || 0 == u16_size) {
             break;
         }
 
         __SAFE_ATOM_CODE(
-            if (NULL == this.ptCurrent) {
-                this.ptCurrent = vsf_stream_usr_fetch_pbuf(&this.use_as__vsf_stream_usr_t);
+            if (NULL == this.current_ptr) {
+                this.current_ptr = vsf_stream_usr_fetch_pbuf(&this.use_as__vsf_stream_usr_t);
                 this.hwOffset = 0;
                 this.hwBufferSize = 0;
             }
         )
 
         __SAFE_ATOM_CODE(
-            if (NULL != this.ptCurrent) {
+            if (NULL != this.current_ptr) {
                 if (this.hwOffset < this.hwBufferSize) {
-                    nReadSize = vsf_pbuf_buffer_read(   this.ptCurrent, 
-                                                        pchBuffer,
-                                                        hwSize,
+                    nReadSize = vsf_pbuf_buffer_read(   this.current_ptr, 
+                                                        buffer_ptr,
+                                                        u16_size,
                                                         this.hwOffset);
                     
                     if (nReadSize > 0) {
                         this.hwOffset += nReadSize;
                         if (this.hwOffset == this.hwBufferSize) {
                             //! current buffer is full
-                            vsf_pbuf_free(this.ptCurrent);                      //! free
-                            this.ptCurrent = NULL;
+                            vsf_pbuf_free(this.current_ptr);                      //! free
+                            this.current_ptr = NULL;
                         }
                     }
                 }
@@ -139,10 +139,10 @@ int_fast32_t vsf_stream_reader_read(vsf_stream_reader_t *ptObj,
     return nReadSize;
 }
 
-bool vsf_stream_reader_read_byte(   vsf_stream_reader_t *ptObj, 
-                                    uint8_t *pchByte)
+bool vsf_stream_reader_read_byte(   vsf_stream_reader_t *obj_ptr, 
+                                    uint8_t *byte_ptr)
 {
-    return vsf_stream_reader_read(ptObj, pchByte, 1);
+    return vsf_stream_reader_read(obj_ptr, byte_ptr, 1);
 }
 
 #endif

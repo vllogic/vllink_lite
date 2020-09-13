@@ -1,7 +1,6 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
-    vsf_simple_bmevt.c
+target_sources(vsf INTERFACE
+    vsf_simple_bmpevt.c
     vsf_simple_task.c
 )
-

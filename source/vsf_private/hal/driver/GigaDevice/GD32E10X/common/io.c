@@ -83,10 +83,12 @@ void vsfhal_gpio_config(enum gpio_idx_t idx, uint32_t pin_mask, uint32_t config)
         } else {
             GPIO_CTL1(gpiox) = (GPIO_CTL0(gpiox) & ~((GPIO_CTL0_MD0 | GPIO_CTL0_CTL0) << ((offset - 8) * 4))) | (ctl << ((offset - 8) * 4));
         }
-        if (octl){
-            GPIO_OCTL(gpiox) |= octl << offset;
-        } else {
-            GPIO_OCTL(gpiox) &= ~(octl << offset);
+        if (ctl == IO_PULL_IN) {
+            if (octl){
+                GPIO_BOP(gpiox) = 0x1ul << offset;
+            } else {
+                GPIO_BC(gpiox) = 0x1ul << offset;
+            }
         }
         if (spd){
             GPIOx_SPD(gpiox) |= spd << offset;

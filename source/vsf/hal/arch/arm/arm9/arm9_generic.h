@@ -15,14 +15,15 @@
  *                                                                           *
  ****************************************************************************/
 
-#ifndef __CORTEX_A_GENERIC_H__
-#define __CORTEX_A_GENERIC_H__
+#ifndef __ARM9_GENERIC_H__
+#define __ARM9_GENERIC_H__
 
 /*============================ INCLUDES ======================================*/
 #include "hal/vsf_hal_cfg.h"
 
 #define __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
 #include "hal/driver/driver.h"
+
 #undef  __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
 
 #ifdef __cplusplus
@@ -30,8 +31,12 @@ extern "C" {
 #endif
 /*============================ MACROS ========================================*/
 
-#define __LITTLE_ENDIAN                 1
-#define __BYTE_ORDER                    __LITTLE_ENDIAN
+#ifndef __LITTLE_ENDIAN
+#   define __LITTLE_ENDIAN                 1
+#endif
+#ifndef __BYTE_ORDER
+#   define __BYTE_ORDER                    __LITTLE_ENDIAN
+#endif
 
 // TODO:
 #if __ARM_ARCH != 5
@@ -39,9 +44,9 @@ extern "C" {
 #endif
 
 #ifndef VSF_ARCH_PRI_NUM
-#   define VSF_ARCH_PRI_NUM             32
+#   define VSF_ARCH_PRI_NUM             4
 #endif
-#if VSF_ARCH_PRI_NUM > 32
+#if VSF_ARCH_PRI_NUM > 4
 #   error invalid VSF_ARCH_PRI_NUM
 #endif
 
@@ -50,7 +55,7 @@ extern "C" {
 #endif
 
 // software interrupt provided by arch
-#define VSF_ARCH_SWI_NUM                1
+#define VSF_ARCH_SWI_NUM                0
 
 #if VSF_ARCH_PRI_NUM > 0
 #   define __VSF_ARCH_PRI(__N, __BIT)                                           \
@@ -69,6 +74,8 @@ extern "C" {
 #if VSF_ARCH_PRI_NUM > 0
 // arm9 arch_priority is software emulated, simple start from 0 to VSF_ARCH_PRI_NUM - 1
 enum vsf_arch_prio_t {
+    __VSF_ARCH_PRIO_LEAST_MAX       = INT16_MAX,
+    __VSF_ARCH_PRIO_LEAST_MIN       = INT16_MIN,
     VSF_ARCH_PRIO_IVALID            = -1,
     vsf_arch_prio_ivalid            = -1,
 

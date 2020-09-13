@@ -33,10 +33,10 @@
     .reg = (void *)USBFS_BASE,                                                  \
     .buffer_word_size = 0x500 >> 2,                                             \
     .speed = USB_SPEED_FULL,                                                    \
-	.dma_en = false,                                                            \
-	.ulpi_en = false,                                                           \
-	.utmi_en = false,                                                           \
-	.vbus_en = false,
+    .dma_en = false,                                                            \
+    .ulpi_en = false,                                                           \
+    .utmi_en = false,                                                           \
+    .vbus_en = false,
 #endif
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
@@ -51,25 +51,17 @@
 #define GD32F3X0_CLKEN_HSE              (1UL << 4)
 #define GD32F3X0_CLKEN_PLL              (1UL << 5)
 
-enum gd32f3x0_hclksrc_t
-{
-	GD32F3X0_HCLKSRC_HSI8M      = 0,
-	GD32F3X0_HCLKSRC_HSE        = 1,
-	GD32F3X0_HCLKSRC_PLL        = 2,
-};
+#define GD32F3X0_HCLKSRC_HSI8M          0
+#define GD32F3X0_HCLKSRC_HSE            1
+#define GD32F3X0_HCLKSRC_PLL            2
 
-enum gd32f3x0_pllsrc_t
-{
-	GD32F3X0_PLLSRC_HSI8M_D2    = 0,
-	GD32F3X0_PLLSRC_HSE         = 1,
-	GD32F3X0_PLLSRC_HSI48M      = 2,
-};
+#define GD32F3X0_PLLSRC_HSI8M_D2        0
+#define GD32F3X0_PLLSRC_HSE             1
+#define GD32F3X0_PLLSRC_HSI48M          2
 
-enum gd32f3x0_usbsrc_t
-{
-	GD32F3X0_USBSRC_PLL         = 0,
-	GD32F3X0_USBSRC_HSI48M      = 1,
-};
+#define GD32F3X0_USBSRC_PLL             0
+#define GD32F3X0_USBSRC_HSI48M          1
+
 
 #define CHIP_CLKEN                      (GD32F3X0_CLKEN_HSI48M | GD32F3X0_CLKEN_PLL)
 #define CHIP_HCLKSRC                    GD32F3X0_HCLKSRC_PLL
@@ -84,19 +76,19 @@ enum gd32f3x0_usbsrc_t
 #endif  // CHIP_CLKEN
 
 struct vsfhal_clk_info_t {
-	uint32_t clken;
-	
-	enum gd32f3x0_hclksrc_t hclksrc;
-	enum gd32f3x0_pllsrc_t pllsrc;
-    enum gd32f3x0_usbsrc_t usbsrc;
-	
-	uint32_t lse_freq_hz;
-	uint32_t hse_freq_hz;
-	uint32_t pll_freq_hz;
+    uint32_t clken;
+    
+    uint8_t hclksrc;
+    uint8_t pllsrc;
+    uint8_t usbsrc;
+    
+    uint32_t lse_freq_hz;
+    uint32_t hse_freq_hz;
+    uint32_t pll_freq_hz;
 
-	uint32_t ahb_freq_hz;
-	uint32_t apb1_freq_hz;
-	uint32_t apb2_freq_hz;
+    uint32_t ahb_freq_hz;
+    uint32_t apb1_freq_hz;
+    uint32_t apb2_freq_hz;
 };
 typedef struct vsfhal_clk_info_t vsfhal_clk_info_t;
 
@@ -106,7 +98,7 @@ typedef void(*callback_param_t)(void *param);
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 extern vsfhal_clk_info_t *vsfhal_clk_info_get(void);
-extern void vsf_config_dma_stream_callback(uint8_t dma, uint8_t stream, callback_param_t callback, void *param);
+extern uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size);
 
 #endif
 /* EOF */

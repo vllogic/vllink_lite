@@ -57,6 +57,13 @@ bool vsf_arch_low_level_init(void)
 {
     //memset(&__vsf_cm, 0, sizeof(__vsf_cm));
     //vsf_systimer_init();
+    
+#if defined(__VSF_DEBUG__) && __ARM_ARCH >= 7
+#   warning As __VSF_DEBUG__ is defined, all unaligned access will be\
+ treated as faults. 
+    /*! disable processor's support for unaligned access for debug purpose */
+    SCB->CCR |= SCB_CCR_UNALIGN_TRP_Msk;
+#endif
     return true;
 }
 
@@ -294,7 +301,7 @@ void vsf_enable_interrupt(void)
 void vsf_arch_sleep(uint32_t mode)
 {
     UNUSED_PARAM(mode);
-    //__WFE();
+    __WFE();
 }
 
 /*----------------------------------------------------------------------------*

@@ -15,21 +15,10 @@
  *                                                                           *
  ****************************************************************************/
 
-#ifndef __USE_ARM_COMPILER_H__
-#define __USE_ARM_COMPILER_H__
+#ifndef __USE_ARM_COMPILER_H_PART_1__
+#define __USE_ARM_COMPILER_H_PART_1__
 
 /*============================ INCLUDES ======================================*/
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#ifndef VSF_UTILITIES_REQ___CMSIS_HEADER_FILE__FROM_USR
-#include "cmsis_compiler.h"
-#else
-#include VSF_UTILITIES_REQ___CMSIS_HEADER_FILE__FROM_USR
-#endif
 
 //! \name The macros to identify the compiler
 //! @{
@@ -41,9 +30,6 @@
 #if defined(__IAR_SYSTEMS_ICC__)
 #   define __IS_COMPILER_IAR__                 1
 #endif
-
-
-
 
 //! \note for arm compiler 5
 #ifdef __IS_COMPILER_ARM_COMPILER_5__
@@ -81,6 +67,10 @@
 #endif
 //! @}
 
+#endif  /* end of __USE_ARM_COMPILER_H_PART_1__ */
+
+/*========================== Multiple-Entry Start ============================*/
+
 #if defined(__IS_COMPILER_IAR__) && __IS_COMPILER_IAR__
 #   include <intrinsics.h>
 #endif
@@ -88,6 +78,17 @@
 #include "./type.h"
 #include "../__common/__compiler.h"
 
+#ifndef VSF_UTILITIES_REQ___CMSIS_HEADER_FILE__FROM_USR
+#include "cmsis_compiler.h"
+#else
+#include VSF_UTILITIES_REQ___CMSIS_HEADER_FILE__FROM_USR
+#endif
+
+/*========================== Multiple-Entry End ==============================*/
+
+
+#ifndef __USE_ARM_COMPILER_H_PART_2__
+#define __USE_ARM_COMPILER_H_PART_2__
 
 #ifdef __cplusplus
 extern "C" {
@@ -145,7 +146,7 @@ extern "C" {
 #   define __WEAK_ALIAS(__ORIGIN, __ALIAS) \
                                 _Pragma(__STR(weak __ORIGIN=__ALIAS))
 #   define PACKED               __attribute__((packed))
-#   define UNALIGNED            __attribute__((packed))
+#   define UNALIGNED            __packed
 #   define TRANSPARENT_UNION    __attribute__((transparent_union))
 #   define __ALIGN_OF(...)      __ALIGNOF__(__VA_ARGS__)
 
@@ -171,7 +172,7 @@ extern "C" {
                                 __attribute__((weakref(__STR(__ALIAS))))
                                 
 #   define PACKED               __attribute__((packed))
-#   define UNALIGNED            __attribute__((packed))
+#   define UNALIGNED            __packed
 #   define TRANSPARENT_UNION    __attribute__((transparent_union))
 #   define __ALIGN_OF(...)      __alignof__(__VA_ARGS__)
 
@@ -220,8 +221,8 @@ extern "C" {
 static ALWAYS_INLINE uint32_t ____disable_irq(void) 
 {
     uint32_t wPRIMASK = __get_interrupt_state();
-    __disable_irq();
-    return wPRIMASK & 0x1;
+    __disable_interrupt();
+    return wPRIMASK;
 }
 
 #elif __IS_COMPILER_ARM_COMPILER_5__
@@ -392,4 +393,7 @@ __attribute__((always_inline, __noreturn__)) static inline void __cmsis_start(vo
 //! \brief for interrupt 
 #include "./signal.h"
 
-#endif
+#endif  /* end of __USE_ARM_COMPILER_H_PART_2__ */
+
+
+

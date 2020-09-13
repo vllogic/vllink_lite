@@ -3,18 +3,23 @@
 #ifndef __TOP_APP_CFG_H__
 #define __TOP_APP_CFG_H__
 
-/*============================ INCLUDES ======================================*/
+#if 0   // Debug mode
+//  Need set '--no_unaligned_access'
+#   define __VSF_DEBUG__
+#   define __OOC_DEBUG__
+#   define ASSERT(...)                     if (!(__VA_ARGS__)) {while(1);};
+#else
+#   define __VSF_RELEASE__
+#   define __OOC_RELEASE__
+#   define ASSERT(...)
+#endif
 
 #ifdef __GNUC__
 #	include "compile_definitions.h"
 #endif
 
-/*============================ MACROS ========================================*/
-
 #define VSF_CFG_USER_HEADER             "../vsf_private/user_vsf.h"
-
-//#define ASSERT(...)                     if (!(__VA_ARGS__)) {while(1);};
-#define ASSERT(...)
+#define VSF_OSA_DRIVER_HEADER           "./driver.h"        // fake include
 
 #define VSF_OS_CFG_PRIORITY_NUM                         1
 #define VSF_OS_CFG_MAIN_MODE                            VSF_OS_CFG_MAIN_MODE_IDLE

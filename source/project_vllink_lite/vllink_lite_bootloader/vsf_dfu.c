@@ -71,7 +71,7 @@ static const uint8_t __usbd_langid_str_desc[] = {
 struct {
     uint8_t bLength;
     uint8_t bDescriptorType;
-    USB_UNICODE str[dimof(APP_CFG_USBD_VENDOR_STR) - 1];
+    usb_unicode_t str[dimof(APP_CFG_USBD_VENDOR_STR) - 1];
 } PACKED static const __usbd_vendor_str_desc = {
     .bLength            = sizeof(__usbd_vendor_str_desc),
     .bDescriptorType    = USB_DT_STRING,
@@ -80,7 +80,7 @@ struct {
 struct {
     uint8_t bLength;
     uint8_t bDescriptorType;
-    USB_UNICODE str[dimof(APP_CFG_USBD_PRODUCT_STR) - 1];
+    usb_unicode_t str[dimof(APP_CFG_USBD_PRODUCT_STR) - 1];
 } PACKED static const __usbd_product_str_desc = {
     .bLength            = sizeof(__usbd_product_str_desc),
     .bDescriptorType    = USB_DT_STRING,
@@ -89,7 +89,7 @@ struct {
 struct {
     uint8_t bLength;
     uint8_t bDescriptorType;
-    USB_UNICODE str[dimof(APP_CFG_USBD_SERIAL_STR) - 1];
+    usb_unicode_t str[dimof(APP_CFG_USBD_SERIAL_STR) - 1];
 } PACKED static const __usbd_serial_str_desc = {
     .bLength            = sizeof(__usbd_serial_str_desc),
     .bDescriptorType    = USB_DT_STRING,
@@ -107,7 +107,7 @@ const uint8_t __usbd_bos_desc[USB_DT_BOS_SIZE + USB_BOS_CAP_WEBUSB_LEN] = {
 struct {
     uint8_t bLength;
     uint8_t bDescriptorType;
-    USB_UNICODE str[dimof(USB_BOS_STR) - 1];
+    usb_unicode_t str[dimof(USB_BOS_STR) - 1];
 } PACKED static const __usbd_bos_str_desc = {
     .bLength            = sizeof(__usbd_bos_str_desc),
     .bDescriptorType    = USB_DT_STRING,
@@ -320,8 +320,8 @@ vsf_err_t vsf_usbd_notify_user(vk_usbd_dev_t *dev, usb_evt_t evt, void *param)
                 break;
             }
 
-            dev->ctrl_handler.trans.pchBuffer = buffer;
-            dev->ctrl_handler.trans.nSize = size;
+            dev->ctrl_handler.trans.buffer = buffer;
+            dev->ctrl_handler.trans.size = size;
         }
         break;
     case USB_ON_STATUS: {

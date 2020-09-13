@@ -21,7 +21,7 @@
 #if VSF_KERNEL_CFG_SUPPORT_THREAD == ENABLED && VSF_USE_KERNEL == ENABLED
 
 #define __VSF_THREAD_CLASS_IMPLEMENT
-#define VSF_EDA_CLASS_INHERIT
+#define __VSF_EDA_CLASS_INHERIT__
 #include "../vsf_kernel_common.h"
 #include "./vsf_thread.h"
 #include "../vsf_os.h"
@@ -267,7 +267,7 @@ static void __vsf_thread_evthandler(uintptr_t local, vsf_evt_t evt)
 {
     jmp_buf ret;
 
-    VSF_KERNEL_ASSERT(local != NULL);
+    VSF_KERNEL_ASSERT(local != (uintptr_t)NULL);
     class_internal( *(void **)((uintptr_t)local - sizeof(uintptr_t)), 
                     this_ptr, vsf_thread_cb_t);
     this_ptr->ret = &ret;
@@ -319,7 +319,7 @@ static void __vsf_thread_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
 
 #if __IS_COMPILER_IAR__
 //! bit mask appears to contain significant bits that do not affect the result 
-#   pragma diag_suppress=pa182
+#   pragma diag_suppress=pa182,pe111
 #endif
 
 SECTION("text.vsf.kernel.vsf_thread")
@@ -365,7 +365,7 @@ vsf_err_t vk_thread_start( vsf_thread_t *thread,
 
 #if __IS_COMPILER_IAR__
 //! bit mask appears to contain significant bits that do not affect the result 
-#   pragma diag_warning=pa182
+#   pragma diag_warning=pa182,pe111
 #endif
 
 SECTION("text.vsf.kernel.vk_eda_call_thread_prepare")

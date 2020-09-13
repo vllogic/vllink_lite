@@ -1,6 +1,6 @@
 # CMakeLists head
 
-target_include_directories(vsfkernel INTERFACE
+target_include_directories(vsf INTERFACE
   .
 )
 

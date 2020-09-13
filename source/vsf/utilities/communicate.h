@@ -32,11 +32,16 @@ extern "C" {
 typedef struct vsf_mem_t vsf_mem_t;
 struct vsf_mem_t {
     union {
-        uint8_t *pchBuffer;         //!< stream buffer
-        uint8_t *pchSrc;
-        void *pObj;
-    }PTR;
-    int32_t nSize;                  //!< stream size
+        // implement linux-style variable
+        uint8_t *buffer;
+        uint8_t *src;
+        void *obj;
+
+        uint8_t *buffer_ptr;         //!< stream buffer
+        uint8_t *src_ptr;
+        void *obj_ptr;
+    }ptr;
+    int32_t size;
 };
 //! @}
 #else
@@ -51,20 +56,20 @@ struct vsf_mem_t {
             uint8_t *src;
             void *obj;
 
-            uint8_t *pchBuffer;         //!< stream buffer
-            uint8_t *pchSrc;
-            void *pObj;
+            uint8_t *buffer_ptr;         //!< stream buffer
+            uint8_t *src_ptr;
+            void *obj_ptr;
         };
         union {
-            uint8_t *pchBuffer;         //!< stream buffer
-            uint8_t *pchSrc;
-            void *pObj;
-        }PTR;
+            uint8_t *buffer_ptr;         //!< stream buffer
+            uint8_t *src_ptr;
+            void *obj_ptr;
+        }ptr;
     };
     union {
         // implement linux-style variable
         int32_t size;
-        int32_t nSize;                  //!< stream size
+        int32_t s32_size;                  //!< stream size
     };
 };
 //! @}
@@ -75,7 +80,7 @@ struct vsf_mem_t {
 declare_interface(i_byte_pipe_t)
 def_interface(i_byte_pipe_t)
     //!< read a byte
-    bool (*ReadByte)(uint8_t *pchByte);
+    bool (*ReadByte)(uint8_t *byte_ptr);
     //!< write a byte
     bool (*WriteByte)(uint_fast8_t chByte);
     
@@ -92,9 +97,9 @@ def_interface(i_pipe_t)
     
     struct {
         //! read a block
-        uint_fast32_t  (*Read)(uint8_t *pchStream, uint_fast32_t wSize);
+        uint_fast32_t  (*Read)(uint8_t *pchStream, uint_fast32_t u32_size);
         //! write a block
-        uint_fast32_t  (*Write)(uint8_t *pchStream, uint_fast32_t wSize);
+        uint_fast32_t  (*Write)(uint8_t *pchStream, uint_fast32_t u32_size);
     } Stream;
 
 end_def_interface(i_pipe_t)

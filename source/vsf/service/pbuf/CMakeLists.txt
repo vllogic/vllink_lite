@@ -1,6 +1,6 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
-    vsf_pbuf_pool.c
+target_sources(vsf INTERFACE
     vsf_pbuf.c
+    vsf_pbuf_pool.c
 )

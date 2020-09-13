@@ -1,7 +1,7 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
-  vsf_arch_abstraction.c
+target_sources(vsf INTERFACE
+    vsf_arch_abstraction.c
 )
 
-add_subdirectory_existed(${VSFHAL_ARCH_SERIES})
+add_subdirectory(${VSF_HAL_ARCH_SERIES})

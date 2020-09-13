@@ -46,7 +46,7 @@ enum gpio_idx_t {
     #if GPIOE_ENABLE
     GPIOE_IDX = 4,
     #endif
-    GPIOE_IDX_NUM,
+    GPIO_IDX_NUM,
     GPIO_INVALID_IDX,
 };
 

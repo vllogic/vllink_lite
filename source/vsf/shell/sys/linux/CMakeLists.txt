@@ -1,13 +1,9 @@
 # CMakeLists head
 
-target_include_directories(vsfkernel INTERFACE
-  ./include
-)
-
-target_sources(vsfkernel INTERFACE
-    vsf_linux_socket.c
+target_sources(vsf INTERFACE
     vsf_linux.c
+    vsf_linux_socket.c
 )
 
-add_subdirectory(lib)
 add_subdirectory(port)
+add_subdirectory(lib)

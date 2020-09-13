@@ -27,10 +27,10 @@
  *!        included in this file
  */
 #if     defined(__VSF_TGUI_CONTROLS_BUTTON_CLASS_IMPLEMENT)
-#   define __PLOOC_CLASS_IMPLEMENT
+#   define __PLOOC_CLASS_IMPLEMENT__
 #   undef __VSF_TGUI_CONTROLS_BUTTON_CLASS_IMPLEMENT
 #elif   defined(__VSF_TGUI_CONTROLS_BUTTON_CLASS_INHERIT)
-#   define __PLOOC_CLASS_INHERIT
+#   define __PLOOC_CLASS_INHERIT__
 #   undef __VSF_TGUI_CONTROLS_BUTTON_CLASS_INHERIT
 #endif
 
@@ -147,7 +147,7 @@ extern
 fsm_rt_t vk_tgui_button_update(vsf_tgui_button_t* ptButton);
 
 extern
-fsm_rt_t vsf_tgui_button_msg_handler(vsf_tgui_button_t* ptControl,
+fsm_rt_t vsf_tgui_button_msg_handler(vsf_tgui_button_t* control_ptr,
                                         vsf_tgui_msg_t* ptMSG);
 
 #endif

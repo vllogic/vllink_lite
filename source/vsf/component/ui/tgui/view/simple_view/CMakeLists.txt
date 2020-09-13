@@ -1,7 +1,7 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
-    vsf_tgui_sv_button.c
+target_sources(vsf INTERFACE
+    vsf_tgui_sv_buttong.c
     vsf_tgui_sv_color.c
     vsf_tgui_sv_container.c
     vsf_tgui_sv_control.c

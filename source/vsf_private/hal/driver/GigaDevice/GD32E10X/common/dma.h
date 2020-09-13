@@ -31,10 +31,10 @@
 
 enum dma_idx_t {
     #if DMA0_ENABLE
-    DMA0_IDX,
+    DMA0_IDX = 0,
     #endif
     #if DMA1_ENABLE
-    DMA1_IDX,
+    DMA1_IDX = 1,
     #endif
     DMA_IDX_NUM,
     DMA_INVALID_IDX,
@@ -46,7 +46,7 @@ enum dma_idx_t {
 /*============================ PROTOTYPES ====================================*/
 
 void vsf_dma_config_channel(enum dma_idx_t idx, uint8_t channel, 
-        callback_param_t callback, void *param);
+        callback_param_t callback, void *param, int32_t int_priority);
 
 #endif  // __HAL_DRIVER_GIGADEVICE_GD32E10X_DMA_H__
 /* EOF */

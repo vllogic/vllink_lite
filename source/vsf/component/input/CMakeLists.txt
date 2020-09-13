@@ -1,8 +1,7 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
+target_sources(vsf INTERFACE
     vsf_input.c
 )
 
 add_subdirectory(driver)
-add_subdirectory(protocol)

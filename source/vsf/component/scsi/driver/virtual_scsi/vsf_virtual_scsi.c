@@ -21,11 +21,11 @@
 
 #if VSF_USE_SCSI == ENABLED && VSF_USE_MAL_SCSI == ENABLED
 
-#define VSF_SCSI_INHERIT
-#define VSF_VIRTUAL_SCSI_IMPLEMENT
+#define __VSF_SCSI_CLASS_INHERIT__
+#define __VSF_VIRTUAL_SCSI_CLASS_IMPLEMENT
 
-// TODO: use dedicated include
-#include "vsf.h"
+#include "../../vsf_scsi.h"
+#include "./vsf_virtual_scsi.h"
 
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
@@ -65,8 +65,8 @@ static bool __vk_virtual_scsi_buffer(vk_scsi_t *pthis, uint8_t *cbd, vsf_mem_t *
     cmd_code = (scsi_cmd_code_t)(cbd[0] & 0x1F);
     is_read = cmd_code == SCSI_CMDCODE_READ;
     if ((cmd_code != SCSI_CMDCODE_READ) && (cmd_code != SCSI_CMDCODE_WRITE)) {
-        mem->nSize = sizeof(virtual_scsi->reply);
-        mem->pchBuffer = virtual_scsi->reply;
+        mem->size = sizeof(virtual_scsi->reply);
+        mem->buffer = virtual_scsi->reply;
         return true;
     } else if (virtual_scsi->virtual_scsi_drv->buffer != NULL) {
         uint64_t addr;
@@ -77,6 +77,11 @@ static bool __vk_virtual_scsi_buffer(vk_scsi_t *pthis, uint8_t *cbd, vsf_mem_t *
     }
     return false;
 }
+
+#if __IS_COMPILER_IAR__
+//! statement is unreachable
+#   pragma diag_suppress=pe111
+#endif
 
 __vsf_component_peda_ifs_entry(__vk_virtual_scsi_init, vk_scsi_init)
 {
@@ -150,6 +155,7 @@ static vsf_err_t __vk_virtual_scsi_rw(vk_virtual_scsi_t *pthis, uint8_t *cbd, vo
                 .size       = size,
                 .mem_stream = mem_stream,
             )
+            UNUSED_PARAM(err);
         } else {
             vsf_err_t err;
             __vsf_component_call_peda_ifs(vk_virtual_scsi_write, err, drv->param_subcall.write, 0, pthis,
@@ -157,6 +163,7 @@ static vsf_err_t __vk_virtual_scsi_rw(vk_virtual_scsi_t *pthis, uint8_t *cbd, vo
                 .size       = size,
                 .mem_stream = mem_stream,
             )
+            UNUSED_PARAM(err);
         }
         return VSF_ERR_NOT_READY;
     default:
@@ -165,14 +172,19 @@ static vsf_err_t __vk_virtual_scsi_rw(vk_virtual_scsi_t *pthis, uint8_t *cbd, vo
     }
 }
 
+#if __IS_COMPILER_IAR__
+//! statement is unreachable
+#   pragma diag_warning=pe111
+#endif
+
 __vsf_component_peda_ifs_entry(__vk_virtual_scsi_execute, vk_scsi_execute)
 {
     vsf_peda_begin();
     vk_virtual_scsi_t *pthis = (vk_virtual_scsi_t *)&vsf_this;
     vk_virtual_scsi_param_t *param = pthis->param;
 
-    uint8_t *reply = vsf_local.mem.pchBuffer;
-    int_fast32_t reply_len = vsf_local.mem.nSize;
+    uint8_t *reply = vsf_local.mem.buffer;
+    int_fast32_t reply_len = vsf_local.mem.size;
 
     switch (evt) {
     case VSF_EVT_INIT: {
@@ -335,11 +347,13 @@ exit_invalid_field_in_cmd:
     pthis->asc = SCSI_ASC_INVALID_FIELD_IN_COMMAND;
     vsf_eda_return(VSF_ERR_FAIL);
     return;
+/*
 exit_not_ready:
     pthis->sense_key = SCSI_SENSEKEY_NOT_READY;
     pthis->asc = SCSI_ASC_NONE;
     vsf_eda_return(VSF_ERR_FAIL);
     return;
+*/
     vsf_peda_end();
 }
 

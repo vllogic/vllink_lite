@@ -1,6 +1,6 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
+target_sources(vsf INTERFACE
     vsf_usbh_ds4.c
     vsf_usbh_HID.c
     vsf_usbh_nspro.c

@@ -42,8 +42,8 @@ static void clk_init(vsfhal_clk_info_t *info)
     }
 
     if (info->clken & GD32F3X0_CLKEN_HSE) {
-        RCU_ADDCTL |= RCU_CTL0_HXTALEN;
-        while(!(RCU_ADDCTL & RCU_CTL0_HXTALSTB));
+        RCU_CTL0 |= RCU_CTL0_HXTALEN;
+        while(!(RCU_CTL0 & RCU_CTL0_HXTALSTB));
     }
 
     RCU_CTL0 &= ~RCU_CTL0_PLLEN;
@@ -186,11 +186,20 @@ static void clk_init(vsfhal_clk_info_t *info)
 	RCU_AHBEN |= RCU_AHBEN_DMAEN;
 }
 
+WEAK(vsf_driver_init_usrapp)
+bool vsf_driver_init_usrapp(void) 
+{
+    return true;
+}
+
 bool vsf_driver_init(void)
 {
 	NVIC_SetPriorityGrouping(3);
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
-
+    ENABLE_GLOBAL_INTERRUPT();
+    
+    vsf_driver_init_usrapp();
+    
 	clk_init(&vsfhal_clk_info);
     return true;
 }
@@ -198,6 +207,13 @@ bool vsf_driver_init(void)
 vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 {
 	return &vsfhal_clk_info;
+}
+
+uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size)
+{
+    size = min(size, 12);   // 96 bit max
+    memcpy(buffer, (uint8_t *)0x1FFFF7AC, size);
+    return size;
 }
 
 /* EOF */

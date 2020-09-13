@@ -1,3 +1,3 @@
 # CMakeLists head
 
-add_subdirectory(${VSFHAL_CHIP_VENDOR})
+add_subdirectory_existed(${VSFHAL_CHIP_VENDOR})

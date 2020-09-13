@@ -84,7 +84,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>CMSISDAP_ID</state>
+                    <state>STLINK_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
@@ -1016,7 +1016,7 @@
                 </option>
                 <option>
                     <name>CCSTLinkInterfaceRadio</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCSTLinkInterfaceCmdLine</name>
@@ -1529,7 +1529,7 @@
                 </option>
                 <option>
                     <name>MemFile</name>
-                    <state>$TOOLKIT_DIR$\CONFIG\debugger\GD\GD32F350x8.ddf</state>
+                    <state>$TOOLKIT_DIR$\CONFIG\debugger\GD\GD32E103x8.ddf</state>
                 </option>
                 <option>
                     <name>RunToEnable</name>
@@ -1569,7 +1569,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>CMSISDAP_ID</state>
+                    <state>STLINK_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
@@ -1597,7 +1597,7 @@
                 </option>
                 <option>
                     <name>FlashLoadersV3</name>
-                    <state>$TOOLKIT_DIR$\config\flashloader\GD\FlashGD32F350x8.board</state>
+                    <state>$TOOLKIT_DIR$\config\flashloader\GD\FlashGD32E103x8.board</state>
                 </option>
                 <option>
                     <name>OCImagesSuppressCheck1</name>
@@ -2501,7 +2501,7 @@
                 </option>
                 <option>
                     <name>CCSTLinkInterfaceRadio</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCSTLinkInterfaceCmdLine</name>

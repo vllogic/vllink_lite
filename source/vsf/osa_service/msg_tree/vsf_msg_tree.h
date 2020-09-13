@@ -33,11 +33,11 @@
 #define __PLOOC_CLASS_USE_STRICT_TEMPLATE__
 
 #if     defined(__VSF_MSG_TREE_CLASS_IMPLEMENT)
-#   define __PLOOC_CLASS_IMPLEMENT
+#   define __PLOOC_CLASS_IMPLEMENT__
 #   undef __VSF_MSG_TREE_CLASS_IMPLEMENT
-#elif   defined(__VSF_MSG_TREE_CLASS_INHERIT)
-#   define __PLOOC_CLASS_INHERIT
-#   undef __VSF_MSG_TREE_CLASS_INHERIT
+#elif   defined(__VSF_MSG_TREE_CLASS_INHERIT__)
+#   define __PLOOC_CLASS_INHERIT__
+#   undef __VSF_MSG_TREE_CLASS_INHERIT__
 #endif
 
 #include "utilities/ooc_class.h"
@@ -75,7 +75,7 @@ declare_structure(vsf_msgt_node_t)
 //! \name the base class for all other tree messages
 //! @{
 typedef struct vsf_msgt_msg_t {
-    vsf_evt_t   tMSG;                                                           //!< the tree message which should larger than VSF_EVT_USER
+    vsf_evt_t   msg;                                                           //!< the tree message which should larger than VSF_EVT_USER
 }vsf_msgt_msg_t;
 //! @}
 

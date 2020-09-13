@@ -20,7 +20,7 @@
 #include "./vsf_kernel_cfg.h"
 
 #if VSF_USE_KERNEL == ENABLED
-#define VSF_EDA_CLASS_INHERIT
+#define __VSF_EDA_CLASS_INHERIT__
 #include "./vsf_kernel_common.h"
 #include "./vsf_eda.h"
 #include "./vsf_evtq.h"
@@ -32,7 +32,7 @@
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
-struct __vsf_os_t {
+typedef struct vsf_os_t {
 #if __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
 #   if defined(__VSF_OS_CFG_EVTQ_LIST)
     vsf_pool(vsf_evt_node_pool) node_pool;
@@ -42,15 +42,14 @@ struct __vsf_os_t {
     vsf_pool(vsf_eda_frame_pool) eda_frame_pool;
 #endif
     const vsf_kernel_resource_t *res_ptr;
-};
-
-typedef struct __vsf_os_t __vsf_os_t;
-
+} vsf_os_t;
 
 
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
-static NO_INIT __vsf_os_t __vsf_os;
+
+static NO_INIT vsf_os_t __vsf_os;
+
 /*============================ PROTOTYPES ====================================*/
 
 extern void vsf_kernel_err_report(vsf_kernel_error_t err);
@@ -77,6 +76,8 @@ implement_vsf_pool(vsf_eda_frame_pool, __vsf_eda_frame_t)
 SECTION(".text.vsf.kernel.vsf_eda_new_frame")
 __vsf_eda_frame_t * vsf_eda_new_frame(size_t local_size)
 {
+    //! make sure local_size is aligned with sizeof(uintalu_t);
+    local_size = (local_size + sizeof(uintalu_t) - 1) & ~ (sizeof(uintalu_t) - 1);
     /* todo: add smart pool support in the future */
 #if 0
     __vsf_eda_frame_t *frame =
@@ -91,7 +92,8 @@ __vsf_eda_frame_t * vsf_eda_new_frame(size_t local_size)
         //! this is important, don't remove it.
         memset(frame, 0, sizeof(__vsf_eda_frame_t) + local_size + sizeof(uintalu_t));
 
-        //! add watermark for local buffer overflow detection
+        //! add watermark for local buffer overflow detection, 
+        //! please never remove this!!! as local size could be zero
         *(uintalu_t *)
             (   (uintptr_t)frame 
             +   sizeof(__vsf_eda_frame_t) 
@@ -119,7 +121,7 @@ void vsf_eda_free_frame(__vsf_eda_frame_t *frame)
 implement_vsf_pool( vsf_evt_node_pool, vsf_evt_node_t)
 #endif
 
-static void vsf_kernel_os_init(void)
+static void __vsf_kernel_os_init(void)
 {
     memset(&__vsf_os, 0, sizeof(__vsf_os));
 
@@ -166,11 +168,11 @@ static void vsf_kernel_os_init(void)
         vsf_arch_prio_t priorit = vsf_arch_prio_highest;
     #endif
     
-        vsf_kernel_cfg_t tCFG = {
+        vsf_kernel_cfg_t cfg = {
             __vsf_os.res_ptr->arch.sched_prio.highest,                          //!< highest priority
             priorit,                                                            //!< systimer priority
         };
-        vsf_kernel_init(&tCFG);
+        vsf_kernel_init(&cfg);
     }
 //#endif
 
@@ -360,13 +362,12 @@ const code_region_t VSF_FORCED_SCHED_SAFE_CODE_REGION = {
 };
 #endif
 
-#ifndef WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE
-WEAK(vsf_plug_in_on_kernel_idle)
-void vsf_plug_in_on_kernel_idle(void)
+// vsf_sleep can only be called in vsf_plug_in_on_kernel_idle
+void vsf_sleep(void)
 {
 #   if VSF_OS_CFG_ADD_EVTQ_TO_IDLE == ENABLED && __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
     vsf_disable_interrupt();
-    if (!vsf_evtq_is_empty(&__vsf_os.res_ptr->evt_queue.queue_array[0])) {
+    if (vsf_evtq_is_empty(&__vsf_os.res_ptr->evt_queue.queue_array[0])) {
         // vsf_arch_sleep will enable interrupt
         vsf_arch_sleep(0);
     }
@@ -374,6 +375,13 @@ void vsf_plug_in_on_kernel_idle(void)
 #   else
     vsf_arch_sleep(0);
 #   endif
+}
+
+#ifndef WEAK_VSF_PLUG_IN_ON_KERNEL_IDLE
+WEAK(vsf_plug_in_on_kernel_idle)
+void vsf_plug_in_on_kernel_idle(void)
+{
+    vsf_sleep();
 }
 #endif
 
@@ -402,7 +410,9 @@ void __vsf_kernel_os_run_priority(vsf_prio_t priority)
 void __vsf_kernel_os_start(void)
 {
     vsf_service_init();
-    vsf_kernel_os_init();
+    vsf_hal_init();
+
+    __vsf_kernel_os_init();
 
 #if __VSF_KERNEL_CFG_EVTQ_EN == ENABLED
     {
@@ -410,7 +420,7 @@ void __vsf_kernel_os_start(void)
 #   ifdef __VSF_OS_CFG_EVTQ_ARRAY
         uint_fast16_t node_size = (__vsf_os.res_ptr->evt_queue.node_bit_sz);
 #   endif
-        uint16_t i;
+        uint_fast16_t i;
     
         for (i = 0; 
             i < __vsf_os.res_ptr->evt_queue.queue_cnt; 
@@ -437,7 +447,6 @@ void __vsf_kernel_os_start(void)
 
 void __vsf_main_entry(void)
 {
-    vsf_hal_init();
     __vsf_kernel_os_start();
 
     while (1) {

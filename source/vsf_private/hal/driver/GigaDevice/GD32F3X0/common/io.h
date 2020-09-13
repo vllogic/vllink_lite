@@ -46,7 +46,7 @@ enum gpio_idx_t {
     #if GPIOF_ENABLE
     GPIOF_IDX = 5,
     #endif
-    GPIOE_IDX_NUM,
+    GPIO_IDX_NUM,
     GPIO_INVALID_IDX,
 };
 
@@ -85,7 +85,6 @@ enum gpio_mode_t{
     IO_OUTPUT_OD            = IO_OUTPUT | IO_OD_OUT,
 
 };
-#define IO_AF_MODE_SELECT(x)        (IO_AF | ((x) << 7));
 
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/

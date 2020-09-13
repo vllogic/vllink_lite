@@ -40,7 +40,7 @@ enum dma_idx_t {
 /*============================ PROTOTYPES ====================================*/
 
 void vsf_dma_config_channel(enum dma_idx_t idx, uint8_t channel, 
-        callback_param_t callback, void *param);
+        callback_param_t callback, void *param, int32_t int_priority);
 
 #endif  // __HAL_DRIVER_GIGADEVICE_GD32F3X0_DMA_H__
 /* EOF */

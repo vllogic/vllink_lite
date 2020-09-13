@@ -23,6 +23,8 @@ extern "C" {
 #endif
 
 /*============================ INCLUDES ======================================*/
+#include "vsf_cfg.h"
+
 /*============================ MACROS ========================================*/
 
 #ifndef DEF_REG
@@ -125,7 +127,8 @@ extern "C" {
                                 __asm__(".equ " #__ALIAS ", " #__ORIGIN)
 
 #   define PACKED               __attribute__((__packed__))
-#   define UNALIGNED            __attribute__((__packed__))
+//#   define UNALIGNED            __attribute__((__packed__))
+#   undef UNALIGNED                                                             //! llvm doesn't support this
 #   define TRANSPARENT_UNION    __attribute__((__transparent_union__))
 #   define __ALIGN_OF(...)      __alignof__(__VA_ARGS__)
 
@@ -149,7 +152,8 @@ extern "C" {
                                 __attribute__((weakref(__STR(__ALIAS))))
 
 #   define PACKED               __attribute__((packed))
-#   define UNALIGNED            __attribute__((packed))
+//#   define UNALIGNED            __attribute__((packed))
+#   undef UNALIGNED                                                             //! gcc doesn't support this
 #   define TRANSPARENT_UNION    __attribute__((transparent_union))
 #   define __ALIGN_OF(...)    __alignof__(__VA_ARGS__)
 
@@ -285,6 +289,15 @@ extern "C" {
 //! use of address of unaligned structure member 
 #pragma diag_suppress=pa039
 
+//! declaration is not visable outside of function
+#pragma diag_suppress=pe231
+
+//! expression has no effect
+#pragma diag_suppress=pe174
+
+//! label was declared but never referenced
+#pragma diag_suppress=pe177
+
 //,Pe186,Pe111,,pe128,,,Pe1866,Pe064,Pa039
 
 #endif
@@ -292,10 +305,13 @@ extern "C" {
 /*----------------------------------------------------------------------------*
  * Warning Emphasize                                                          *
  *----------------------------------------------------------------------------*/
-#if defined(__clang__) //__IS_COMPILER_LLVM__
-#pragma clang diagnostic warning "-Wcast-align"
-#elif __IS_COMPILER_GCC__
-#pragma GCC diagnostic warning "-Wcast-align"
+ 
+#if defined(__VSF_DEBUG__)
+#   if defined(__clang__) //__IS_COMPILER_LLVM__
+#       pragma clang diagnostic warning "-Wcast-align"
+#   elif __IS_COMPILER_GCC__
+#       pragma GCC diagnostic warning "-Wcast-align"
+#   endif
 #endif
 
 /*----------------------------------------------------------------------------*

@@ -42,8 +42,8 @@ static void clk_init(vsfhal_clk_info_t *info)
     }
 
     if (info->clken & GD32E10X_CLKEN_HSE) {
-        RCU_ADDCTL |= RCU_CTL_HXTALEN;
-        while(!(RCU_ADDCTL & RCU_CTL_HXTALSTB));
+        RCU_CTL |= RCU_CTL_HXTALEN;
+        while(!(RCU_CTL & RCU_CTL_HXTALSTB));
     }
 
     RCU_CTL &= ~RCU_CTL_PLLEN;
@@ -52,10 +52,16 @@ static void clk_init(vsfhal_clk_info_t *info)
             RCU_CFG0 &= ~RCU_CFG0_PLLSEL;
             tmp32 = info->pll_freq_hz / 4000000;
         } else if (info->pllsrc == GD32E10X_PLLSRC_HSE) {
-            RCU_CFG1 &= ~(RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV0 | RCU_CFG1_PREDV0SEL);
-            RCU_CFG1 |= info->hse_freq_hz / 4000000 - 1;
-            RCU_CFG0 |= RCU_CFG0_PLLSEL;
-            tmp32 = info->pll_freq_hz / 4000000;
+            if (info->pll_freq_hz <= 124000000) {
+                RCU_CFG1 &= ~(RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV0 | RCU_CFG1_PREDV0SEL);
+                RCU_CFG1 |= info->hse_freq_hz / 4000000 - 1;
+                RCU_CFG0 |= RCU_CFG0_PLLSEL;
+                tmp32 = info->pll_freq_hz / 4000000;
+            } else {
+                RCU_CFG1 &= ~(RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV0 | RCU_CFG1_PREDV0SEL);
+                RCU_CFG0 |= RCU_CFG0_PLLSEL;
+                tmp32 = info->pll_freq_hz / info->hse_freq_hz;
+            }
         } else if (info->pllsrc == GD32E10X_PLLSRC_HSI48M) {
             RCU_CFG1 &= ~(RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV0 | RCU_CFG1_PREDV0SEL);
             RCU_CFG1 |= RCU_CFG1_PLLPRESEL | (48000000 / 8000000 - 1);
@@ -199,12 +205,23 @@ static void clk_init(vsfhal_clk_info_t *info)
 
     RCU_AHBEN |= RCU_AHBEN_DMA0EN | RCU_AHBEN_DMA1EN;
 	RCU_APB2EN |= RCU_APB2EN_AFEN;
+    
+    AFIO_PCF0 |= 0x2ul << 24;   // enable PB3 output
+}
+
+WEAK(vsf_driver_init_usrapp)
+bool vsf_driver_init_usrapp(void) 
+{
+    return true;
 }
 
 bool vsf_driver_init(void)
 {
-	NVIC_SetPriorityGrouping(3);
+	NVIC_SetPriorityGrouping(3);    // 4 bits for pre-emption priority
     SCB->VTOR = (uint32_t)__VECTOR_TABLE;
+    ENABLE_GLOBAL_INTERRUPT();
+    
+    vsf_driver_init_usrapp();
 
 	clk_init(&vsfhal_clk_info);
     return true;
@@ -213,6 +230,13 @@ bool vsf_driver_init(void)
 vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 {
 	return &vsfhal_clk_info;
+}
+
+uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size)
+{
+    size = min(size, 12);   // 96 bit max
+    memcpy(buffer, (uint8_t *)0x1FFFF7E8, size);
+    return size;
 }
 
 /* EOF */

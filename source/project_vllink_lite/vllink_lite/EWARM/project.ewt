@@ -2397,20 +2397,44 @@
                 <name>$PROJ_DIR$\..\config\proj_cfg_vllinklite.h</name>
             </file>
             <file>
-                <name>$PROJ_DIR$\..\config\proj_cfg_vllinklite_extflash.h</name>
-            </file>
-            <file>
                 <name>$PROJ_DIR$\..\config\vsf_usr_cfg.h</name>
             </file>
         </group>
         <file>
-            <name>$PROJ_DIR$\GD32E103xx_boot.icf</name>
+            <name>$PROJ_DIR$\..\dap.c</name>
         </file>
         <file>
-            <name>$PROJ_DIR$\GD32F350xx_boot.icf</name>
+            <name>$PROJ_DIR$\..\dap.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\GD32E103xx_booted.icf</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\GD32F350xx_booted.icf</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\main.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\ramuart.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\ramuart.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\usrapp_usbd_common.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\usrapp_usbd_vllinklite.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\vsf_usbd_cmsis_dap_v2.c</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\vsf_usbd_cmsis_dap_v2.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\vsf_usbd_webusb_usr.h</name>
         </file>
     </group>
     <group>
@@ -2430,24 +2454,6 @@
                             <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\hash\crc\vsf_crc.h</name>
                         </file>
                     </group>
-                    <group>
-                        <name>tiny-AES-c</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\tiny-AES-c\aes.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\tiny-AES-c\aes.h</name>
-                        </file>
-                    </group>
-                    <group>
-                        <name>xxtea</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\xxtea\xxtea.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\xxtea\xxtea.h</name>
-                        </file>
-                    </group>
                 </group>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\component\crypto\vsf_crypto_cfg.h</name>
@@ -2458,15 +2464,6 @@
                 <group>
                     <name>nulink</name>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole.h</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole_Config.h</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\nulink\NuConsole_stream.c</name>
                     </file>
                     <file>
@@ -2475,24 +2472,6 @@
                 </group>
                 <group>
                     <name>segger_rtt</name>
-                    <group>
-                        <name>RTT</name>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT.c</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT.h</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT_ASM_ARMv7M.S</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT_Conf.h</name>
-                        </file>
-                        <file>
-                            <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\RTT\SEGGER_RTT_printf.c</name>
-                        </file>
-                    </group>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\component\debugger\segger_rtt\segger_rtt_stream.c</name>
                     </file>
@@ -3115,10 +3094,10 @@
                         <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple.h</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmevt.c</name>
+                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmpevt.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmevt.h</name>
+                        <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_bmpevt.h</name>
                     </file>
                     <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\kernel\shell\simple\vsf_simple_task.c</name>
@@ -3346,6 +3325,15 @@
             </group>
             <group>
                 <name>vsfstream</name>
+                <group>
+                    <name>block_steam</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\block_stream\vsf_block_stream.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\block_stream\vsf_block_stream.h</name>
+                    </file>
+                </group>
                 <group>
                     <name>fifo_steam</name>
                     <file>
@@ -3713,6 +3701,12 @@
                     <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\code_region.h</name>
                 </file>
                 <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\delegate.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\delegate.h</name>
+                </file>
+                <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\utilities\language_extension\language_extension.h</name>
                 </file>
                 <file>
@@ -3776,6 +3770,9 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\..\..\vsf\vsf_cfg.h</name>
+        </file>
+        <file>
+            <name>$PROJ_DIR$\..\vsf_usbd_webusb_usr.c</name>
         </file>
     </group>
     <group>
@@ -3941,6 +3938,18 @@
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\driver.h</name>
                         </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\jtag.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\jtag.h</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\swd.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\swd.h</name>
+                        </file>
                     </group>
                     <group>
                         <name>GD32F3X0</name>
@@ -4099,6 +4108,18 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\driver.h</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\jtag.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\jtag.h</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\swd.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\swd.h</name>
                         </file>
                     </group>
                     <file>
