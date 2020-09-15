@@ -146,7 +146,7 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
 static vsf_callback_timer_t cb_timer;
 
 #define DAP_TEST_PORT                   0   // 0, DAP_PORT_SWD, DAP_PORT_JTAG
-#define DAP_TEST_SPEED_KHZ              8000
+#define DAP_TEST_SPEED_KHZ              4000
 #if DAP_TEST_PORT
 static void do_dap_test(vsf_callback_timer_t *timer)
 {

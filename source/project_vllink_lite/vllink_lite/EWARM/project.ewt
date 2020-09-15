@@ -2402,6 +2402,9 @@
         </group>
         <file>
             <name>$PROJ_DIR$\..\dap.c</name>
+            <configuration>
+                <name>VllinkLite_GD32E103</name>
+            </configuration>
         </file>
         <file>
             <name>$PROJ_DIR$\..\dap.h</name>
@@ -3940,12 +3943,18 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\jtag.c</name>
+                            <configuration>
+                                <name>VllinkLite_GD32E103</name>
+                            </configuration>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\jtag.h</name>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\swd.c</name>
+                            <configuration>
+                                <name>VllinkLite_GD32E103</name>
+                            </configuration>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\swd.h</name>

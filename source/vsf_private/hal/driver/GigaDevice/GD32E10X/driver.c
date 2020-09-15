@@ -232,6 +232,18 @@ vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 	return &vsfhal_clk_info;
 }
 
+void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
+{
+     if (vsfhal_clk_info.apb1_freq_hz != vsfhal_clk_info.apb2_freq_hz)
+         return;
+
+     if ((vsfhal_clk_info.apb1_freq_hz == 64000000) && (apb_freq_hz == 48000000)) {
+        
+     } else if ((vsfhal_clk_info.apb1_freq_hz == 48000000) && (apb_freq_hz == 64000000)) {
+        
+     }
+}
+
 uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size)
 {
     size = min(size, 12);   // 96 bit max
