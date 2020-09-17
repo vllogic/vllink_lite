@@ -40,7 +40,12 @@ static void on_response_ready(void *p, uint8_t *buf, uint16_t size)
     vk_usbd_trans_t *trans = &cmsis_dap_v2->transact_in;
     
     if (size) {
-        size = min(sizeof(cmsis_dap_v2->response_buff), size);
+        if (size < sizeof(cmsis_dap_v2->response_buff)) {
+            if (!(size % 64))
+                size += 1;
+        } else {
+            size = sizeof(cmsis_dap_v2->response_buff);
+        }
         memcpy(cmsis_dap_v2->response_buff, buf, size);
         trans->use_as__vsf_mem_t.size = size;
         vk_usbd_ep_send(cmsis_dap_v2->dev, trans);

@@ -140,7 +140,7 @@ static inline void jtag_set_io_mode(void)
 }
 
 #pragma optimize=none
-static void delay_jtag_1500khz(uint16_t dummy)
+static void delay_jtag_2000khz_1500khz(uint16_t dummy)
 {
     __ASM("NOP");
     __ASM("NOP");
@@ -149,43 +149,25 @@ static void delay_jtag_1500khz(uint16_t dummy)
 }
 
 #pragma optimize=none
-static void delay_jtag_1000khz(uint16_t dummy)
+static void delay_jtag_1000khz_750khz(uint16_t dummy)
 {
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
+    int32_t temp = 9;
+    while (--temp);
+}
+
+
+#pragma optimize=none
+static void delay_jtag_500khz_375khz(uint16_t dummy)
+{
+    int32_t temp = 25;
+    while (--temp);
 }
 
 #pragma optimize=none
-static void delay_jtag_ticks(uint16_t delay_tick)
+static void delay_jtag_250khz_188khz(uint16_t dummy)
 {
-    vsf_systimer_cnt_t ticks = vsf_systimer_get() + delay_tick;
-    while (ticks >= vsf_systimer_get());
+    int32_t temp = 57;
+    while (--temp);
 }
 
 const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
@@ -235,22 +217,22 @@ void vsfhal_jtag_config(uint16_t kHz, uint16_t retry, uint8_t idle)
         jtag_control.jtag_rw = jtag_rw_quick;
         jtag_control.jtag_rw_dr = jtag_rw_dr_quick;
         jtag_control.jtag_delay = NULL;
-    } else if (kHz >= 2000) {
-        jtag_control.jtag_rw = jtag_rw_slow;
-        jtag_control.jtag_rw_dr = jtag_rw_dr_slow;
-        jtag_control.jtag_delay = NULL;
     } else if (kHz >= 1500) {
         jtag_control.jtag_rw = jtag_rw_slow;
         jtag_control.jtag_rw_dr = jtag_rw_dr_slow;
-        jtag_control.jtag_delay = delay_jtag_1500khz;
-    } else if (kHz >= 1000) {
+        jtag_control.jtag_delay = delay_jtag_2000khz_1500khz;
+    } else if (kHz >= 750) {
         jtag_control.jtag_rw = jtag_rw_slow;
         jtag_control.jtag_rw_dr = jtag_rw_dr_slow;
-        jtag_control.jtag_delay = delay_jtag_1000khz;
+        jtag_control.jtag_delay = delay_jtag_1000khz_750khz;
+    } else if (kHz >= 375) {
+        jtag_control.jtag_rw = jtag_rw_slow;
+        jtag_control.jtag_rw_dr = jtag_rw_dr_slow;
+        jtag_control.jtag_delay = delay_jtag_500khz_375khz;
     } else {
         jtag_control.jtag_rw = jtag_rw_slow;
         jtag_control.jtag_rw_dr = jtag_rw_dr_slow;
-        jtag_control.jtag_delay = delay_jtag_ticks;
+        jtag_control.jtag_delay = delay_jtag_250khz_188khz;
     }
 
     // SPI config
@@ -377,7 +359,7 @@ uint32_t vsfhal_jtag_dr(uint32_t request, uint32_t dr, uint32_t dr_before, uint3
     return ack;
 }
 
-#pragma optimize=low
+// OFF "Instruction scheduling"
 static void jtag_rw_quick(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *tdo)
 {
     uint8_t bits, tdi_last, tms_last, tdo_last;
@@ -402,6 +384,9 @@ static void jtag_rw_quick(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *
             tdi_last >>= 1;
             tdo_last >>= 1;
             bits--;
+            __ASM("NOP");
+            __ASM("NOP");
+            __ASM("NOP");
             IO_SET(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             tdo_last |= IO_GET_80_or_00(PERIPHERAL_GPIO_TDO_MI_IDX, PERIPHERAL_GPIO_TDO_MI_PIN);
         } while (bits);
@@ -428,6 +413,9 @@ static void jtag_rw_quick(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *
             tdi_last >>= 1;
             tdo_last >>= 1;
             bitlen--;
+            __ASM("NOP");
+            __ASM("NOP");
+            __ASM("NOP");
             IO_SET(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             tdo_last |= IO_GET_80_or_00(PERIPHERAL_GPIO_TDO_MI_IDX, PERIPHERAL_GPIO_TDO_MI_PIN);
         } while (bitlen);
@@ -500,7 +488,8 @@ static void jtag_rw_slow(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *t
     }
 }
 
-#pragma optimize=low
+
+// OFF "Instruction scheduling"
 static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t *tms, uint8_t *tdi, uint8_t *tdo)
 {
     uint8_t bits, tdi_last, tms_last, tdo_last;
@@ -524,6 +513,9 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
         tdi_last >>= 1;
         tdo_last >>= 1;
         bits--;
+        __ASM("NOP");
+        __ASM("NOP");
+        __ASM("NOP");
         IO_SET(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
         tdo_last |= IO_GET_80_or_00(PERIPHERAL_GPIO_TDO_MI_IDX, PERIPHERAL_GPIO_TDO_MI_PIN);
     } while (bits);
@@ -565,6 +557,9 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
             tdi_last >>= 1;
             tdo_last >>= 1;
             bits--;
+            __ASM("NOP");
+            __ASM("NOP");
+            __ASM("NOP");
             IO_SET(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             tdo_last |= IO_GET_80_or_00(PERIPHERAL_GPIO_TDO_MI_IDX, PERIPHERAL_GPIO_TDO_MI_PIN);
         } while (bits);
@@ -591,6 +586,9 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
             tdi_last >>= 1;
             tdo_last >>= 1;
             bitlen_tail--;
+            __ASM("NOP");
+            __ASM("NOP");
+            __ASM("NOP");
             IO_SET(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             tdo_last |= IO_GET_80_or_00(PERIPHERAL_GPIO_TDO_MI_IDX, PERIPHERAL_GPIO_TDO_MI_PIN);
         } while (bitlen_tail);

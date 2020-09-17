@@ -198,7 +198,12 @@ void vsfhal_swd_io_reconfig(void)
 }
 
 #pragma optimize=none
-static void delay_swd_2000khz(uint16_t dummy)
+static void delay_swd_4000khz_3000khz(uint16_t dummy)
+{
+}
+
+#pragma optimize=none
+static void delay_swd_2000khz_1500khz(uint16_t dummy)
 {
     __ASM("NOP");
     __ASM("NOP");
@@ -215,34 +220,28 @@ static void delay_swd_2000khz(uint16_t dummy)
 }
 
 #pragma optimize=none
-static void delay_swd_1500khz(uint16_t dummy)
-{
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-    __ASM("NOP");
-}
-
-#pragma optimize=none
-static void delay_swd_1000khz(uint16_t dummy)
+static void delay_swd_1000khz_750khz(uint16_t dummy)
 {
 	dummy = 7;
+	while (--dummy);
+    __ASM("NOP");
+    __ASM("NOP");
+}
+
+#pragma optimize=none
+static void delay_swd_500khz_375khz(uint16_t dummy)
+{
+	dummy = 19;
 	while (--dummy);
 }
 
 #pragma optimize=none
-static void swd_delay_ticks(uint16_t delay_tick)
+static void delay_swd_250khz_188khz(uint16_t dummy)
 {
-    vsf_systimer_cnt_t ticks = vsf_systimer_get() + delay_tick;
-    while (ticks >= vsf_systimer_get());
+	dummy = 40;
+	while (--dummy);
 }
+
 
 static uint32_t inline get_parity_4bit(uint8_t data)
 {
@@ -322,42 +321,42 @@ void vsfhal_swd_config(uint16_t kHz, uint16_t retry, uint8_t idle, uint8_t trn, 
     swd_control.data_force = data_force;
     swd_control.retry_limit = retry;
 
-    if (kHz >= 8000) {
+    if (kHz >= 6000) {
         swd_control.swd_read = swd_read_quick;
         swd_control.swd_write = swd_write_quick;
         swd_control.swd_read_io = swd_read_io_quick;
         swd_control.swd_write_io = swd_write_io_quick;
         swd_control.swd_delay = NULL;
-    } else if (kHz >= 4000) {
+    } else if (kHz >= 3000) {
         swd_control.swd_read = swd_read_slow;
         swd_control.swd_write = swd_write_slow;
         swd_control.swd_read_io = swd_read_io_slow;
         swd_control.swd_write_io = swd_write_io_slow;
-        swd_control.swd_delay = NULL;
-    } else if (kHz >= 2000) {
-        swd_control.swd_read = swd_read_slow;
-        swd_control.swd_write = swd_write_slow;
-        swd_control.swd_read_io = swd_read_io_slow;
-        swd_control.swd_write_io = swd_write_io_slow;
-        swd_control.swd_delay = delay_swd_2000khz;
+        swd_control.swd_delay = delay_swd_4000khz_3000khz;
     } else if (kHz >= 1500) {
         swd_control.swd_read = swd_read_slow;
         swd_control.swd_write = swd_write_slow;
         swd_control.swd_read_io = swd_read_io_slow;
         swd_control.swd_write_io = swd_write_io_slow;
-        swd_control.swd_delay = delay_swd_1500khz;
-    } else if (kHz >= 1000) {
+        swd_control.swd_delay = delay_swd_2000khz_1500khz;
+    } else if (kHz >= 750) {
         swd_control.swd_read = swd_read_slow;
         swd_control.swd_write = swd_write_slow;
         swd_control.swd_read_io = swd_read_io_slow;
         swd_control.swd_write_io = swd_write_io_slow;
-        swd_control.swd_delay = delay_swd_1000khz;
+        swd_control.swd_delay = delay_swd_1000khz_750khz;
+    } else if (kHz >= 375) {
+        swd_control.swd_read = swd_read_slow;
+        swd_control.swd_write = swd_write_slow;
+        swd_control.swd_read_io = swd_read_io_slow;
+        swd_control.swd_write_io = swd_write_io_slow;
+        swd_control.swd_delay = delay_swd_500khz_375khz;
     } else {
         swd_control.swd_read = swd_read_slow;
         swd_control.swd_write = swd_write_slow;
         swd_control.swd_read_io = swd_read_io_slow;
         swd_control.swd_write_io = swd_write_io_slow;
-        swd_control.swd_delay = swd_delay_ticks;
+        swd_control.swd_delay = delay_swd_250khz_188khz;
     }
 
     // SPI config
@@ -423,6 +422,7 @@ uint32_t vsfhal_swd_write(uint32_t request, uint8_t *w_data)
     return swd_control.swd_write(request, w_data);
 }
 
+// OFF "Instruction scheduling"
 static uint32_t swd_read_quick(uint32_t request, uint8_t *r_data)
 {
     uint_fast32_t tick, temp, retry = 0;
@@ -729,6 +729,7 @@ SYNC_READ_RESTART:
     return temp;
 }
 
+// OFF "Instruction scheduling"
 static uint32_t swd_write_quick(uint32_t request, uint8_t *w_data)
 {
     uint_fast32_t tick, temp, retry = 0;
@@ -1053,6 +1054,7 @@ SYNC_READ_RESTART:
     }
 }
 
+// OFF "Instruction scheduling"
 static void swd_read_io_quick(uint8_t *data, uint32_t bits)
 {
     uint32_t byte = 0, pos = 8 - bits;
@@ -1083,6 +1085,7 @@ static void swd_read_io_slow(uint8_t *data, uint32_t bits)
     *data = byte >> pos;
 }
 
+// OFF "Instruction scheduling"
 static void swd_write_io_quick(uint8_t *data, uint32_t bits)
 {
     uint32_t byte = data[0];
