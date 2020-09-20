@@ -14,6 +14,7 @@
 
 static uint16_t usrapp_get_serial(uint8_t *serial);
 static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *baudrate, vsf_stream_t *tx, vsf_stream_t *rx);
+static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate);
 static vsf_err_t usrapp_cdcext_set_line_coding(usb_cdcacm_line_coding_t *line_coding);
 static vsf_err_t usrapp_cdcshell_set_line_coding(usb_cdcacm_line_coding_t *line_coding);
 
@@ -39,6 +40,7 @@ usrapp_t usrapp                 = {
     .dap.dap_param              = {
         .get_serial             = usrapp_get_serial,
         .config_usart           = usrapp_config_usart,
+        .get_usart_baud           = usrapp_get_usart_baud,
         #if VENDOR_UART
         .ext_tx = {
             .op                 = &vsf_fifo_stream_op,
@@ -121,11 +123,16 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
             if (baudrate)
                 usrapp.usart_ext_baud = *baudrate;
             vsfhal_usart_init(PERIPHERAL_UART_EXT_IDX);
-            vsfhal_usart_config(PERIPHERAL_UART_EXT_IDX, usrapp.usart_ext_baud, usrapp.usart_ext_mode);
+            usrapp.usart_ext_baud = vsfhal_usart_config(PERIPHERAL_UART_EXT_IDX, usrapp.usart_ext_baud, usrapp.usart_ext_mode);
+            if (baudrate)
+                *baudrate = usrapp.usart_ext_baud;
         }
         vsfhal_usart_stream_init(PERIPHERAL_UART_EXT_IDX, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
-        if (!mode && !baudrate)
+        if (!mode && !baudrate) {
+            usrapp.usart_ext_mode = 0;
+            usrapp.usart_ext_baud = 0;
             vsfhal_usart_fini(PERIPHERAL_UART_EXT_IDX);
+        }
         break;
     case PERIPHERAL_UART_SWO_IDX:
         if ((mode && *mode != usrapp.usart_swo_mode) || (baudrate && *baudrate != usrapp.usart_swo_baud)) {
@@ -134,19 +141,34 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
             if (baudrate)
                 usrapp.usart_swo_baud = *baudrate;
             vsfhal_usart_init(PERIPHERAL_UART_SWO_IDX);
-            vsfhal_usart_config(PERIPHERAL_UART_SWO_IDX, usrapp.usart_swo_baud, usrapp.usart_swo_mode);
+            usrapp.usart_swo_baud = vsfhal_usart_config(PERIPHERAL_UART_SWO_IDX, usrapp.usart_swo_baud, usrapp.usart_swo_mode);
+            if (baudrate)
+                *baudrate = usrapp.usart_swo_baud;
         }
         vsfhal_usart_stream_init(PERIPHERAL_UART_SWO_IDX, PERIPHERAL_UART_SWO_PRIORITY, tx, rx);
-        if (!mode && !baudrate)
+        if (!mode && !baudrate) {
+            usrapp.usart_swo_mode = 0;
+            usrapp.usart_swo_baud = 0;
             vsfhal_usart_fini(PERIPHERAL_UART_SWO_IDX);
+        }
         break;
     }
+}
+
+static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate)
+{
+    struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
+    uint32_t apb = info->apb1_freq_hz;
+    uint32_t div = (apb + baudrate - 1) / baudrate;
+    return apb / div;
 }
 
 static vsf_callback_timer_t cb_timer;
 
 #define DAP_TEST_PORT                   0   // 0, DAP_PORT_SWD, DAP_PORT_JTAG
-#define DAP_TEST_SPEED_KHZ              250
+#define DAP_TEST_SPEED_KHZ              3000
+#define UART_SWO_TEST_ENABLE            0
+#define UART_EXT_TEST_ENABLE            0
 #if DAP_TEST_PORT
 static void do_dap_test(vsf_callback_timer_t *timer)
 {
@@ -161,6 +183,21 @@ static void connect_usbd(vsf_callback_timer_t *timer)
 #if DAP_TEST_PORT
     timer->on_timer = do_dap_test;
     vsf_callback_timer_add_ms(timer, 1000);
+#endif
+    
+#if UART_SWO_TEST_ENABLE
+    static uint8_t test_swo[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+    vsfhal_usart_init(PERIPHERAL_UART_SWO_IDX);
+    vsfhal_usart_config(PERIPHERAL_UART_SWO_IDX, 2000000, PERIPHERAL_UART_MODE_DEFAULT);
+    vsfhal_usart_tx_bytes(PERIPHERAL_UART_SWO_IDX, test_swo, sizeof(test_swo));
+    vsfhal_usart_config_cb(PERIPHERAL_UART_SWO_IDX, PERIPHERAL_UART_SWO_PRIORITY, NULL, NULL, NULL);
+#endif
+#if UART_EXT_TEST_ENABLE
+    static uint8_t test_ext[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
+    vsfhal_usart_init(PERIPHERAL_UART_EXT_IDX);
+    vsfhal_usart_config(PERIPHERAL_UART_EXT_IDX, PERIPHERAL_UART_BAUD_DEFAULT, PERIPHERAL_UART_MODE_DEFAULT);
+    vsfhal_usart_tx_bytes(PERIPHERAL_UART_EXT_IDX, test_ext, sizeof(test_ext));
+    vsfhal_usart_config_cb(PERIPHERAL_UART_EXT_IDX, PERIPHERAL_UART_EXT_PRIORITY, NULL, NULL, NULL);
 #endif
 }
 

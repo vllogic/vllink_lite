@@ -43,7 +43,7 @@
 #   define USART1_RTS_IO_AF     (IO_AF | IO_AF_1)
 
 #define SPI0_ENABLE             0
-#   define SPI0_DMA_ENABLE      1
+#   define SPI0_DMA_ENABLE      0
 #   define SPI0_NSS_IO_IDX      GPIO_INVALID_IDX 
 #   define SPI0_NSS_IO_PIN      0
 #   define SPI0_NSS_IO_AF       0
@@ -57,7 +57,7 @@
 #   define SPI0_MOSI_IO_PIN     0
 #   define SPI0_MOSI_IO_AF      0
 #define SPI1_ENABLE             0
-#   define SPI1_DMA_ENABLE      1
+#   define SPI1_DMA_ENABLE      0
 #   define SPI1_NSS_IO_IDX      GPIO_INVALID_IDX 
 #   define SPI1_NSS_IO_PIN      0
 #   define SPI1_NSS_IO_AF       0
@@ -79,6 +79,7 @@
 
 #define PERIPHERAL_JTAG_PRIORITY            vsf_arch_prio_2
 #define PERIPHERAL_SWD_PRIORITY             vsf_arch_prio_2
+#define PERIPHERAL_TIMESTAMP_PRIORITY       vsf_arch_prio_3
 
 // KEY
 #define PERIPHERAL_KEY_IDX                  GPIOA_IDX
@@ -100,8 +101,10 @@
 #define PERIPHERAL_GPIO_TMS_MO_PIN          5
 #define PERIPHERAL_GPIO_TMS_MI_IDX          GPIOB_IDX
 #define PERIPHERAL_GPIO_TMS_MI_PIN          4
-#define PERIPHERAL_GPIO_TCK0_IDX            GPIOA_IDX
-#define PERIPHERAL_GPIO_TCK0_PIN            5
+#define PERIPHERAL_GPIO_TCK_SWD_IDX         GPIOB_IDX
+#define PERIPHERAL_GPIO_TCK_SWD_PIN         5
+#define PERIPHERAL_GPIO_TCK_JTAG_IDX        PERIPHERAL_GPIO_TCK_SWD_IDX
+#define PERIPHERAL_GPIO_TCK_JTAG_PIN        PERIPHERAL_GPIO_TCK_SWD_PIN
 #define PERIPHERAL_GPIO_SRST_IDX            GPIOB_IDX
 #define PERIPHERAL_GPIO_SRST_PIN            0
 #define PERIPHERAL_GPIO_TDO_MI_IDX          GPIOA_IDX
@@ -122,8 +125,8 @@
 #define PERIPHERAL_UART_EXT_IDX             USART0_IDX
 #   define PERIPHERAL_UART_EXT_BAUD_MAX     (96000000 / 20)
 #   define PERIPHERAL_UART_EXT_BAUD_MIN     (2000)
-#define PERIPHERAL_UART_SWO_PRIORITY        vsf_arch_prio_2
-#define PERIPHERAL_UART_EXT_PRIORITY        vsf_arch_prio_2
+#define PERIPHERAL_UART_SWO_PRIORITY        vsf_arch_prio_3
+#define PERIPHERAL_UART_EXT_PRIORITY        vsf_arch_prio_3
 #define PERIPHERAL_UART_PARITY_NONE         USART_PARITY_NONE
 #define PERIPHERAL_UART_PARITY_ODD          USART_PARITY_ODD
 #define PERIPHERAL_UART_PARITY_EVEN         USART_PARITY_EVEN
@@ -178,14 +181,14 @@
 #define PERIPHERAL_GPIO_TMS_CLEAR()         do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);} while (0)
 #define PERIPHERAL_GPIO_TMS_READ()          (vsfhal_gpio_read(PERIPHERAL_GPIO_TMS_MI_IDX, 1 << PERIPHERAL_GPIO_TMS_MI_PIN) >> PERIPHERAL_GPIO_TMS_MI_PIN)
 
-#define PERIPHERAL_GPIO_TCK_INIT()          do {vsfhal_gpio_init(PERIPHERAL_GPIO_TCK0_IDX);\
-                                                vsfhal_gpio_config(PERIPHERAL_GPIO_TCK0_IDX, 0x1 << PERIPHERAL_GPIO_TCK0_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TCK_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK0_IDX, 0x1 << PERIPHERAL_GPIO_TCK0_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TCK_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK0_IDX, 0x1 << PERIPHERAL_GPIO_TCK0_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TCK_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK0_IDX, 0x1 << PERIPHERAL_GPIO_TCK0_PIN, IO_OUTPUT_PP);} while (0)
-#define PERIPHERAL_GPIO_TCK_SET()           do {vsfhal_gpio_set(PERIPHERAL_GPIO_TCK0_IDX, 1 << PERIPHERAL_GPIO_TCK0_PIN);} while (0)
-#define PERIPHERAL_GPIO_TCK_CLEAR()         do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TCK0_IDX, 1 << PERIPHERAL_GPIO_TCK0_PIN);} while (0)
-#define PERIPHERAL_GPIO_TCK_READ()          (vsfhal_gpio_read(PERIPHERAL_GPIO_TCK0_IDX, 1 << PERIPHERAL_GPIO_TCK0_PIN) >> PERIPHERAL_GPIO_TCK0_PIN)
+#define PERIPHERAL_GPIO_TCK_INIT()          do {vsfhal_gpio_init(PERIPHERAL_GPIO_TCK_SWD_IDX);\
+                                                vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);} while (0)
+#define PERIPHERAL_GPIO_TCK_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);} while (0)
+#define PERIPHERAL_GPIO_TCK_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);} while (0)
+#define PERIPHERAL_GPIO_TCK_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_OUTPUT_PP);} while (0)
+#define PERIPHERAL_GPIO_TCK_SET()           do {vsfhal_gpio_set(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);} while (0)
+#define PERIPHERAL_GPIO_TCK_CLEAR()         do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);} while (0)
+#define PERIPHERAL_GPIO_TCK_READ()          (vsfhal_gpio_read(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN) >> PERIPHERAL_GPIO_TCK_SWD_PIN)
 
 #define PERIPHERAL_GPIO_SRST_INIT()         do {vsfhal_gpio_init(PERIPHERAL_GPIO_SRST_IDX);\
                                                 vsfhal_gpio_config(PERIPHERAL_GPIO_SRST_IDX, 0x1 << PERIPHERAL_GPIO_SRST_PIN, IO_INPUT_FLOAT);} while (0)
@@ -218,12 +221,16 @@
 #define PERIPHERAL_GPIO_TRST_CLEAR()        do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TRST_MO_IDX, 1 << PERIPHERAL_GPIO_TRST_MO_PIN);} while (0)
 #define PERIPHERAL_GPIO_TRST_READ()         (vsfhal_gpio_read(PERIPHERAL_GPIO_TRST_MO_IDX, 1 << PERIPHERAL_GPIO_TRST_MO_PIN) >> PERIPHERAL_GPIO_TRST_MO_PIN)
 
+#define IO_AF_SELECT(idx, pin, afsel)       do {REG32((GPIOA_BASE + 0x400 * idx) + 0x20U + ((pin & 0x8) >> 1)) &= ~(0xful << ((pin & 0x7) * 4));\
+                                                REG32((GPIOA_BASE + 0x400 * idx) + 0x20U + ((pin & 0x8) >> 1)) |= (uint32_t)afsel << ((pin & 0x7) * 4);} while(0)
+
+
 #define PERIPHERAL_JTAG_IO_AF_CONFIG()      do {IO_AF_SELECT(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, 0);\
-                                                IO_AF_SELECT(PERIPHERAL_GPIO_TCK0_IDX, 0x1 << PERIPHERAL_GPIO_TCK0_PIN, 0);\
+                                                IO_AF_SELECT(PERIPHERAL_GPIO_TCK_JTAG_IDX, 0x1 << PERIPHERAL_GPIO_TCK_JTAG_PIN, 0);\
                                                 IO_AF_SELECT(PERIPHERAL_GPIO_TDO_MI_IDX, 0x1 << PERIPHERAL_GPIO_TDO_MI_PIN, 0);} while (0);
 
 #define PERIPHERAL_SWD_IO_AF_CONFIG()       do {IO_AF_SELECT(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, 0);\
                                                 IO_AF_SELECT(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, 0);\
-                                                IO_AF_SELECT(PERIPHERAL_GPIO_TCK0_IDX, 0x1 << PERIPHERAL_GPIO_TCK0_PIN, 0);} while (0);
+                                                IO_AF_SELECT(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, 0);} while (0);
 
 #endif // __BOARD_CFG_LVL2_H__

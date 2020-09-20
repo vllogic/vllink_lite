@@ -210,7 +210,7 @@ void vsfhal_usart_fini(enum usart_idx_t idx)
 #if USART3_ENABLE || USART4_ENABLE
 static void enable_overtimer(uint32_t timer_clk)
 {
-    if (!(TIMER_CTL0(TIMER6) & TIMER_CTL0_CEN)) {
+    if (!(RCU_APB1EN & RCU_APB1EN_TIMER6EN)) {
         RCU_APB1EN |= RCU_APB1EN_TIMER6EN;
         TIMER_CTL0(TIMER6) = TIMER_CTL0_ARSE;
         TIMER_DMAINTEN(TIMER6) = TIMER_DMAINTEN_UPIE;
@@ -222,7 +222,7 @@ static void enable_overtimer(uint32_t timer_clk)
 }
 #endif
 
-void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
+uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
 {
     VSF_HAL_ASSERT(idx < USART_IDX_NUM);
     
@@ -236,7 +236,7 @@ void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
     USART_CTL0(usartx) = ((mode << 8) & (USART_CTL0_PM | USART_CTL0_PCEN)) |
             USART_CTL0_TEN | USART_CTL0_REN;
     USART_CTL1(usartx) = (mode << 8) & USART_CTL1_STB;
-    USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN);
+    USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN | USART_CTL2_ERRIE);
     USART_CTL3(usartx) = ((mode >> 8) & (USART_CTL3_RINV | USART_CTL3_TINV | USART_CTL3_DINV | USART_CTL3_MSBF)) |
             USART_CTL3_RTEN | USART_CTL3_RTIE;
     USART_RT(usartx) = 20;
@@ -272,13 +272,13 @@ void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
         #if USART3_DMA_ENABLE
         dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
         #endif
-        enable_overtimer(temp);
+        enable_overtimer(temp == info->apb1_freq_hz ? temp : temp / 2);
         break;
     #endif
     #if USART4_ENABLE
     case USART4_IDX:
         temp = info->apb1_freq_hz;
-        enable_overtimer(temp);
+        enable_overtimer(temp == info->apb1_freq_hz ? temp : temp / 2);
         break;
     #endif
     }
@@ -309,8 +309,10 @@ void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
         USART_CTL0(usartx) |= USART_CTL0_RBNEIE | USART_CTL0_TCIE;
     }
     
-    USART_BAUD(usartx) = temp / baudrate;
+    USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
     USART_CTL0(usartx) |= USART_CTL0_UEN;
+    
+    return temp / USART_BAUD(usartx);
 }
 
 void vsfhal_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *))
@@ -454,6 +456,12 @@ static void usart_rx_done(void *p)
 #if USART0_ENABLE
 ROOT void USART0_IRQHandler(void)
 {
+    if (USART_STAT0(USART0) & (USART_STAT0_PERR | USART_STAT0_FERR | USART_STAT0_NERR | USART_STAT0_ORERR)) {
+        volatile uint32_t dummy = 0;
+        dummy = USART_STAT0(USART0);
+        dummy = USART_DATA(USART0);
+    }
+
     if (USART_STAT1(USART0) & USART_STAT1_RTF) {
         USART_STAT1(USART0) &= ~USART_STAT1_RTF;
         usart_rx_done(&usart_control[USART0_IDX]);
@@ -463,6 +471,12 @@ ROOT void USART0_IRQHandler(void)
 #if USART1_ENABLE
 ROOT void USART1_IRQHandler(void)
 {
+    if (USART_STAT0(USART1) & (USART_STAT0_PERR | USART_STAT0_FERR | USART_STAT0_NERR | USART_STAT0_ORERR)) {
+        volatile uint32_t dummy = 0;
+        dummy = USART_STAT0(USART1);
+        dummy = USART_DATA(USART1);
+    }
+
     if (USART_STAT1(USART1) & USART_STAT1_RTF) {
         USART_STAT1(USART1) &= ~USART_STAT1_RTF;
         usart_rx_done(&usart_control[USART1_IDX]);
@@ -472,6 +486,12 @@ ROOT void USART1_IRQHandler(void)
 #if USART2_ENABLE
 ROOT void USART2_IRQHandler(void)
 {
+    if (USART_STAT0(USART2) & (USART_STAT0_PERR | USART_STAT0_FERR | USART_STAT0_NERR | USART_STAT0_ORERR)) {
+        volatile uint32_t dummy = 0;
+        dummy = USART_STAT0(USART2);
+        dummy = USART_DATA(USART2);
+    }
+    
     if (USART_STAT1(USART2) & USART_STAT1_RTF) {
         USART_STAT1(USART2) &= ~USART_STAT1_RTF;
         usart_rx_done(&usart_control[USART2_IDX]);

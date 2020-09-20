@@ -78,10 +78,10 @@ void vsfhal_gpio_config(enum gpio_idx_t idx, uint32_t pin_mask, uint32_t config)
         pin_mask <<= tmp8;
         offset -= tmp8;
         
-        if (offset <= 8) {
+        if (offset < 8) {
             GPIO_CTL0(gpiox) = (GPIO_CTL0(gpiox) & ~((GPIO_CTL0_MD0 | GPIO_CTL0_CTL0) << (offset * 4))) | (ctl << (offset * 4));
         } else {
-            GPIO_CTL1(gpiox) = (GPIO_CTL0(gpiox) & ~((GPIO_CTL0_MD0 | GPIO_CTL0_CTL0) << ((offset - 8) * 4))) | (ctl << ((offset - 8) * 4));
+            GPIO_CTL1(gpiox) = (GPIO_CTL1(gpiox) & ~((GPIO_CTL1_MD8 | GPIO_CTL1_CTL8) << ((offset - 8) * 4))) | (ctl << ((offset - 8) * 4));
         }
         if (ctl == IO_PULL_IN) {
             if (octl){

@@ -14,6 +14,9 @@
 
 #define SWD_COUNT                  (0 + SWD0_ENABLE)
 
+#define SWD_SYNC
+//#define SWD_ASYNC
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 /*============================ GLOBAL VARIABLES ==============================*/
@@ -24,11 +27,19 @@
 #if SWD_COUNT
 void vsfhal_swd_init(int32_t int_priority);
 void vsfhal_swd_fini(void);
+void vsfhal_swd_io_reconfig(void);
 void vsfhal_swd_config(uint16_t kHz, uint16_t retry, uint8_t idle, uint8_t trn, bool data_force);
 void vsfhal_swd_seqout(uint8_t *data, uint32_t bitlen);
 void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen);
-int vsfhal_swd_read(uint32_t request, uint8_t *r_data);
-int vsfhal_swd_write(uint32_t request, uint8_t *w_data);
+uint32_t vsfhal_swd_read(uint32_t request, uint8_t *r_data);
+uint32_t vsfhal_swd_write(uint32_t request, uint8_t *w_data);
+#ifdef SWD_ASYNC
+uint32_t vsfhal_swd_wait(void);
+void vsfhal_swd_clear(void);
+#endif
+#if TIMESTAMP_CLOCK
+uint32_t vsfhal_swd_get_timestamp(void);
+#endif
 #endif
 
 #endif

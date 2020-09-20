@@ -79,7 +79,7 @@ enum usart_mode_t{
 #if USART_COUNT
 void vsfhal_usart_init(enum usart_idx_t idx);
 void vsfhal_usart_fini(enum usart_idx_t idx);
-void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode);
+uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode);
 void vsfhal_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *));
 uint16_t vsfhal_usart_tx_bytes(enum usart_idx_t idx, uint8_t *data, uint16_t size);
 uint16_t vsfhal_usart_tx_get_free_size(enum usart_idx_t idx);

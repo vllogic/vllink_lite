@@ -2403,6 +2403,9 @@
         <file>
             <name>$PROJ_DIR$\..\dap.c</name>
             <configuration>
+                <name>VllinkLite_GD32F350</name>
+            </configuration>
+            <configuration>
                 <name>VllinkLite_GD32E103</name>
             </configuration>
         </file>
@@ -3959,6 +3962,12 @@
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\swd.h</name>
                         </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\timestamp.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32E10X\timestamp.h</name>
+                        </file>
                     </group>
                     <group>
                         <name>GD32F3X0</name>
@@ -4120,15 +4129,27 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\jtag.c</name>
+                            <configuration>
+                                <name>VllinkLite_GD32F350</name>
+                            </configuration>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\jtag.h</name>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\swd.c</name>
+                            <configuration>
+                                <name>VllinkLite_GD32F350</name>
+                            </configuration>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\swd.h</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\timestamp.c</name>
+                        </file>
+                        <file>
+                            <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\GigaDevice\GD32F3X0\timestamp.h</name>
                         </file>
                     </group>
                     <file>

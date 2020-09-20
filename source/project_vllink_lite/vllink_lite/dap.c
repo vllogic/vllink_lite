@@ -17,10 +17,6 @@ const char DAP_DEVICE_Vendor[] = DAP_DEVICE_VENDOR;
 const char DAP_DEVICE_Name[] = DAP_DEVICE_NAME;
 #endif
 
-#if TIMESTAMP_CLOCK
-uint32_t dap_timestamp;
-#endif
-
 #ifdef JTAG_ASYNC
 static uint64_t buf_tms[2], buf_tdi[2], buf_tdo[2];
 #else
@@ -31,13 +27,17 @@ static vsf_err_t port_init(dap_param_t* param, uint8_t port)
 {
     if (port == DAP_PORT_SWD) {
         vsfhal_swd_init(PERIPHERAL_SWD_PRIORITY);
-        vsfhal_swd_config(param->speed_khz, param->transfer.retry_count,
-            param->transfer.idle_cycles, param->swd_conf.turnaround,
-            param->swd_conf.data_phase);
+        if (param->speed_khz) { // for keil
+            vsfhal_swd_config(param->speed_khz, param->transfer.retry_count,
+                param->transfer.idle_cycles, param->swd_conf.turnaround,
+                param->swd_conf.data_phase);
+        }
     } else if (port == DAP_PORT_JTAG) {
         vsfhal_jtag_init(PERIPHERAL_JTAG_PRIORITY);
-        vsfhal_jtag_config(param->speed_khz, param->transfer.retry_count,
-            param->transfer.idle_cycles);
+        if (param->speed_khz) { // for keil
+            vsfhal_jtag_config(param->speed_khz, param->transfer.retry_count,
+                param->transfer.idle_cycles);
+        }
     }
     param->port_io_need_reconfig = false;
     return VSF_ERR_NONE;
@@ -219,6 +219,124 @@ static uint16_t jtag_dr_to_raw(uint64_t *buf_tms, uint64_t *buf_tdi, uint8_t req
 }
 #endif
 
+#if SWO_UART || SWO_MANCHESTER
+static uint32_t swo_request_handler(dap_param_t* param, uint8_t* request,
+        uint8_t* response, uint8_t cmd_id, uint16_t remaining_size)
+{
+    uint16_t req_ptr = 0, resp_ptr = 0;
+
+    switch (cmd_id) {
+    case ID_DAP_SWO_Transport: {
+        uint8_t ret = DAP_ERROR;
+        uint8_t transport = request[req_ptr++];
+        if (!(param->trace_status & DAP_SWO_CAPTURE_ACTIVE)) {
+            #if SWO_STREAM
+            if (transport <= 2) {
+            #else
+            if (transport <= 1) {
+            #endif
+                param->transport = transport;
+                ret = DAP_OK;
+            }
+        }
+        response[resp_ptr++] = ret;
+    } break;
+    case ID_DAP_SWO_Mode: {
+        uint8_t mode = request[req_ptr++];
+        // Note: not support DAP_SWO_MANCHESTER
+        if ((mode == DAP_SWO_OFF) || (mode == DAP_SWO_UART)) {
+            param->trace_mode = mode;
+            response[resp_ptr++] = DAP_OK;
+        } else {
+            param->trace_mode = DAP_SWO_OFF;
+            response[resp_ptr++] = DAP_ERROR;
+        }
+    } break;
+    case ID_DAP_SWO_Baudrate: {
+        uint32_t baudrate = get_unaligned_le32(request + req_ptr);
+        req_ptr += 4;
+        if (baudrate > SWO_UART_MAX_BAUDRATE)
+            baudrate = SWO_UART_MAX_BAUDRATE;
+        else if (baudrate < SWO_UART_MIN_BAUDRATE)
+            baudrate = SWO_UART_MIN_BAUDRATE;
+        if (param->get_usart_baud)
+            baudrate = param->get_usart_baud(PERIPHERAL_UART_SWO_IDX, baudrate);
+        #if (SWO_UART != 0)
+        param->swo_baudrate = baudrate;
+        #endif
+        put_unaligned_le32(baudrate, response + resp_ptr);
+        resp_ptr += 4;
+    } break;
+    case ID_DAP_SWO_Control: {
+        uint8_t active = request[req_ptr++] & DAP_SWO_CAPTURE_ACTIVE;
+        if (active != (param->trace_status & DAP_SWO_CAPTURE_ACTIVE)) {
+            uint32_t mode = PERIPHERAL_UART_MODE_DEFAULT;
+            if (active) {
+                param->trace_o = 0;
+                #if TIMESTAMP_CLOCK
+                param->trace_timestamp = 0;
+                #endif
+                if (param->config_usart) {
+                    param->config_usart(PERIPHERAL_UART_SWO_IDX, &mode, &param->swo_baudrate, NULL, (vsf_stream_t *)&param->swo_rx);
+                }
+                VSF_STREAM_CONNECT_RX(&param->swo_rx);
+            } else {
+                VSF_STREAM_DISCONNECT_RX(&param->swo_rx);
+                param->config_usart(PERIPHERAL_UART_SWO_IDX, NULL, NULL, NULL, NULL);
+            }
+            param->trace_status = active;
+        }
+        response[resp_ptr++] = DAP_OK;
+    } break;
+    case ID_DAP_SWO_Status: {
+        uint32_t count = VSF_STREAM_GET_DATA_SIZE(&param->swo_rx);
+        response[resp_ptr++] = param->trace_status;
+        put_unaligned_le32(count, response + resp_ptr);
+        resp_ptr += 4;
+    } break;
+    case ID_DAP_SWO_ExtendedStatus: {
+        uint8_t sb_cmd = request[req_ptr++];
+
+        if (sb_cmd & 0x1)
+            response[resp_ptr++] = param->trace_status;
+        if (sb_cmd & 0x2) {
+            uint32_t count = VSF_STREAM_GET_DATA_SIZE(&param->swo_rx);
+            put_unaligned_le32(count, response + resp_ptr);
+            resp_ptr += 4;
+        }
+        #if TIMESTAMP_CLOCK
+        if (sb_cmd & 0x4) {
+            put_unaligned_le32(param->trace_o + VSF_STREAM_GET_DATA_SIZE(&param->swo_rx), response + resp_ptr);
+            put_unaligned_le32(param->trace_timestamp, response + resp_ptr + 4);
+            resp_ptr += 8;
+        }
+        #endif
+    } break;
+    case ID_DAP_SWO_Data: {
+        int32_t count = min(get_unaligned_le16(request + req_ptr),
+                VSF_STREAM_GET_DATA_SIZE(&param->swo_rx));
+        req_ptr += 2;
+        if (count >= 16)
+            __ASM("NOP");
+        response[resp_ptr++] = param->trace_status;
+        if (param->transport != 1)	// Read trace data via DAP_SWO_Data command
+            count = 0;
+        if (count > (remaining_size - 3))
+            count = remaining_size - 3;
+        if (count) {
+            count = VSF_STREAM_READ(&param->swo_rx, response + resp_ptr + 2, count);
+        }
+        put_unaligned_le16(count, response + resp_ptr);
+        resp_ptr += 2 + count;
+        param->trace_o += count;
+    } break;
+    default:
+        break;
+    }
+    return ((uint32_t)resp_ptr << 16) | req_ptr;
+}
+#endif
+
 static uint16_t request_handler(dap_param_t* param, uint8_t* request,
         uint8_t* response, uint16_t pkt_size)
 {
@@ -236,7 +354,19 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
 
         if ((cmd_id >= ID_DAP_Vendor0) && (cmd_id <= ID_DAP_Vendor31)) {
             // TODO
-        } else {
+        }
+        #if SWO_UART || SWO_MANCHESTER
+        else if ((cmd_id >= ID_DAP_SWO_Transport) && (cmd_id <= ID_DAP_SWO_ExtendedStatus)) {
+            uint32_t ret = swo_request_handler(param, request + req_ptr, response + resp_ptr, cmd_id, pkt_size - resp_ptr);
+            if (ret == 0)
+                goto fault;
+            else {
+                req_ptr += ret & 0xffff;
+                resp_ptr += ret >> 16;
+            }
+        }
+        #endif
+        else {
             switch (cmd_id) {
             case ID_DAP_ExecuteCommands:
                 cmd_num = request[req_ptr++];
@@ -749,7 +879,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                                         #endif
                                     }
                                 } else {    // Read DP register
-                                    transfer_ack = vsfhal_swd_read(transfer_req, response + resp_ptr);
+                                    transfer_ack = vsfhal_swd_read(transfer_req, (uint8_t *)&data);
                                     if (transfer_ack != DAP_TRANSFER_OK)
                                         break;
                                     #if TIMESTAMP_CLOCK
@@ -758,6 +888,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                                         resp_ptr += 4;
                                     }
                                     #endif
+                                    put_unaligned_le32(data, response + resp_ptr);
                                     resp_ptr += 4;
                                 }
                             }
@@ -889,7 +1020,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                                         #endif
                                     }
                                 } else {    // Read DP register
-                                    transfer_ack = vsfhal_swd_read(transfer_req, response + resp_ptr);
+                                    transfer_ack = vsfhal_swd_read(transfer_req, (uint8_t *)&data);
                                     if (transfer_ack != DAP_TRANSFER_OK)
                                         break;
                                     #if TIMESTAMP_CLOCK
@@ -898,6 +1029,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                                         resp_ptr += 4;
                                     }
                                     #endif
+                                    put_unaligned_le32(data, response + resp_ptr);
                                     resp_ptr += 4;
                                 }
                             }
@@ -1151,11 +1283,9 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                                     break;
                                 select = select ? 0 : 1;
                                 #if TIMESTAMP_CLOCK
-                                if (post_read) {    // Store Timestamp
-                                    if (transfer_req & DAP_TRANSFER_TIMESTAMP) {
-                                        put_unaligned_le32(vsfhal_jtag_get_timestamp(), response + resp_ptr);
-                                        resp_ptr += 4;
-                                    }
+                                if (transfer_req & DAP_TRANSFER_TIMESTAMP) {    // Store Timestamp
+                                    put_unaligned_le32(vsfhal_jtag_get_timestamp(), response + resp_ptr);
+                                    resp_ptr += 4;
                                 }
                                 #endif
                             }
@@ -1752,108 +1882,6 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     response[resp_ptr++] = DAP_ERROR;
                 }
             } break;
-            #if SWO_UART || SWO_MANCHESTER
-            case ID_DAP_SWO_Transport: {
-                uint8_t ret = DAP_ERROR;
-                uint8_t transport = request[req_ptr++];
-                if (!(param->trace_status & DAP_SWO_CAPTURE_ACTIVE)) {
-                    #if SWO_STREAM
-                    if (transport <= 2) {
-                    #else
-                    if (transport <= 1) {
-                    #endif
-                        param->transport = transport;
-                        ret = DAP_OK;
-                    }
-                }
-                response[resp_ptr++] = ret;
-            } break;
-            case ID_DAP_SWO_Mode: {
-                uint8_t mode = request[req_ptr++];
-                // Note: not support DAP_SWO_MANCHESTER
-                if ((mode == DAP_SWO_OFF) || (mode == DAP_SWO_UART)) {
-                    param->trace_mode = mode;
-                    response[resp_ptr++] = DAP_OK;
-                } else {
-                    param->trace_mode = DAP_SWO_OFF;
-                    response[resp_ptr++] = DAP_ERROR;
-                }
-            } break;
-            case ID_DAP_SWO_Baudrate: {
-                uint32_t baudrate = get_unaligned_le32(request + req_ptr);
-                req_ptr += 4;
-                if (baudrate > SWO_UART_MAX_BAUDRATE)
-                    baudrate = SWO_UART_MAX_BAUDRATE;
-                else if (baudrate < SWO_UART_MIN_BAUDRATE)
-                    baudrate = SWO_UART_MIN_BAUDRATE;
-                #if (SWO_UART != 0)
-                param->swo_baudrate = baudrate;
-                #endif
-                put_unaligned_le32(baudrate, response + resp_ptr);
-                resp_ptr += 4;
-            } break;
-            case ID_DAP_SWO_Control: {
-                uint8_t active = request[req_ptr++] & DAP_SWO_CAPTURE_ACTIVE;
-                if (active != (param->trace_status & DAP_SWO_CAPTURE_ACTIVE)) {
-                    uint32_t mode = PERIPHERAL_UART_MODE_DEFAULT;
-                    if (active) {
-                        param->trace_o = 0;
-                        #if TIMESTAMP_CLOCK
-                        param->trace_timestamp = 0;
-                        #endif
-                        if (param->config_usart) {
-                            param->config_usart(PERIPHERAL_UART_SWO_IDX, &mode, &param->swo_baudrate, NULL, (vsf_stream_t *)&param->swo_rx);
-                        }
-                        VSF_STREAM_CONNECT_RX(&param->swo_rx);
-                    } else {
-                        VSF_STREAM_DISCONNECT_RX(&param->swo_rx);
-                        param->config_usart(PERIPHERAL_UART_SWO_IDX, NULL, NULL, NULL, NULL);
-                    }
-                    param->trace_status = active;
-                }
-                response[resp_ptr++] = DAP_OK;
-            } break;
-            case ID_DAP_SWO_Status: {
-                uint32_t count = VSF_STREAM_GET_DATA_SIZE(&param->swo_rx);
-                response[resp_ptr++] = param->trace_status;
-                put_unaligned_le32(count, response + resp_ptr);
-                resp_ptr += 4;
-            } break;
-            case ID_DAP_SWO_ExtendedStatus: {
-                uint8_t sb_cmd = request[req_ptr++];
-
-                if (sb_cmd & 0x1)
-                    response[resp_ptr++] = param->trace_status;
-                if (sb_cmd & 0x2) {
-                    uint32_t count = VSF_STREAM_GET_DATA_SIZE(&param->swo_rx);
-                    put_unaligned_le32(count, response + resp_ptr);
-                    resp_ptr += 4;
-                }
-                #if TIMESTAMP_CLOCK
-                if (sb_cmd & 0x4) {
-                    put_unaligned_le32(param->trace_o + VSF_STREAM_GET_DATA_SIZE(&param->swo_rx), response + resp_ptr);
-                    put_unaligned_le32(param->trace_timestamp, response + resp_ptr + 4);
-                    resp_ptr += 8;
-                }
-                #endif
-            } break;
-            case ID_DAP_SWO_Data: {
-                uint16_t count = min(get_unaligned_le16(request + req_ptr),
-                        VSF_STREAM_GET_DATA_SIZE(&param->swo_rx));
-                req_ptr += 2;
-                response[resp_ptr++] = param->trace_status;
-                if (param->transport != 1)	// Read trace data via DAP_SWO_Data command
-                    count = 0;
-                if (count > (pkt_size - 2 - resp_ptr))
-                    count = pkt_size - 2 - resp_ptr;
-                if (count) {
-                    count = VSF_STREAM_READ(&param->swo_rx, response + resp_ptr + 2, count);
-                }
-                put_unaligned_le32(count, response + resp_ptr);
-                resp_ptr += 2 + count;
-                param->trace_o += count;
-            } break;
-            #endif
             default:
                 goto fault;
             }
@@ -1914,6 +1942,10 @@ implement_vsf_task(dap_task_t)
 
 void dap_init(dap_t *dap, vsf_prio_t prio)
 {
+    #if TIMESTAMP_CLOCK
+    vsfhal_timestamp_init(TIMESTAMP_CLOCK, PERIPHERAL_TIMESTAMP_PRIORITY);
+    #endif
+
     dap->dap_task.dap_param = &dap->dap_param;
     init_vsf_task(dap_task_t, &dap->dap_task, prio);
 }

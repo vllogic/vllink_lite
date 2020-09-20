@@ -105,6 +105,9 @@ uint32_t vsfhal_flash_write(enum flash_idx_t idx, uint32_t addr, uint32_t size, 
         uint32_t i;
         uint32_t *w = (uint32_t *)addr;
         uint32_t *r = (uint32_t *)buff;
+        
+        vsf_gint_state_t vsf_gint_state = vsf_get_interrupt();
+        vsf_disable_interrupt();
 
         FMC_KEY = UNLOCK_KEY0;
         FMC_KEY = UNLOCK_KEY1;
@@ -120,6 +123,7 @@ uint32_t vsfhal_flash_write(enum flash_idx_t idx, uint32_t addr, uint32_t size, 
 
         FMC_CTL = FMC_CTL_LK;
 
+        vsf_set_interrupt(vsf_gint_state);
         return size;
     }
     return 0;
@@ -130,6 +134,9 @@ uint32_t vsfhal_flash_erase(enum flash_idx_t idx, uint32_t addr, uint32_t size)
     VSF_HAL_ASSERT(idx < GPIO_IDX_NUM);
 
     if (idx == FLASH0_IDX) {
+        vsf_gint_state_t vsf_gint_state = vsf_get_interrupt();
+        vsf_disable_interrupt();
+        
         FMC_KEY = UNLOCK_KEY0;
         FMC_KEY = UNLOCK_KEY1;
 
@@ -142,7 +149,8 @@ uint32_t vsfhal_flash_erase(enum flash_idx_t idx, uint32_t addr, uint32_t size)
         FMC_CTL &= ~FMC_CTL_PER;
 
         FMC_CTL = FMC_CTL_LK;
-
+        
+        vsf_set_interrupt(vsf_gint_state);
         return size;
     }
     return 0;

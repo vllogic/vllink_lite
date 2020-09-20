@@ -82,13 +82,13 @@
 #   define DAP_PACKET_SIZE                              DAP_HID_PACKET_SIZE
 #endif
 #define DAP_PACKET_COUNT                                4
-#define TIMESTAMP_CLOCK                                 0			// 1M
+#define TIMESTAMP_CLOCK                                 1000000			// 1M
 #define SWO_UART                                        1
-#define SWO_STREAM                                      1
+#define SWO_STREAM                                      0
 #define SWO_UART_MAX_BAUDRATE                           3200000
 #define SWO_UART_MIN_BAUDRATE                           2000
 #define SWO_MANCHESTER                                  0
-#define SWO_BUFFER_SIZE                                 256
+#define SWO_BUFFER_SIZE                                 512
 #define VENDOR_UART                                     0
 #define VENDOR_UART_BUFFER_SIZE                         256
 

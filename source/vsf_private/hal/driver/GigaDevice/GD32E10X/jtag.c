@@ -5,6 +5,7 @@ Reference Document:
 */
 
 #include "jtag.h"
+#include "timestamp.h"
 #include "./common/io.h"
 #include "./common/dma.h"
 #include "vsf.h"
@@ -344,6 +345,11 @@ uint32_t vsfhal_jtag_dr(uint32_t request, uint32_t dr, uint32_t dr_before, uint3
     bitlen++;
 
     bits_tail = bitlen - 8 - (dma_bytes << 3);
+
+    #if TIMESTAMP_CLOCK
+    if (request & DAP_TRANSFER_TIMESTAMP)
+        jtag_control.dap_timestamp = vsfhal_timestamp_get();
+    #endif
 
     do
     {

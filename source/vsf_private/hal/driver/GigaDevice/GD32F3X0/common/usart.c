@@ -62,6 +62,15 @@ static uint8_t usart_dma_channel[USART_COUNT][2] = {   // DMA, TX RX
     #endif  // USART1_ENABLE
 };
 
+static const IRQn_Type usart_irqn_list[USART_COUNT] = {
+    #if USART0_ENABLE
+    USART0_IRQn,
+    #endif  // USART0_ENABLE
+    #if USART1_ENABLE
+    TIMER5_DAC_IRQn,
+    #endif  // USART1_ENABLE
+};
+
 static usart_control_t usart_control[USART_COUNT];
 
 void vsfhal_usart_init(enum usart_idx_t idx)
@@ -140,14 +149,13 @@ static void enable_overtimer(uint32_t timer_clk)
 }
 #endif
 
-void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
+uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
 {
     VSF_HAL_ASSERT(idx < USART_IDX_NUM);
     
 	uint32_t temp;
 	uint32_t usartx = usart_reg_base_list[idx];
     uint8_t dma_idx = DMA_INVALID_IDX;
-    uint8_t tx_dma_ch, rx_dma_ch;
     struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
 
     USART_CTL0(usartx) = 0;
@@ -165,8 +173,6 @@ void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
         temp = info->apb2_freq_hz;
         #if USART0_DMA_ENABLE
         dma_idx = DMA0_IDX;
-        tx_dma_ch = usart_dma_channel[idx][0];
-        rx_dma_ch = usart_dma_channel[idx][1];
         #endif
         break;
     #endif
@@ -175,15 +181,16 @@ void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
         temp = info->apb1_freq_hz;
         #if USART1_DMA_ENABLE
         dma_idx = DMA0_IDX;
-        tx_dma_ch = usart_dma_channel[idx][0];
-        rx_dma_ch = usart_dma_channel[idx][1];
         #endif
         enable_overtimer(temp);
         break;
     #endif
     }
-
+    
     if (dma_idx != DMA_INVALID_IDX) {
+        uint8_t tx_dma_ch = usart_dma_channel[idx][0];
+        uint8_t rx_dma_ch = usart_dma_channel[idx][1];
+
         usart_control[idx].dma_idx = dma_idx;
         usart_control[idx].tx_dma_ch = tx_dma_ch;
         usart_control[idx].rx_dma_ch = rx_dma_ch;
@@ -205,11 +212,13 @@ void vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t mode)
         usart_control[idx].dma_idx = DMA_INVALID_IDX;
         USART_CTL0(usartx) |= USART_CTL0_RBNEIE | USART_CTL0_TCIE;
     }
-    
-    USART_BAUD(usartx) = temp / baudrate;
+
+    USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
     USART_CMD(usartx) = USART_CMD_ABDCMD | USART_CMD_SBKCMD | USART_CMD_MMCMD | USART_CMD_RXFCMD | USART_CMD_TXFCMD;
     USART_RFCS(usartx) |= USART_RFCS_RFEN;
     USART_CTL0(usartx) |= USART_CTL0_UEN;
+
+    return temp / USART_BAUD(usartx);
 }
 
 void vsfhal_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *))
@@ -227,29 +236,14 @@ void vsfhal_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p,
             vsf_dma_config_channel(ctrl->dma_idx, ctrl->tx_dma_ch, usart_tx_done, ctrl, int_priority);
             vsf_dma_config_channel(ctrl->dma_idx, ctrl->rx_dma_ch, usart_rx_done, ctrl, int_priority);
         }
-        if (idx == USART0_IDX) {
-            NVIC_EnableIRQ(USART0_IRQn);
-            NVIC_SetPriority(USART0_IRQn, int_priority);
-        }
-        #if USART1_ENABLE
-        if (idx == USART1_IDX) {
-            NVIC_EnableIRQ(TIMER5_DAC_IRQn);
-            NVIC_SetPriority(TIMER5_DAC_IRQn, int_priority);
-        }
-        #endif
+        NVIC_EnableIRQ(usart_irqn_list[idx]);
+        NVIC_SetPriority(usart_irqn_list[idx], int_priority);
     } else {
         if (ctrl->dma_idx != DMA_INVALID_IDX) {
             vsf_dma_config_channel(ctrl->dma_idx, ctrl->tx_dma_ch, NULL, NULL, -1);
             vsf_dma_config_channel(ctrl->dma_idx, ctrl->rx_dma_ch, NULL, NULL, -1);
         }
-        if (idx == USART0_IDX) {
-            NVIC_DisableIRQ(USART0_IRQn);
-        }
-        #if USART1_ENABLE
-        if (idx == USART1_IDX) {
-            NVIC_DisableIRQ(TIMER5_DAC_IRQn);
-        }
-        #endif
+        NVIC_DisableIRQ(usart_irqn_list[idx]);
     }
 }
 
@@ -259,7 +253,7 @@ uint16_t vsfhal_usart_tx_bytes(enum usart_idx_t idx, uint8_t *data, uint16_t siz
 
     uint8_t *tx_buff = usart_control[idx].tx_buff;
     usart_control[idx].tx_size = size;
-
+    
     if (usart_control[idx].dma_idx != DMA_INVALID_IDX) {
         uint8_t tx_dma_ch = usart_control[idx].tx_dma_ch;
 

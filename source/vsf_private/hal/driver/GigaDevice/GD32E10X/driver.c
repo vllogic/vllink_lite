@@ -25,6 +25,14 @@ static vsfhal_clk_info_t vsfhal_clk_info = {
 	.apb2_freq_hz = CHIP_APB2_FREQ_HZ,
 };
 
+static void scs_delay(void)
+{
+    __ASM("NOP");
+    __ASM("NOP");
+    __ASM("NOP");
+    __ASM("NOP");
+}
+
 static void clk_init(vsfhal_clk_info_t *info)
 {
 #ifndef PROJ_CFG_CORE_INIT_TINY
@@ -35,6 +43,7 @@ static void clk_init(vsfhal_clk_info_t *info)
     RCU_CTL |= RCU_CTL_IRC8MEN;
     while(!(RCU_CTL & RCU_CTL_IRC8MSTB));
     RCU_CFG0 &= ~RCU_CFG0_SCS;
+    scs_delay();
 
     if (info->clken & GD32E10X_CLKEN_HSI48M) {
         RCU_ADDCTL |= RCU_ADDCTL_IRC48MEN;
@@ -149,6 +158,7 @@ static void clk_init(vsfhal_clk_info_t *info)
         RCU_CFG0 &= ~RCU_CFG0_SCS;
         while((RCU_CFG0 & RCU_SCSS_IRC8M) != RCU_SCSS_IRC8M);
     }
+    scs_delay();
     
     if (!(info->clken & GD32E10X_CLKEN_HSI))
         RCU_CTL &= ~RCU_CTL_IRC8MEN;
@@ -157,6 +167,7 @@ static void clk_init(vsfhal_clk_info_t *info)
     RCU_CTL |= RCU_CTL_IRC8MEN;
     while (!(RCU_CTL & RCU_CTL_IRC8MSTB));
     RCU_CFG0 &= ~RCU_CFG0_SCS;
+    scs_delay();
 
     RCU_ADDCTL |= RCU_ADDCTL_IRC48MEN;
     while (!(RCU_ADDCTL & RCU_ADDCTL_IRC48MSTB));
@@ -234,14 +245,122 @@ vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 
 void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
 {
-     if (vsfhal_clk_info.apb1_freq_hz != vsfhal_clk_info.apb2_freq_hz)
-         return;
+    uint32_t temp;
 
-     if ((vsfhal_clk_info.apb1_freq_hz == 64000000) && (apb_freq_hz == 48000000)) {
+    if (vsfhal_clk_info.apb1_freq_hz != vsfhal_clk_info.apb2_freq_hz)
+        return;
+
+    if ((vsfhal_clk_info.apb1_freq_hz == 64000000) && (apb_freq_hz == 48000000)) {
+        vsf_gint_state_t gint_state = vsf_disable_interrupt(); 
+
+        RCU_CTL |= RCU_CTL_IRC8MEN;
+        while(!(RCU_CTL & RCU_CTL_IRC8MSTB));
+        RCU_CFG0 &= ~RCU_CFG0_SCS;
+        scs_delay();
         
-     } else if ((vsfhal_clk_info.apb1_freq_hz == 48000000) && (apb_freq_hz == 64000000)) {
+        RCU_CTL &= ~RCU_CTL_PLLEN;
+        RCU_CFG1 &= ~(RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV0 | RCU_CFG1_PREDV0SEL);
+        RCU_CFG1 |= RCU_CFG1_PLLPRESEL | (48000000 / 8000000 - 1);
+        RCU_CFG0 |= RCU_CFG0_PLLSEL;
+        RCU_CFG0 &= ~(RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4);
+        RCU_CFG0 |= ((10 & 0xf) << 18) | ((10 & 0x10) << 25); // 8M * 12 = 96M
+        RCU_CTL |= RCU_CTL_PLLEN;
+        while (!(RCU_CTL & RCU_CTL_PLLSTB));
+
+        FMC_WS &= ~FMC_WS_WSCNT;
+        FMC_WS |= WS_WSCNT(3);
         
-     }
+        // config usart
+        {
+            if (USART_CTL0(USART0) & USART_CTL0_UEN) {
+                temp = 64000000 / USART_BAUD(USART0);
+                USART_CTL0(USART0) &= ~USART_CTL0_UEN;
+                USART_BAUD(USART0) = 48000000 / temp;
+                USART_CTL0(USART0) |= USART_CTL0_UEN;
+            }
+            if (USART_CTL0(USART1) & USART_CTL0_UEN) {
+                temp = 64000000 / USART_BAUD(USART1);
+                USART_CTL0(USART1) &= ~USART_CTL0_UEN;
+                USART_BAUD(USART1) = 48000000 / temp;
+                USART_CTL0(USART1) |= USART_CTL0_UEN;
+            }
+        }
+
+        // config timer
+        {
+            temp = 64000000 / 2 / (TIMER_PSC(TIMER5) + 1);
+            TIMER_PSC(TIMER5) = 48000000 / 2 / temp - 1;
+            
+            temp = 64000000 / 2 / (TIMER_PSC(TIMER6) + 1);
+            TIMER_PSC(TIMER6) = 48000000 / 2 / temp - 1;
+        }
+        
+        RCU_CFG0 |= RCU_CKSYSSRC_PLL;
+        while ((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
+
+        RCU_CTL &= ~RCU_CTL_IRC8MEN;
+
+        vsfhal_clk_info.apb1_freq_hz = apb_freq_hz;
+        vsfhal_clk_info.apb2_freq_hz = apb_freq_hz;
+        vsfhal_clk_info.pll_freq_hz = apb_freq_hz * 2;
+        vsfhal_clk_info.ahb_freq_hz = apb_freq_hz * 2;
+        vsf_set_interrupt(gint_state);
+    } else if ((vsfhal_clk_info.apb1_freq_hz == 48000000) && (apb_freq_hz == 64000000)) {
+        vsf_gint_state_t gint_state = vsf_disable_interrupt(); 
+        
+        RCU_CTL |= RCU_CTL_IRC8MEN;
+        while(!(RCU_CTL & RCU_CTL_IRC8MSTB));
+        RCU_CFG0 &= ~RCU_CFG0_SCS;
+        scs_delay();
+        
+        RCU_CTL &= ~RCU_CTL_PLLEN;
+        RCU_CFG1 &= ~(RCU_CFG1_PLLPRESEL | RCU_CFG1_PREDV0 | RCU_CFG1_PREDV0SEL);
+        RCU_CFG1 |= RCU_CFG1_PLLPRESEL | (48000000 / 8000000 - 1);
+        RCU_CFG0 |= RCU_CFG0_PLLSEL;
+        RCU_CFG0 &= ~(RCU_CFG0_PLLMF | RCU_CFG0_PLLMF_4);
+        RCU_CFG0 |= ((10 & 0xf) << 18) | ((10 & 0x10) << 25); // 8M * 12 = 96M
+        RCU_CTL |= RCU_CTL_PLLEN;
+        while (!(RCU_CTL & RCU_CTL_PLLSTB));
+        
+        FMC_WS &= ~FMC_WS_WSCNT;
+        FMC_WS |= WS_WSCNT(3);
+        
+        // config usart
+        {
+            if (USART_CTL0(USART0) & USART_CTL0_UEN) {
+                temp = 48000000 / USART_BAUD(USART0);
+                USART_CTL0(USART0) &= ~USART_CTL0_UEN;
+                USART_BAUD(USART0) = 64000000 / temp;
+                USART_CTL0(USART0) |= USART_CTL0_UEN;
+            }
+            if (USART_CTL0(USART1) & USART_CTL0_UEN) {
+                temp = 48000000 / USART_BAUD(USART1);
+                USART_CTL0(USART1) &= ~USART_CTL0_UEN;
+                USART_BAUD(USART1) = 64000000 / temp;
+                USART_CTL0(USART1) |= USART_CTL0_UEN;
+            }
+        }
+
+        // config timer
+        {
+            temp = 48000000 / 2 / (TIMER_PSC(TIMER5) + 1);
+            TIMER_PSC(TIMER5) = 64000000 / 2 / temp - 1;
+            
+            temp = 48000000 / 2 / (TIMER_PSC(TIMER6) + 1);
+            TIMER_PSC(TIMER6) = 64000000 / 2 / temp - 1;
+        }
+
+        RCU_CFG0 |= RCU_CKSYSSRC_PLL;
+        while ((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
+
+        RCU_CTL &= ~RCU_CTL_IRC8MEN;
+
+        vsfhal_clk_info.apb1_freq_hz = apb_freq_hz;
+        vsfhal_clk_info.apb2_freq_hz = apb_freq_hz;
+        vsfhal_clk_info.pll_freq_hz = apb_freq_hz * 2;
+        vsfhal_clk_info.ahb_freq_hz = apb_freq_hz * 2;
+        vsf_set_interrupt(gint_state);
+    }
 }
 
 uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size)

@@ -99,7 +99,6 @@
 #   define SWD_SPI_DMAX         DMA0
 #   define SWD_SPI_TX_DMA_CH    2
 #   define SWD_SPI_RX_DMA_CH    1
-#   define SWD_SPI_IRQ          DMA0_Channel2_IRQn
 
 #define JTAG0_ENABLE            1
 #   define JTAG_SPI_BASE        SPI0
@@ -108,10 +107,10 @@
 #   define JTAG_SPI_DMAX        DMA0
 #   define JTAG_SPI_TX_DMA_CH   2
 #   define JTAG_SPI_RX_DMA_CH   1
-#   define JTAG_SPI_IRQ         DMA0_Channel2_IRQn
 
 #define PERIPHERAL_JTAG_PRIORITY            vsf_arch_prio_2
 #define PERIPHERAL_SWD_PRIORITY             vsf_arch_prio_2
+#define PERIPHERAL_TIMESTAMP_PRIORITY       vsf_arch_prio_3
 
 // KEY
 #define PERIPHERAL_KEY_IDX                  GPIOA_IDX
@@ -157,8 +156,8 @@
 #define PERIPHERAL_UART_EXT_IDX             USART0_IDX
 #   define PERIPHERAL_UART_EXT_BAUD_MAX     (96000000 / 20)
 #   define PERIPHERAL_UART_EXT_BAUD_MIN     (2000)
-#define PERIPHERAL_UART_SWO_PRIORITY        vsf_arch_prio_2
-#define PERIPHERAL_UART_EXT_PRIORITY        vsf_arch_prio_2
+#define PERIPHERAL_UART_SWO_PRIORITY        vsf_arch_prio_3
+#define PERIPHERAL_UART_EXT_PRIORITY        vsf_arch_prio_3
 #define PERIPHERAL_UART_PARITY_NONE         USART_PARITY_NONE
 #define PERIPHERAL_UART_PARITY_ODD          USART_PARITY_ODD
 #define PERIPHERAL_UART_PARITY_EVEN         USART_PARITY_EVEN

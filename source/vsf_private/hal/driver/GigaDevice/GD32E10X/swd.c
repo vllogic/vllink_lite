@@ -27,6 +27,7 @@ SWD Write:
 */
 
 #include "swd.h"
+#include "timestamp.h"
 #include "./common/io.h"
 #include "./common/dma.h"
 #include "vsf.h"
@@ -514,6 +515,11 @@ SYNC_READ_RESTART:
             //    swd_control.swd_delay(swd_control.delay_tick);
         }
 
+        #if TIMESTAMP_CLOCK
+        if (request & SWD_TRANS_TIMESTAMP)
+            swd_control.dap_timestamp = vsfhal_timestamp_get();
+        #endif
+
         if (temp == get_parity_32bit(get_unaligned_le32(r_data))) {
             return SWD_ACK_OK | SWD_SUCCESS;
         } else {
@@ -666,6 +672,11 @@ SYNC_READ_RESTART:
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
         }
+
+        #if TIMESTAMP_CLOCK
+        if (request & SWD_TRANS_TIMESTAMP)
+            swd_control.dap_timestamp = vsfhal_timestamp_get();
+        #endif
 
         if (temp == get_parity_32bit(get_unaligned_le32(r_data))) {
             return SWD_ACK_OK | SWD_SUCCESS;
@@ -833,6 +844,11 @@ SYNC_READ_RESTART:
         }
         SWDIO_MO_SWITCH_ANALOG_IN();
 
+        #if TIMESTAMP_CLOCK
+        if (request & SWD_TRANS_TIMESTAMP)
+            swd_control.dap_timestamp = vsfhal_timestamp_get();
+        #endif
+
         return SWD_ACK_OK | SWD_SUCCESS;
     } else if ((temp == SWD_ACK_WAIT) || (temp == SWD_ACK_FAULT)) {
         // TRN:[C]*trn
@@ -994,6 +1010,11 @@ SYNC_READ_RESTART:
                 swd_control.swd_delay(swd_control.delay_tick);
         }
         SWDIO_MO_SWITCH_ANALOG_IN();
+
+        #if TIMESTAMP_CLOCK
+        if (request & SWD_TRANS_TIMESTAMP)
+            swd_control.dap_timestamp = vsfhal_timestamp_get();
+        #endif
 
         return SWD_ACK_OK | SWD_SUCCESS;
     } else if ((temp == SWD_ACK_WAIT) || (temp == SWD_ACK_FAULT)) {

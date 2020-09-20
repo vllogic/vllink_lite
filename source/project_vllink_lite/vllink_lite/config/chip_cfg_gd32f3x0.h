@@ -48,6 +48,17 @@
 #   define CHIP_AHB_FREQ_HZ                (CHIP_PLL_FREQ_HZ)
 #   define CHIP_APB1_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #   define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
+#elif defined(PROJ_CFG_GD32F3X0_HSI48M_USB_PLL_96M)
+#   define CHIP_CLKEN                      (GD32F3X0_CLKEN_HSI48M | GD32F3X0_CLKEN_PLL)
+#   define CHIP_HCLKSRC                    GD32F3X0_HCLKSRC_PLL
+#   define CHIP_PLLSRC                     GD32F3X0_PLLSRC_HSI48M
+#   define CHIP_USBSRC                     GD32F3X0_USBSRC_HSI48M
+#   define CHIP_LSE_FREQ_HZ                (32768)
+#   define CHIP_HSE_FREQ_HZ                (12 * 1000 * 1000)
+#   define CHIP_PLL_FREQ_HZ                (96 * 1000 * 1000)
+#   define CHIP_AHB_FREQ_HZ                (CHIP_PLL_FREQ_HZ)
+#   define CHIP_APB1_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
+#   define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #elif defined(PROJ_CFG_GD32F3X0_HSI48M_USB_PLL_72M)
 #   define CHIP_CLKEN                      (GD32F3X0_CLKEN_HSI48M | GD32F3X0_CLKEN_PLL)
 #   define CHIP_HCLKSRC                    GD32F3X0_HCLKSRC_PLL
