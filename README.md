@@ -24,7 +24,7 @@ Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350/GD32E103�
 
 * 支持固件更新，按住按键连接Win10电脑，再使用Chrome浏览器打开更新页面即可 [WebDFU](https://devanlai.github.io/webdfu/dfu-util/)
 * 提供一路CMSIS-DAP V2协议免驱（仅限Win10）接口，提供SWD及JTAG接口，已支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29及以上）、[PyOCD](https://github.com/mbedmicro/pyOCD)、[OpenOCD](https://github.com/vllogic/openocd_cmsis-dap_v2)。具体配置方式可参看[IDE使用教程](https://github.com/vllogic/vllink_lite/blob/master/doc/ide_guide.md)
-* 提供一路USB CDC接口
+* 提供两路USB CDC接口，一路固定连接硬件串口，~~一路作为Shell灵活使用~~
 
 ## 特点
 
@@ -43,6 +43,15 @@ Vllink Lite是一款低成本高性能调试器。硬件基于GD32F350/GD32E103�
 * IAR for ARM 8.40.2 + [GD32F3x0/GD32E10x AddOn](http://www.gd32mcu.com/cn/download)
 * GNU Arm Embedded Toolchain + Cmake + Ninja
 
+## TODO List
+1. 支持Swd/Jtag Host
+2. 支持RAMIO，即通过调试口访问目标芯片的特定RAM，实现数据交互，类似RTT(J-Link)及Nuconsole(Nu-Link)
+3. 支持CDCShell，用以访问第二路串口或者RAMIO
+
+## 远景
+1. WebUSB接口
+2. 简易脚本及自动化配置功能，配合网页端工具，通过载入IAR或Keil的芯片描述文件，自动完成对应芯片的离线编程配置
+
 ## 授权
 
 GPLv3，随便玩
@@ -54,11 +63,6 @@ GPLv3，随便玩
 ## 购买渠道
 * 5元打样 + 淘宝买MCU
 
-## TODO List
-1. 支持Swd/Jtag Host
-2. 支持RAMIO，即通过调试口访问目标芯片的特定RAM，实现数据交互，类似RTT(J-Link)及Nuconsole(Nu-Link)
-3. 支持CDCShell，用以访问第二路串口或者RAMIO
+## 其他
 
-## 远景
-1. WebUSB接口
-2. 简易脚本及自动化配置功能，配合网页端工具，通过载入IAR或Keil的芯片描述工具，自动完成对应芯片的离线编程工具配置
+* [CMSIS-DAP V2在Windows 7下使用](https://arm-software.github.io/CMSIS_5/DAP/html/group__DAP__ConfigUSB__gr.html)
