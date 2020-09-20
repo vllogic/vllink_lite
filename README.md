@@ -55,8 +55,10 @@ GPLv3，随便玩
 * 5元打样 + 淘宝买MCU
 
 ## TODO List
+1. 支持Swd/Jtag Host
+2. 支持RAMIO，即通过调试口访问目标芯片的特定RAM，实现数据交互，类似RTT(J-Link)及Nuconsole(Nu-Link)
+3. 支持CDCShell，用以访问第二路串口或者RAMIO
 
-1. SWO功能测试
-2. 编写 ID_DAP_Vendor1 - ID_DAP_Vendor5 串口命令，支持多路串口同时收发
-3. 集成taget chip memory rw功能，增加虚拟CDC口，通过直接读写RAM实现调试I/O，类似RTT(J-Link)及Nuconsole(Nu-Link)
-4. 利用板上SPI Flash，研究自动化较高的离线编程器方案
+## 远景
+1. WebUSB接口
+2. 简易脚本及自动化配置功能，配合网页端工具，通过载入IAR或Keil的芯片描述工具，自动完成对应芯片的离线编程工具配置
