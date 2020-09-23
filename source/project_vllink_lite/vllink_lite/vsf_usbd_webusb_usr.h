@@ -4,7 +4,7 @@
 /*============================ INCLUDES ======================================*/
 
 #include "component/usb/vsf_usb_cfg.h"
-#include "dap.h"
+#include "dap/dap.h"
 
 #if VSF_USE_USB_DEVICE == ENABLED
 

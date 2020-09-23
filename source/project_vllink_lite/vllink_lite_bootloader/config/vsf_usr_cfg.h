@@ -42,7 +42,6 @@
 #   define VSF_HEAP_CFG_MCB_MAGIC_EN                    DISABLED
 #   define VSF_HEAP_SIZE                                0x1000
 
-#define VSF_KERNEL_CFG_SUPPORT_MSG_QUEUE                DISABLED
 #define VSF_USE_KERNEL_SIMPLE_SHELL                     ENABLED
 #define VSF_KERNEL_CFG_SUPPORT_THREAD                   DISABLED
 

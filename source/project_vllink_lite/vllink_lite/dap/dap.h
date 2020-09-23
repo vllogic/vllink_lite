@@ -287,7 +287,7 @@ void dap_init(dap_t *dap, vsf_prio_t prio);
 vsf_err_t dap_requset(dap_t *dap, vsf_sem_t *response_sem,
         void (*response)(void* p, uint8_t* buf, uint16_t size),
         void* response_param, uint8_t* buf, uint16_t pkt_size);
-
+vsf_err_t dap_requset_sync(dap_t *dap, uint8_t *request_buf, uint8_t *response_buf, uint16_t pkt_size);
 void dap_test(dap_t *dap, uint8_t port, uint16_t speed_khz);
 
 #ifdef __cplusplus

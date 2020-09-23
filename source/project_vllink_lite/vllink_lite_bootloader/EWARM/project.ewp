@@ -651,11 +651,11 @@
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>project.bin</state>
+                    <state>vllink_lite_gd32f350xx_bootloader_12KB.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -1708,11 +1708,11 @@
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>project.bin</state>
+                    <state>vllink_lite_gd32e103xx_bootloader_12KB.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>

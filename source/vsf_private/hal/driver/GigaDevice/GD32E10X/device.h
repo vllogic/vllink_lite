@@ -99,9 +99,9 @@ typedef void(*callback_param_t)(void *param);
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
-extern vsfhal_clk_info_t *vsfhal_clk_info_get(void);
-extern void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz);
-extern uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size);
+vsfhal_clk_info_t *vsfhal_clk_info_get(void);
+void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz);
+uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size);
 
 #endif
 /* EOF */

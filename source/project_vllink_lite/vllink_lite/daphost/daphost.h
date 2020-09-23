@@ -1,5 +1,5 @@
-#ifndef __RAMUART_H__
-#define __RAMUART_H__
+#ifndef __DAPHOST_H__
+#define __DAPHOST_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,4 +10,4 @@ extern "C" {
 }
 #endif
 
-#endif // __RAMUART_H__
+#endif // __DAPHOST_H__

@@ -651,11 +651,11 @@
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>project.bin</state>
+                    <state>vllink_lite_gd32f350xx_app.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -1135,7 +1135,7 @@
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
-                    <state>GD32E103x8	GD GD32E103x8</state>
+                    <state>GD32E103xB	GD GD32E103xB</state>
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
@@ -1195,7 +1195,7 @@
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>GD32E103x8	GD GD32E103x8</state>
+                    <state>GD32E103xB	GD GD32E103xB</state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -1708,11 +1708,11 @@
                 </option>
                 <option>
                     <name>OCOutputOverride</name>
-                    <state>0</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>project.bin</state>
+                    <state>vllink_lite_gd32e103xx_app.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
@@ -2144,8 +2144,26 @@
                 <name>$PROJ_DIR$\..\config\vsf_usr_cfg.h</name>
             </file>
         </group>
-        <file>
-            <name>$PROJ_DIR$\..\dap.c</name>
+        <group>
+            <name>dap</name>
+            <file>
+                <name>$PROJ_DIR$\..\dap\dap.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\dap\dap.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\dap\dap_swo.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\dap\dap_swo.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\dap\dap_vendor.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\dap\dap_vendor.h</name>
+            </file>
             <configuration>
                 <name>VllinkLite_GD32F350</name>
                 <settings>
@@ -2662,10 +2680,28 @@
                     </data>
                 </settings>
             </configuration>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\dap.h</name>
-        </file>
+        </group>
+        <group>
+            <name>daphost</name>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost_jtag.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost_jtag.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost_swd.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost_swd.h</name>
+            </file>
+        </group>
         <file>
             <name>$PROJ_DIR$\GD32E103xx_booted.icf</name>
         </file>
@@ -2674,12 +2710,6 @@
         </file>
         <file>
             <name>$PROJ_DIR$\..\main.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\ramuart.c</name>
-        </file>
-        <file>
-            <name>$PROJ_DIR$\..\ramuart.h</name>
         </file>
         <file>
             <name>$PROJ_DIR$\..\usrapp_usbd_common.c</name>

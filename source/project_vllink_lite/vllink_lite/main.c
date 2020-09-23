@@ -4,8 +4,7 @@
 /*============================ INCLUDES ======================================*/
 
 #include "vsf.h"
-#include "dap.h"
-#include "ramuart.h"
+#include "dap/dap.h"
 #include "vsf_usbd_cmsis_dap_v2.h"
 #include "vsf_usbd_webusb_usr.h"
 
