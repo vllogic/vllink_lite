@@ -1,5 +1,5 @@
 # CMakeLists head
 
 target_sources(vsf INTERFACE
-    usbh.c
+    vsf_input_ds4.c
 )

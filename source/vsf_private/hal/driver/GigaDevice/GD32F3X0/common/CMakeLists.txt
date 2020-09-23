@@ -1,6 +1,6 @@
 # CMakeLists head
 
-target_sources(vsfkernel INTERFACE
+target_sources(vsf INTERFACE
     __common.c
     dma.c
     flash.c

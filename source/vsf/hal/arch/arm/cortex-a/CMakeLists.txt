@@ -1,5 +1,5 @@
 # CMakeLists head
 
 target_sources(vsf INTERFACE
-    usbh.c
+    cortex_a_generic.c
 )

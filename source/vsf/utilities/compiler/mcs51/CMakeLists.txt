@@ -1,5 +1,6 @@
 # CMakeLists head
 
 target_sources(vsf INTERFACE
-    usbh.c
+    retarget_io.c
+    signal.c
 )

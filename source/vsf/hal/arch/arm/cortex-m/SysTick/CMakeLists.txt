@@ -1,5 +1,6 @@
 # CMakeLists head
 
 target_sources(vsf INTERFACE
-    usbh.c
+    systick_internal.c
+    systick.c
 )

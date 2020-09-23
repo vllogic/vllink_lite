@@ -1,5 +1,7 @@
 # CMakeLists head
 
 target_sources(vsf INTERFACE
-    usbh.c
+    cortex_m_generic.c
 )
+
+add_subdirectory(SysTick)

@@ -86,7 +86,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-  vsfkernel
+  vsf
 )
 
 file(WRITE compile_definitions.h "// Auto Generate\n\n")
