@@ -61,15 +61,6 @@
 #define VSF_USE_SERVICE_VSFSTREAM                       DISABLED
 
 
-#define APP_CFG_USBD_VID                                0x1209
-#define APP_CFG_USBD_PID                                0x6666
-#define APP_CFG_USBD_EP0_SIZE                           64
-#define APP_CFG_USBD_VENDOR_STR                         u"vsf"
-#define APP_CFG_USBD_PRODUCT_STR                        u"vsf_dfu"
-#define APP_CFG_USBD_SERIAL_STR                         u"0000"
-#define APP_CFG_USBD_WEBUSB_URL                         "vllogic.github.io/webdfu/"
-
-
 /*============================ INCLUDES ======================================*/
 
 #include "proj_cfg.h"

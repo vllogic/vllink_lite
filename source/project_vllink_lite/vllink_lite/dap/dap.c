@@ -1873,7 +1873,7 @@ vsf_err_t dap_requset_sync(dap_t *dap, uint8_t *request_buf, uint8_t *response_b
 }
 
 void dap_test(dap_t *dap, uint8_t port, uint16_t speed_khz)
-{
+{ 
     uint16_t ret;
     dap_param_t *param = &dap->dap_param;
     dap_task_t *dap_task = &dap->dap_task;

@@ -100,7 +100,9 @@ typedef void(*callback_param_t)(void *param);
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 vsfhal_clk_info_t *vsfhal_clk_info_get(void);
+#ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
 void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz);
+#endif
 uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size);
 
 #endif

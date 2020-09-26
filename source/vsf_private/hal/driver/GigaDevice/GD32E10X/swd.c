@@ -270,6 +270,7 @@ static uint32_t inline get_parity_32bit(uint32_t data)
     return data & 0x1;
 }
 
+#ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
 const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 32000,}, // 64M / 2 = 32M
     {48000000, 24000,}, // 48M / 2 = 24M
@@ -288,6 +289,18 @@ const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 250,},   // 64M / 256 = 250K
     {48000000, 188,},   // 48M / 256 = 187.5K
 };
+#else
+const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
+    {64000000, 32000,}, // 64M / 2 = 32M
+    {64000000, 16000,}, // 64M / 4 = 16M
+    {64000000, 8000,},  // 64M / 8 = 8M
+    {64000000, 4000,},  // 64M / 16 = 4M
+    {64000000, 2000,},  // 64M / 32 = 2M
+    {64000000, 1000,},  // 64M / 64 = 1M
+    {64000000, 500,},   // 64M / 128 = 500K
+    {64000000, 250,},   // 64M / 256 = 250K
+};
+#endif
 
 void vsfhal_swd_config(uint16_t kHz, uint16_t retry, uint8_t idle, uint8_t trn, bool data_force)
 {
@@ -303,9 +316,11 @@ void vsfhal_swd_config(uint16_t kHz, uint16_t retry, uint8_t idle, uint8_t trn, 
             break;
         }
     }
-    temp = temp / 2;
 
+    #ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
+    temp = temp / 2;
     vsfhal_clk_reconfig_apb(apb);
+    #endif
 
     info = vsfhal_clk_info_get();
 
@@ -388,7 +403,8 @@ void vsfhal_swd_seqout(uint8_t *data, uint32_t bitlen)
         while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
         SWDIO_MO_SWITCH_ANALOG_IN_SWCLK_SWITCH_OUTPP();
     }
-    swd_control.swd_write_io(data, bitlen);
+    if (bitlen)
+        swd_control.swd_write_io(data, bitlen);
 }
 
 void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen)
@@ -410,7 +426,8 @@ void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen)
         while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
         SWDIO_MO_SWITCH_ANALOG_IN_SWCLK_SWITCH_OUTPP();
     }
-    swd_control.swd_read_io(data, bitlen);
+    if (bitlen)
+        swd_control.swd_read_io(data, bitlen);
 }
 
 uint32_t vsfhal_swd_read(uint32_t request, uint8_t *r_data)
@@ -439,7 +456,6 @@ SYNC_READ_RESTART:
     DMA_CHxMADDR(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = (uint32_t)&buffer;
     DMA_CHxCNT(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = 1;
     DMA_CHxCTL(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = DMA_CHXCTL_CHEN | DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_PRIO;
-    temp = 0;
     tick = swd_control.trn;
     if (!r_data)
         r_data = (uint8_t *)&buffer;
@@ -597,7 +613,6 @@ SYNC_READ_RESTART:
     DMA_CHxMADDR(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = (uint32_t)&buffer;
     DMA_CHxCNT(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = 1;
     DMA_CHxCTL(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = DMA_CHXCTL_CHEN | DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_PRIO;
-    temp = 0;
     tick = swd_control.trn;
     if (!r_data)
         r_data = (uint8_t *)&buffer;
@@ -756,7 +771,6 @@ SYNC_READ_RESTART:
     DMA_CHxMADDR(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = (uint32_t)&buffer;
     DMA_CHxCNT(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = 1;
     DMA_CHxCTL(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = DMA_CHXCTL_CHEN | DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_PRIO;
-    temp = 0;
     tick = swd_control.trn;
     while (DMA_CHxCNT(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH));
     while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
@@ -923,7 +937,6 @@ SYNC_READ_RESTART:
     DMA_CHxMADDR(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = (uint32_t)&buffer;
     DMA_CHxCNT(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = 1;
     DMA_CHxCTL(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH) = DMA_CHXCTL_CHEN | DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_PRIO;
-    temp = 0;
     tick = swd_control.trn;
     while (DMA_CHxCNT(SWD_SPI_DMAX, SWD_SPI_TX_DMA_CH));
     while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);

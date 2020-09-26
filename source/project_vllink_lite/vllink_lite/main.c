@@ -165,7 +165,7 @@ static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate)
 static vsf_callback_timer_t cb_timer;
 
 #define DAP_TEST_PORT                   0   // 0, DAP_PORT_SWD, DAP_PORT_JTAG
-#define DAP_TEST_SPEED_KHZ              3000
+#define DAP_TEST_SPEED_KHZ              4000
 #define UART_SWO_TEST_ENABLE            0
 #define UART_EXT_TEST_ENABLE            0
 #if DAP_TEST_PORT
@@ -183,7 +183,7 @@ static void connect_usbd(vsf_callback_timer_t *timer)
     timer->on_timer = do_dap_test;
     vsf_callback_timer_add_ms(timer, 1000);
 #endif
-    
+
 #if UART_SWO_TEST_ENABLE
     static uint8_t test_swo[16] = {0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88};
     vsfhal_usart_init(PERIPHERAL_UART_SWO_IDX);
@@ -253,6 +253,7 @@ struct usb_cdcacm_line_coding_t {
     return VSF_ERR_NONE;
 }
 
+#ifdef APP_CFG_CDCSHELL_SUPPORT
 static vsf_err_t usrapp_cdcshell_set_line_coding(usb_cdcacm_line_coding_t *line_coding)
 {
     uint32_t baudrate = line_coding->bitrate;
@@ -281,6 +282,7 @@ static vsf_err_t usrapp_cdcshell_set_line_coding(usb_cdcacm_line_coding_t *line_
     usrapp.cdc_shell_usart_baud = baudrate;
     return VSF_ERR_NONE;
 }
+#endif
 
 int main(void)
 {
@@ -302,8 +304,10 @@ int main(void)
 
     VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext);
     VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb);
+    #ifdef APP_CFG_CDCSHELL_SUPPORT
     VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcshell.usb2shell);
     VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcshell.shell2usb);
+    #endif
 
     dap_init(&usrapp.dap, vsf_prio_0);
 

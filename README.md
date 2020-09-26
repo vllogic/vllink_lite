@@ -2,7 +2,7 @@
 
 ## 简介
 
-Vllink Lite是一款低成本高性能开源调试器。**在PCBA成本控制在￥5.0以内的同时，SWD调试速度可达Jlink V8的125%**。当前调试器主控可选GD32F350G8U6/GD32F350C8T6/GD32E103Tx/GD32E103Cx，并提供对应的硬件图纸。其中GD32E103系列主控拥有更大RAM、ROM，会集成更多功能。
+Vllink Lite是一款低成本高性能开源调试器。**在PCBA成本控制在￥5.0以内的同时，SWD调试速度可达Jlink V8的125%**。目前调试器主控可选GD32F350G8U6/GD32F350C8T6/GD32E103Tx/GD32E103Cx，并提供对应的硬件图纸。其中GD32E103系列主控拥有更大RAM、ROM，可以集成更多功能。
 
 ## 硬件参考设计
 
@@ -12,7 +12,7 @@ GD32F350G8淘宝零售价格已低于￥3.8，SOF校准免晶振，适合作为�
 ### 2. [Vllink Lite.R4.GD32E103Tx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103tx)
 相比GD32F350，提供更大RAM与ROM，预留IO连接SPI Flash。
 
-### 3. [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103Cx)
+### 3. [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103cx)
 LQFP封装，预留独立SPI连接SPI Flash。
 
 ### 仿真及实拍图
@@ -24,9 +24,9 @@ LQFP封装，预留独立SPI连接SPI Flash。
 ## 基本功能
 
 * WEBDFU固件更新，按住按键连接Win10电脑，再使用Chrome浏览器打开更新页面即可 [WebDFU@Github](https://devanlai.github.io/webdfu/dfu-util/)或[WebDFU@Gitee](https://talpachen.gitee.io/webdfu/dfu-util/)
-* CMSIS-DAP V2协议免驱（仅限Win10）接口，提供SWD及JTAG接口，已支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29及以上）、[PyOCD](https://github.com/mbedmicro/pyOCD)、[OpenOCD](https://github.com/vllogic/openocd_cmsis-dap_v2)。具体配置方式可参看[IDE使用教程](https://github.com/vllogic/vllink_lite/blob/master/doc/ide_guide.md)
+* CMSIS-DAP V2协议（Win10免驱）接口，提供SWD及JTAG接口，已支持IAR for ARM（版本8.32.1及以上）、MDK-ARM（版本5.29及以上）、[PyOCD](https://github.com/mbedmicro/pyOCD)、[OpenOCD](https://github.com/vllogic/openocd_cmsis-dap_v2)。具体配置方式可参看[IDE使用教程](https://github.com/vllogic/vllink_lite/blob/master/doc/ide_guide.md)
 * CMSIS-DAP V2的SWO功能，在MDK-ARM下测试可用
-* CDC-UART，固定连接硬件串口`TXD` `RXD`
+* CDC-UART，连接硬件串口：`TXD` `RXD`
 
 ## 额外功能（限GD32E103）
 * 内置SWD Host、JTAG Host
@@ -36,7 +36,7 @@ LQFP封装，预留独立SPI连接SPI Flash。
 
 ## 调试速度测试
 
-* 优化了底层传输协议，尽量使用SPI通讯，IAR默认速率下对SRAM的读写速度可达270KB/S(SWD)或200KB/S(JTAG)，相比DAPLink（CMSIS-DAP V2），大约提升一倍。如果使用优化版的OpenOCD，读写速度可达400KB/s以上。[与主流调试器对比](https://github.com/vllogic/vllink_lite/blob/master/hardware/vllink_lite.r3/speed_test.md)
+* 优化底层传输协议，尽量使用SPI通讯，IAR默认速率下对SRAM的读写速度可达270KB/S(SWD)或200KB/S(JTAG)，相比DAPLink（CMSIS-DAP V2），大约提升一倍。如果使用优化版的OpenOCD，读写速度可达400KB/s以上。[与主流调试器对比](https://github.com/vllogic/vllink_lite/blob/master/hardware/vllink_lite.r3/speed_test.md)
 
 ## 硬件制作
 
@@ -63,7 +63,7 @@ LQFP封装，预留独立SPI连接SPI Flash。
 
 欢迎加入QQ群：512256420
 
-## 购买渠道
+## 硬件获得渠道
 
 * JLC 5元打样 + 淘宝买MCU
 

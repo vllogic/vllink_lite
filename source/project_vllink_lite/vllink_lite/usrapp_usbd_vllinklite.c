@@ -16,7 +16,9 @@ typedef struct usbd_vllinklite_const_t {
         uint8_t str_cmsis_dap_v2[26];
         uint8_t str_webusb[36];
         uint8_t str_cdcext[28];
+        #ifdef APP_CFG_CDCSHELL_SUPPORT
         uint8_t str_cdcshell[32];
+        #endif
         vk_usbd_desc_t std_desc[APP_CFG_USBD_DESC_COUNT];
     } usbd;
 } usbd_vllinklite_const_t;
@@ -469,12 +471,14 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0,
             'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
         },
+        #ifdef APP_CFG_CDCSHELL_SUPPORT
         .str_cdcshell            = {
             32,
             USB_DT_STRING,
            'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0,
            'D', 0, 'C', 0, 'S', 0, 'h', 0, 'e', 0, 'l', 0, 'l', 0,
         },
+        #endif
         .std_desc               = {
             VSF_USBD_DESC_DEVICE(__usrapp_usbd_vllinklite_const.usbd.dev_desc, sizeof(__usrapp_usbd_vllinklite_const.usbd.dev_desc)),
             VSF_USBD_DESC_CONFIG(0, __usrapp_usbd_vllinklite_const.usbd.config_desc, sizeof(__usrapp_usbd_vllinklite_const.usbd.config_desc)),

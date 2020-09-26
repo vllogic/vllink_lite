@@ -2683,6 +2683,10 @@
         </group>
         <group>
             <name>daphost</name>
+            <excluded>
+                <configuration>VllinkLite_GD32F350</configuration>
+                <configuration>VllinkLite_GD32E103</configuration>
+            </excluded>
             <file>
                 <name>$PROJ_DIR$\..\daphost\daphost.c</name>
             </file>
@@ -2694,6 +2698,9 @@
             </file>
             <file>
                 <name>$PROJ_DIR$\..\daphost\daphost_jtag.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\daphost\daphost_priv.h</name>
             </file>
             <file>
                 <name>$PROJ_DIR$\..\daphost\daphost_swd.c</name>

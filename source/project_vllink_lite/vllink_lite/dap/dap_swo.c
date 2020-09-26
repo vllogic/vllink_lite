@@ -98,8 +98,6 @@ uint32_t dap_swo_request_handler(dap_param_t* param, uint8_t* request,
         int32_t count = min(get_unaligned_le16(request + req_ptr),
                 VSF_STREAM_GET_DATA_SIZE(&param->swo_rx));
         req_ptr += 2;
-        if (count >= 16)
-            __ASM("NOP");
         response[resp_ptr++] = param->trace_status;
         if (param->transport != 1)	// Read trace data via DAP_SWO_Data command
             count = 0;

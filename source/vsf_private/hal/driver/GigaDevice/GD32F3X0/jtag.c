@@ -22,7 +22,13 @@ Reference Document:
 #define IO_SET(idx, pin)            (GPIO_OCTL(GPIOA_BASE + 0x400 * (idx)) |= 0x1 << pin)
 #define IO_CLEAR(idx, pin)          (GPIO_BC(GPIOA_BASE + 0x400 * (idx)) = 0x1 << pin)
 #define IO_GET(idx, pin)            ((GPIO_ISTAT(GPIOA_BASE + 0x400 * (idx)) >> pin) & 0x1)
-#define IO_GET_80_or_00(idx, pin)   (*(uint8_t *)(0x42000000U + (((GPIOA_BASE + 0x400 * (idx)) + 0x10) - 0x40000000) * 32 + (pin) * 4) << 7)
+#if PERIPHERAL_GPIO_TDO_MI_PIN < 7
+#   define IO_GET_80_or_00(idx, pin)    ((GPIO_ISTAT(GPIOA_BASE + 0x400 * (idx)) & (0x1ul << pin)) << (7 - pin))
+#elif PERIPHERAL_GPIO_TDO_MI_PIN == 7
+#   define IO_GET_80_or_00(idx, pin)    (GPIO_ISTAT(GPIOA_BASE + 0x400 * (idx)) & (0x1ul << pin))
+#else
+#   define IO_GET_80_or_00(idx, pin)    ((GPIO_ISTAT(GPIOA_BASE + 0x400 * (idx)) & (0x1ul << pin)) >> (pin - 7))
+#endif
 
 typedef struct jtag_control_t {
 	uint8_t idle;
@@ -173,6 +179,7 @@ static void delay_jtag_250khz_188khz(uint16_t dummy)
     while (--temp);
 }
 
+#ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
 const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 32000,}, // 64M / 2 = 32M
     {48000000, 24000,}, // 48M / 2 = 24M
@@ -191,6 +198,18 @@ const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 250,},   // 64M / 256 = 250K
     {48000000, 188,},   // 48M / 256 = 187.5K
 };
+#else
+const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
+    {64000000, 32000,}, // 64M / 2 = 32M
+    {64000000, 16000,}, // 64M / 4 = 16M
+    {64000000, 8000,},  // 64M / 8 = 8M
+    {64000000, 4000,},  // 64M / 16 = 4M
+    {64000000, 2000,},  // 64M / 32 = 2M
+    {64000000, 1000,},  // 64M / 64 = 1M
+    {64000000, 500,},   // 64M / 128 = 500K
+    {64000000, 250,},   // 64M / 256 = 250K
+};
+#endif
 
 void vsfhal_jtag_config(uint16_t kHz, uint16_t retry, uint8_t idle)
 {
@@ -206,9 +225,11 @@ void vsfhal_jtag_config(uint16_t kHz, uint16_t retry, uint8_t idle)
             break;
         }
     }
-    temp = temp / 2;
 
+    #ifdef PROJ_CFG_GD32F3X0_AHP_APB_UNFIXED
+    temp = temp / 2;
     vsfhal_clk_reconfig_apb(apb);
+    #endif
 
     info = vsfhal_clk_info_get();
 
@@ -525,7 +546,7 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
     // dma
     jtag_set_spi_mode();
     do {
-        SPI_CTL0(JTAG_SPI_BASE) = *tdi;
+        SPI_DATA(JTAG_SPI_BASE) = *tdi;
         tdi++;
         tms++;
         while (SPI_STAT(JTAG_SPI_BASE) & SPI_STAT_TRANS);
@@ -628,7 +649,7 @@ static void jtag_rw_dr_slow(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t 
     // dma
     jtag_set_spi_mode();
     do {
-        SPI_CTL0(JTAG_SPI_BASE) = *tdi;
+        SPI_DATA(JTAG_SPI_BASE) = *tdi;
         tdi++;
         tms++;
         while (SPI_STAT(JTAG_SPI_BASE) & SPI_STAT_TRANS);

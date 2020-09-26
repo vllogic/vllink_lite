@@ -4,11 +4,12 @@
 #if defined(BRD_CFG_VLLINKLITE_GD32E103)
 #   define APP_CFG_SERIAL_HEADER_STR                    u"GD32E103."
 #   define APP_CFG_SERIAL_HEADER_STR_LENGTH             (sizeof(APP_CFG_SERIAL_HEADER_STR) - 2)
-#   define FIRMWARE_AREA_ADDR                           0x08003000
-#   define FIRMWARE_AREA_SIZE_MAX                       (128 * 1024 - 12 * 1024)
-#   define FIRMWARE_SP_ADDR			                    (0x20000000 + 4)
-#   define FIRMWARE_SP_SIZE_MAX		                    (8 * 1024 - 4)
-//#   define PROJ_CFG_CORE_INIT_TINY
+#   define APP_CFG_USBD_VID                             0x1209
+#   define APP_CFG_USBD_PID                             0x6666
+#   define APP_CFG_USBD_BCD                             0x0100
+#   define APP_CFG_USBD_VENDOR_STR                      u"Vllogic.com"
+#   define APP_CFG_USBD_PRODUCT_STR                     u"Vllink Lite"
+#   define APP_CFG_USBD_SERIAL_STR                      u"GD32E103"
 #   if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
 #       define VSF_DWCOTG_DCD_CFG_FAKE_EP               ENABLED
 #       define USRAPP_CFG_USBD_SPEED                    USB_SPEED_FULL
@@ -20,14 +21,17 @@
 #       define APP_CFG_CDCEXT_PKT_SIZE                  64
 #	define APP_CFG_CDCSHELL_SUPPORT
 #       define APP_CFG_CDCSHELL_PKT_SIZE                64
+#   define APP_CFG_DAPHOST_SUPPORT
+#       define APP_CFG_DAPHOST_SUPPORT
 #elif defined(BRD_CFG_VLLINKLITE_GD32F350)
 #   define APP_CFG_SERIAL_HEADER_STR                    u"GD32F350."
 #   define APP_CFG_SERIAL_HEADER_STR_LENGTH             (sizeof(APP_CFG_SERIAL_HEADER_STR) - 2)
-#   define FIRMWARE_AREA_ADDR                           0x08003000
-#   define FIRMWARE_AREA_SIZE_MAX                       (64 * 1024 - 12 * 1024)
-#   define FIRMWARE_SP_ADDR			                    (0x20000000 + 4)
-#   define FIRMWARE_SP_SIZE_MAX		                    (32 * 1024 - 4)
-//#   define PROJ_CFG_CORE_INIT_TINY
+#   define APP_CFG_USBD_VID                             0x1209
+#   define APP_CFG_USBD_PID                             0x6666
+#   define APP_CFG_USBD_BCD                             0x0101
+#   define APP_CFG_USBD_VENDOR_STR                      u"Vllogic.com"
+#   define APP_CFG_USBD_PRODUCT_STR                     u"Vllink Lite"
+#   define APP_CFG_USBD_SERIAL_STR                      u"GD32F350"
 #   if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
 #       define VSF_DWCOTG_DCD_CFG_FAKE_EP               ENABLED
 #       define USRAPP_CFG_USBD_SPEED                    USB_SPEED_FULL
@@ -36,20 +40,12 @@
 #	define APP_CFG_CMSIS_DAP_V2_SUPPORT
 #	define APP_CFG_WEBUSB_SUPPORT
 #	define APP_CFG_CDCEXT_SUPPORT
-#       define APP_CFG_CDCEXT_PKT_SIZE                  32
-#	define APP_CFG_CDCSHELL_SUPPORT
-#       define APP_CFG_CDCSHELL_PKT_SIZE                32
+#       define APP_CFG_CDCEXT_PKT_SIZE                  64
+//#	define APP_CFG_CDCSHELL_SUPPORT
+//#       define APP_CFG_CDCSHELL_PKT_SIZE                64
+//#   define APP_CFG_DAPHOST_SUPPORT
+//#       define APP_CFG_DAPHOST_SUPPORT
 #endif
-
-#define APP_CFG_USBD_VID                                0xABCD  // 0x1209
-#define APP_CFG_USBD_PID                                0x6666
-#define APP_CFG_USBD_BCD                                0x0100
-#define APP_CFG_USBD_EP0_SIZE                           64
-#define APP_CFG_USBD_VENDOR_STR                         u"vsf"
-#define APP_CFG_USBD_PRODUCT_STR                        u"vsf_dfu"
-#define APP_CFG_USBD_SERIAL_STR                         u"0000"
-#define APP_CFG_USBD_WEBUSB_URL                         "vllogic.github.io/webdfu/"
-
 
 #define CMSIS_DAP_V2_PACKET_SIZE                        512
 #define WEBUSB_DAP_PACKET_SIZE                          64

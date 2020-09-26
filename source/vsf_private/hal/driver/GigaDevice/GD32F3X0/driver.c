@@ -219,6 +219,7 @@ vsfhal_clk_info_t *vsfhal_clk_info_get(void)
     return &vsfhal_clk_info;
 }
 
+#ifdef PROJ_CFG_GD32F3X0_AHP_APB_UNFIXED
 void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
 {
     uint32_t temp;
@@ -332,6 +333,7 @@ void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
         vsf_set_interrupt(gint_state);
     }
 }
+#endif
 
 uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size)
 {

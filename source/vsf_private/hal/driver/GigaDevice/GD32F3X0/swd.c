@@ -57,9 +57,9 @@ SWD Write:
 
 #define SWDIO_MI_TO_AFIN_SWCLK_TO_AFPP()    (IO_CFG_AF(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN),IO_CFG_AF(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
 #define SWDIO_MI_TO_IN_SWCLK_TO_OUTPP()     (IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN),IO_CFG_OUTPUT(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
-#define SWDIO_MO_TO_AFPP_SWCLK_TO_AFPP()    (IO_CFG_AF(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN),IO_CFG_AF(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN))
-#define SWDIO_MO_TO_IN_SWCLK_TO_OUTPP()     (IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN),IO_CFG_AF(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
-#define SWDIO_MO_TO_OUTPP_SWCLK_TO_OUTPP()  (IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN),IO_CFG_AF(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
+#define SWDIO_MO_TO_AFPP_SWCLK_TO_AFPP()    (IO_CFG_AF(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN),IO_CFG_AF(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
+#define SWDIO_MO_TO_IN_SWCLK_TO_OUTPP()     (IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN),IO_CFG_OUTPUT(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
+#define SWDIO_MO_TO_OUTPP_SWCLK_TO_OUTPP()  (IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN),IO_CFG_OUTPUT(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN))
 #define SWDIO_MO_TO_IN()                    (IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN))
 #define SWDIO_MO_TO_OUTPP()                 (IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN))
 #define SWDIO_MO_TO_AFPP()                  (IO_CFG_AF(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN))
@@ -228,6 +228,7 @@ static uint32_t inline get_parity_32bit(uint32_t data)
     return data & 0x1;
 }
 
+#ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
 const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 32000,}, // 64M / 2 = 32M
     {48000000, 24000,}, // 48M / 2 = 24M
@@ -246,6 +247,18 @@ const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 250,},   // 64M / 256 = 250K
     {48000000, 188,},   // 48M / 256 = 187.5K
 };
+#else
+const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
+    {64000000, 32000,}, // 64M / 2 = 32M
+    {64000000, 16000,}, // 64M / 4 = 16M
+    {64000000, 8000,},  // 64M / 8 = 8M
+    {64000000, 4000,},  // 64M / 16 = 4M
+    {64000000, 2000,},  // 64M / 32 = 2M
+    {64000000, 1000,},  // 64M / 64 = 1M
+    {64000000, 500,},   // 64M / 128 = 500K
+    {64000000, 250,},   // 64M / 256 = 250K
+};
+#endif
 
 void vsfhal_swd_config(uint16_t kHz, uint16_t retry, uint8_t idle, uint8_t trn, bool data_force)
 {
@@ -261,9 +274,11 @@ void vsfhal_swd_config(uint16_t kHz, uint16_t retry, uint8_t idle, uint8_t trn, 
             break;
         }
     }
-    temp = temp / 2;
 
+    #ifdef PROJ_CFG_GD32F3X0_AHP_APB_UNFIXED
+    temp = temp / 2;
     vsfhal_clk_reconfig_apb(apb);
+    #endif
 
     info = vsfhal_clk_info_get();
 
@@ -340,7 +355,9 @@ void vsfhal_swd_seqout(uint8_t *data, uint32_t bitlen)
         } while (bytes);
         SWDIO_MO_TO_IN_SWCLK_TO_OUTPP();
     }
-    swd_control.swd_write_io(data, bitlen);
+    bitlen = bitlen & 0x7;
+    if (bitlen)
+        swd_control.swd_write_io(data, bitlen);
 }
 
 void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen)
@@ -357,7 +374,9 @@ void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen)
         } while (bytes);
         SWDIO_MI_TO_IN_SWCLK_TO_OUTPP();
     }
-    swd_control.swd_read_io(data, bitlen);
+    bitlen = bitlen & 0x7;
+    if (bitlen)
+        swd_control.swd_read_io(data, bitlen);
 }
 
 uint32_t vsfhal_swd_read(uint32_t request, uint8_t *r_data)
@@ -385,6 +404,7 @@ SYNC_READ_RESTART:
     SPI_DATA(SWD_SPI_BASE) = buffer;
     if (!r_data)
         r_data = (uint8_t *)&buffer;
+    tick = swd_control.trn;
     while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
     buffer = SPI_DATA(SWD_SPI_BASE);
 
@@ -441,6 +461,8 @@ SYNC_READ_RESTART:
         //if (swd_control.swd_delay)
         //    swd_control.swd_delay(swd_control.delay_tick);
 
+        tick = swd_control.trn + swd_control.idle;
+        
         // Trn:[C]*trn --> Idle:[C]*idle
         while (tick--) {
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -537,6 +559,7 @@ SYNC_READ_RESTART:
     SPI_DATA(SWD_SPI_BASE) = buffer;
     if (!r_data)
         r_data = (uint8_t *)&buffer;
+    tick = swd_control.trn;
     while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
     buffer = SPI_DATA(SWD_SPI_BASE);
 
@@ -577,13 +600,11 @@ SYNC_READ_RESTART:
     if (temp == SWD_ACK_OK) {
         // Data:[R]*32
         SWDIO_MI_TO_AFIN_SWCLK_TO_AFPP();
-        temp = 4;
-        do {
+        for (temp = 0; temp < 4; temp++) {
             SPI_DATA(SWD_SPI_BASE) = 0xff;
-            temp--;
             while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
-            buffer = SPI_DATA(SWD_SPI_BASE);
-        } while (temp);
+            r_data[temp] = SPI_DATA(SWD_SPI_BASE);
+        }
 
         // Parity:[R]*1
         SWDIO_MI_TO_IN_SWCLK_TO_OUTPP();
@@ -595,6 +616,8 @@ SYNC_READ_RESTART:
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);
 
+        tick = swd_control.trn + swd_control.idle;
+        
         // Trn:[C]*trn --> Idle:[C]*idle
         while (tick--) {
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -690,7 +713,6 @@ SYNC_READ_RESTART:
     // Request:[W]*8
     SWDIO_MO_TO_AFPP_SWCLK_TO_AFPP();
     SPI_DATA(SWD_SPI_BASE) = buffer;
-    temp = 0;
     tick = swd_control.trn;
     while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
     buffer = SPI_DATA(SWD_SPI_BASE);
@@ -743,14 +765,11 @@ SYNC_READ_RESTART:
 
         // Data:[W]*32
         SWDIO_MO_TO_AFPP_SWCLK_TO_AFPP();
-        temp = 4;
-        do {
-            SPI_DATA(SWD_SPI_BASE) = *w_data;
-            w_data++;
-            temp--;
+        for (temp = 0; temp < 4; temp++) {
+            SPI_DATA(SWD_SPI_BASE) = w_data[temp];
             while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
             buffer = SPI_DATA(SWD_SPI_BASE);
-        } while (temp);
+        }
 
         temp = get_parity_32bit(get_unaligned_le32(w_data));
         tick = swd_control.idle;
@@ -856,7 +875,6 @@ SYNC_READ_RESTART:
     // Request:[W]*8
     SWDIO_MO_TO_AFPP_SWCLK_TO_AFPP();
     SPI_DATA(SWD_SPI_BASE) = buffer;
-    temp = 0;
     tick = swd_control.trn;
     while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
     buffer = SPI_DATA(SWD_SPI_BASE);
@@ -909,14 +927,11 @@ SYNC_READ_RESTART:
 
         // Data:[W]*32
         SWDIO_MO_TO_AFPP_SWCLK_TO_AFPP();
-        temp = 4;
-        do {
-            SPI_DATA(SWD_SPI_BASE) = *w_data;
-            w_data++;
-            temp--;
+        for (temp = 0; temp < 4; temp++) {
+            SPI_DATA(SWD_SPI_BASE) = w_data[temp];
             while (SPI_STAT(SWD_SPI_BASE) & SPI_STAT_TRANS);
             buffer = SPI_DATA(SWD_SPI_BASE);
-        } while (temp);
+        }
 
         temp = get_parity_32bit(get_unaligned_le32(w_data));
         tick = swd_control.idle;

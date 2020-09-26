@@ -9,7 +9,7 @@ void vsfhal_timestamp_init(uint32_t timestamp, int32_t int_priority)
 {
     struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
 
-    RCU_APB1EN |= RCU_APB1EN_TIMER5EN;
+    RCU_APB1EN |= RCU_APB1EN_TIMER13EN;
     TIMER_CTL0(TIMER13) = TIMER_CTL0_ARSE;
     TIMER_DMAINTEN(TIMER13) = TIMER_DMAINTEN_UPIE;
     if (info->apb1_freq_hz == info->ahb_freq_hz)
