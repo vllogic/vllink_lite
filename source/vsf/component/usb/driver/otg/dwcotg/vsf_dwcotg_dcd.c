@@ -491,8 +491,8 @@ vsf_err_t vk_dwcotg_dcd_ep_transaction_set_data_size(vk_dwcotg_dcd_t *dwcotg_dcd
 
     if (!size) {
         in_regs->dieptsiz = 0x1ul << 19;
-        in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
     }
+    in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
     
     return VSF_ERR_NONE;
 }
@@ -518,7 +518,6 @@ vsf_err_t vk_dwcotg_dcd_ep_transaction_write_buffer(vk_dwcotg_dcd_t *dwcotg_dcd,
         *dwcotg_dcd->reg.dfifo[ep_idx] = data;
     }
     dwcotg_dcd->reg.dev.global_regs->dtknqr4_fifoemptymsk |= 1 << ep_idx;
-    in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
     return VSF_ERR_NONE;
 }
 
@@ -557,7 +556,6 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
     struct dwcotg_dev_in_ep_regs_t *in_regs = dwcotg_dcd->reg.dev.ep.in_regs;
     struct dwcotg_dev_out_ep_regs_t *out_regs = dwcotg_dcd->reg.dev.ep.out_regs;
     uint_fast32_t intsts = global_regs->gintmsk | USB_OTG_GINTSTS_CMOD;
-    vk_dwcotg_dcd_trans_t *trans;
 
     intsts &= global_regs->gintsts;
 
