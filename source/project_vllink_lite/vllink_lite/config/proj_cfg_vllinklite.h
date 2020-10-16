@@ -19,10 +19,15 @@
 #	define APP_CFG_WEBUSB_SUPPORT
 #	define APP_CFG_CDCEXT_SUPPORT
 #       define APP_CFG_CDCEXT_PKT_SIZE                  64
-#	define APP_CFG_CDCSHELL_SUPPORT
+//#	define APP_CFG_CDCSHELL_SUPPORT
 #       define APP_CFG_CDCSHELL_PKT_SIZE                64
-#   define APP_CFG_DAPHOST_SUPPORT
-#       define APP_CFG_DAPHOST_SUPPORT
+#       define APP_CFG_CDCSHELL_DAPHOST
+#   define APP_CFG_CDCEXT_DATA_OUT_EP                   2
+#   define APP_CFG_CDCEXT_DATA_IN_EP                    2
+#   define APP_CFG_CDCEXT_NOTIFY_EP                     3
+//#   define APP_CFG_CDCSHELL_DATA_OUT_EP                 3
+//#   define APP_CFG_CDCSHELL_DATA_IN_EP                  3
+//#   define APP_CFG_CDCSHELL_NOTIFY_EP                   5
 #elif defined(BRD_CFG_VLLINKLITE_GD32F350)
 #   define APP_CFG_SERIAL_HEADER_STR                    u"GD32F350."
 #   define APP_CFG_SERIAL_HEADER_STR_LENGTH             (sizeof(APP_CFG_SERIAL_HEADER_STR) - 2)
@@ -41,10 +46,26 @@
 #	define APP_CFG_WEBUSB_SUPPORT
 #	define APP_CFG_CDCEXT_SUPPORT
 #       define APP_CFG_CDCEXT_PKT_SIZE                  64
-//#	define APP_CFG_CDCSHELL_SUPPORT
-//#       define APP_CFG_CDCSHELL_PKT_SIZE                64
-//#   define APP_CFG_DAPHOST_SUPPORT
-//#       define APP_CFG_DAPHOST_SUPPORT
+//#   define APP_CFG_CDCSHELL_SUPPORT
+#   define APP_CFG_CDCEXT_DATA_OUT_EP                   2
+#   define APP_CFG_CDCEXT_DATA_IN_EP                    2
+#   define APP_CFG_CDCEXT_NOTIFY_EP                     3
+//#   define APP_CFG_CDCSHELL_DATA_OUT_EP                 3
+//#   define APP_CFG_CDCSHELL_DATA_IN_EP                  3
+//#   define APP_CFG_CDCSHELL_NOTIFY_EP                   5
+#endif
+
+#ifdef APP_CFG_CDCSHELL_SUPPORT
+#   define VSF_KERNEL_CFG_EDA_SUPPORT_SUB_CALL          ENABLED
+#   define VSF_KERNEL_CFG_EDA_SUPPORT_FSM               ENABLED
+#   define VSF_USE_HEAP                                 ENABLED
+#       define VSF_HEAP_CFG_MCB_MAGIC_EN                ENABLED
+#       define VSF_HEAP_SIZE                            0x2000
+#   define VSF_USE_PTSHELL                              ENABLED
+#else
+#   define VSF_KERNEL_CFG_EDA_SUPPORT_SUB_CALL          DISABLED
+#   define VSF_KERNEL_CFG_EDA_SUPPORT_FSM               DISABLED
+#   define VSF_USE_HEAP                                 DISABLED
 #endif
 
 #define CMSIS_DAP_V2_PACKET_SIZE                        512

@@ -5,6 +5,9 @@
 extern "C" {
 #endif
 
+
+extern const daphost_op_t daphost_swd_op;
+
 #ifdef __cplusplus
 }
 #endif

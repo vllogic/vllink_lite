@@ -206,6 +206,23 @@ typedef enum _target_state {
     SHUTDOWN,                //!< Poweroff the target
 } target_state_t;
 
+typedef struct {
+    vsf_err_t (*read_dp)(uint8_t adr, uint32_t *val);
+    vsf_err_t (*write_dp)(uint8_t adr, uint32_t val);
+    vsf_err_t (*read_ap)(uint32_t adr, uint32_t *val);
+    vsf_err_t (*write_ap)(uint32_t adr, uint32_t val);
+    vsf_err_t (*read_memory)(uint32_t addr, uint32_t size, uint8_t *buf);
+    vsf_err_t (*write_memory)(uint32_t addr, uint32_t size, uint8_t *buf);
+    vsf_err_t (*read_core_register)(uint32_t n, uint32_t *val);
+    vsf_err_t (*write_core_register)(uint32_t n, uint32_t val);
+    vsf_err_t (*flash_syscall_exec)(const program_syscall_t *sysCallParam, uint32_t entry, uint32_t arg1, uint32_t arg2, uint32_t arg3, uint32_t arg4, flash_algo_return_t return_type);
+    vsf_err_t (*set_target_state_hw)(target_state_t state);
+    vsf_err_t (*set_target_state_sw)(target_state_t state);
+    void (*set_reset_connect)(SWD_CONNECT_TYPE type);
+    void (*set_soft_reset)(uint32_t soft_reset_type);
+} daphost_op_t;
+
+
 #ifdef __cplusplus
 }
 #endif

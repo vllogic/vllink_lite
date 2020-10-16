@@ -69,6 +69,7 @@ enum usart_mode_t{
     USART_DATA_INV              = (0x1ul << (8 + 10)),
     USART_TX_INV                = (0x1ul << (8 + 9)),
     USART_RX_INV                = (0x1ul << (8 + 8)),
+    USART_RESET_BAUD_ONLY       = (0x1ul << 31),
 };
 
 /*============================ GLOBAL VARIABLES ==============================*/

@@ -2451,6 +2451,21 @@
                 <name>$PROJ_DIR$\..\daphost\daphost_swd.h</name>
             </file>
         </group>
+        <group>
+            <name>shell</name>
+            <file>
+                <name>$PROJ_DIR$\..\shell\extrauart.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\shell\extrauart.h</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\shell\help.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\shell\help.h</name>
+            </file>
+        </group>
         <file>
             <name>$PROJ_DIR$\GD32E103xx_booted.icf</name>
         </file>
@@ -4190,6 +4205,15 @@
                     </file>
                 </group>
             </group>
+        </group>
+        <group>
+            <name>ptshell</name>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\vsf_private\ptshell\vsf_ptshell.c</name>
+            </file>
+            <file>
+                <name>$PROJ_DIR$\..\..\..\vsf_private\ptshell\vsf_ptshell.h</name>
+            </file>
         </group>
         <file>
             <name>$PROJ_DIR$\..\..\..\vsf_private\user_vsf.h</name>

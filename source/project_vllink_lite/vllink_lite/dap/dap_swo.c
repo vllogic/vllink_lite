@@ -59,12 +59,12 @@ uint32_t dap_swo_request_handler(dap_param_t* param, uint8_t* request,
                 param->trace_timestamp = 0;
                 #endif
                 if (param->config_usart) {
-                    param->config_usart(PERIPHERAL_UART_SWO_IDX, &mode, &param->swo_baudrate, NULL, (vsf_stream_t *)&param->swo_rx);
+                    param->config_usart(PERIPHERAL_UART_SWO_IDX, &mode, &param->swo_baudrate, NULL, (vsf_stream_t *)&param->swo_rx, true);
                 }
                 VSF_STREAM_CONNECT_RX(&param->swo_rx);
             } else {
                 VSF_STREAM_DISCONNECT_RX(&param->swo_rx);
-                param->config_usart(PERIPHERAL_UART_SWO_IDX, NULL, NULL, NULL, NULL);
+                param->config_usart(PERIPHERAL_UART_SWO_IDX, NULL, NULL, NULL, NULL, false);
             }
             param->trace_status = active;
         }

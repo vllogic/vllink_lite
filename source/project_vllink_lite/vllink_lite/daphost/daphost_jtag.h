@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+extern const daphost_op_t daphost_jtag_op;
 
 #ifdef __cplusplus
 }

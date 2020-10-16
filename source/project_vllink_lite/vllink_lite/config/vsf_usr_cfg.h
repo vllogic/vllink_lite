@@ -29,15 +29,10 @@
 #define VSF_KERNEL_CFG_EDA_SUPPORT_PT                   ENABLED
 #define VSF_KERNEL_CFG_EDA_SUPPORT_TIMER                ENABLED
 #   define VSF_KERNEL_CFG_CALLBACK_TIMER                ENABLED
-#define VSF_KERNEL_CFG_EDA_SUPPORT_SUB_CALL             DISABLED
-#define VSF_KERNEL_CFG_EDA_SUPPORT_FSM                  DISABLED
 
 #define VSF_KERNEL_CFG_ALLOW_KERNEL_BEING_PREEMPTED     ENABLED
 #   define VSF_KERNEL_CFG_SUPPORT_DYNAMIC_PRIOTIRY      DISABLED
 #   define VSF_OS_CFG_EVTQ_BITSIZE                      4
-
-#define VSF_USE_HEAP                                    DISABLED
-#   define VSF_HEAP_SIZE                                0x1000
 
 #define VSF_USE_KERNEL_SIMPLE_SHELL                     ENABLED
 #define VSF_KERNEL_CFG_SUPPORT_THREAD                   DISABLED

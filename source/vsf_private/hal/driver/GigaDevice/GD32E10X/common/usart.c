@@ -231,86 +231,120 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
     uint32_t dmax = 0;
     struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
 
-    USART_CTL0(usartx) = 0;
-    USART_STAT0(usartx) = 0;
-    USART_CTL0(usartx) = ((mode << 8) & (USART_CTL0_PM | USART_CTL0_PCEN)) |
-            USART_CTL0_TEN | USART_CTL0_REN;
-    USART_CTL1(usartx) = (mode << 8) & USART_CTL1_STB;
-    USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN | USART_CTL2_ERRIE);
-    USART_CTL3(usartx) = ((mode >> 8) & (USART_CTL3_RINV | USART_CTL3_TINV | USART_CTL3_DINV | USART_CTL3_MSBF)) |
-            USART_CTL3_RTEN | USART_CTL3_RTIE;
-    USART_RT(usartx) = 20;
+    if (mode == USART_RESET_BAUD_ONLY) {
+        switch (idx) {
+        #if USART0_ENABLE
+        case USART0_IDX:
+            temp = info->apb2_freq_hz;
+            break;
+        #endif
+        #if USART1_ENABLE
+        case USART1_IDX:
+            temp = info->apb1_freq_hz;
+            break;
+        #endif
+        #if USART2_ENABLE
+        case USART2_IDX:
+            temp = info->apb1_freq_hz;
+            break;
+        #endif
+        #if USART3_ENABLE
+        case USART3_IDX:
+            temp = info->apb1_freq_hz;
+            break;
+        #endif
+        #if USART4_ENABLE
+        case USART4_IDX:
+            temp = info->apb1_freq_hz;
+            break;
+        #endif
+        }
 
-    switch (idx) {
-    #if USART0_ENABLE
-    case USART0_IDX:
-        temp = info->apb2_freq_hz;
-        #if USART0_DMA_ENABLE
-        dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
-        #endif
-        break;
-    #endif
-    #if USART1_ENABLE
-    case USART1_IDX:
-        temp = info->apb1_freq_hz;
-        #if USART1_DMA_ENABLE
-        dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
-        #endif
-        break;
-    #endif
-    #if USART2_ENABLE
-    case USART2_IDX:
-        temp = info->apb1_freq_hz;
-        #if USART2_DMA_ENABLE
-        dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
-        #endif
-        break;
-    #endif
-    #if USART3_ENABLE
-    case USART3_IDX:
-        temp = info->apb1_freq_hz;
-        #if USART3_DMA_ENABLE
-        dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
-        #endif
-        enable_overtimer(temp == info->apb1_freq_hz ? temp : temp / 2);
-        break;
-    #endif
-    #if USART4_ENABLE
-    case USART4_IDX:
-        temp = info->apb1_freq_hz;
-        enable_overtimer(temp == info->apb1_freq_hz ? temp : temp / 2);
-        break;
-    #endif
-    }
-    
-    if (dmax) {
-        uint8_t tx_dma_ch = usart_dma_channel[idx][1];
-        uint8_t rx_dma_ch = usart_dma_channel[idx][2];
-
-        usart_control[idx].dma_idx = usart_dma_channel[idx][0];
-        usart_control[idx].tx_dma_ch = tx_dma_ch;
-        usart_control[idx].rx_dma_ch = rx_dma_ch;
-        
-        // dma & dma channel config
-        DMA_CHxCTL(dmax, tx_dma_ch) = 0;
-        DMA_CHxCTL(dmax, tx_dma_ch) = DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE;
-        DMA_CHxPADDR(dmax, tx_dma_ch) = (uint32_t)(usartx + 0x4U);
-        
-        DMA_CHxCTL(dmax, rx_dma_ch) = 0;
-        DMA_CHxCTL(dmax, rx_dma_ch) = DMA_CHXCTL_CMEN | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_HTFIE;
-        DMA_CHxPADDR(dmax, rx_dma_ch) = (uint32_t)(usartx + 0x4U);
-        DMA_CHxMADDR(dmax, rx_dma_ch) = (uint32_t)usart_control[idx].rx_buff;
-        DMA_CHxCNT(dmax, rx_dma_ch) = USART_BUFF_SIZE * 2;
-        DMA_CHxCTL(dmax, rx_dma_ch) |= DMA_CHXCTL_CHEN;
-
-        USART_CTL2(usartx) |= USART_CTL2_DENR | USART_CTL2_DENT;
+        USART_CTL0(usartx) &= ~USART_CTL0_UEN;
+        USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
+        USART_CTL0(usartx) |= USART_CTL0_UEN;
     } else {
-        usart_control[idx].dma_idx = DMA_INVALID_IDX;
-        USART_CTL0(usartx) |= USART_CTL0_RBNEIE | USART_CTL0_TCIE;
+        USART_CTL0(usartx) = 0;
+        USART_STAT0(usartx) = 0;
+        USART_CTL0(usartx) = ((mode << 8) & (USART_CTL0_PM | USART_CTL0_PCEN)) |
+                USART_CTL0_TEN | USART_CTL0_REN;
+        USART_CTL1(usartx) = (mode << 8) & USART_CTL1_STB;
+        USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN | USART_CTL2_ERRIE);
+        USART_CTL3(usartx) = ((mode >> 8) & (USART_CTL3_RINV | USART_CTL3_TINV | USART_CTL3_DINV | USART_CTL3_MSBF)) |
+                USART_CTL3_RTEN | USART_CTL3_RTIE;
+        USART_RT(usartx) = 20;
+
+        switch (idx) {
+        #if USART0_ENABLE
+        case USART0_IDX:
+            temp = info->apb2_freq_hz;
+            #if USART0_DMA_ENABLE
+            dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
+            #endif
+            break;
+        #endif
+        #if USART1_ENABLE
+        case USART1_IDX:
+            temp = info->apb1_freq_hz;
+            #if USART1_DMA_ENABLE
+            dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
+            #endif
+            break;
+        #endif
+        #if USART2_ENABLE
+        case USART2_IDX:
+            temp = info->apb1_freq_hz;
+            #if USART2_DMA_ENABLE
+            dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
+            #endif
+            break;
+        #endif
+        #if USART3_ENABLE
+        case USART3_IDX:
+            temp = info->apb1_freq_hz;
+            #if USART3_DMA_ENABLE
+            dmax = (usart_dma_channel[idx][0] == 0) ? DMA0 : DMA1;
+            #endif
+            enable_overtimer(temp == info->apb1_freq_hz ? temp : temp / 2);
+            break;
+        #endif
+        #if USART4_ENABLE
+        case USART4_IDX:
+            temp = info->apb1_freq_hz;
+            enable_overtimer(temp == info->apb1_freq_hz ? temp : temp / 2);
+            break;
+        #endif
+        }
+        
+        if (dmax) {
+            uint8_t tx_dma_ch = usart_dma_channel[idx][1];
+            uint8_t rx_dma_ch = usart_dma_channel[idx][2];
+
+            usart_control[idx].dma_idx = usart_dma_channel[idx][0];
+            usart_control[idx].tx_dma_ch = tx_dma_ch;
+            usart_control[idx].rx_dma_ch = rx_dma_ch;
+            
+            // dma & dma channel config
+            DMA_CHxCTL(dmax, tx_dma_ch) = 0;
+            DMA_CHxCTL(dmax, tx_dma_ch) = DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE;
+            DMA_CHxPADDR(dmax, tx_dma_ch) = (uint32_t)(usartx + 0x4U);
+            
+            DMA_CHxCTL(dmax, rx_dma_ch) = 0;
+            DMA_CHxCTL(dmax, rx_dma_ch) = DMA_CHXCTL_CMEN | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_HTFIE;
+            DMA_CHxPADDR(dmax, rx_dma_ch) = (uint32_t)(usartx + 0x4U);
+            DMA_CHxMADDR(dmax, rx_dma_ch) = (uint32_t)usart_control[idx].rx_buff;
+            DMA_CHxCNT(dmax, rx_dma_ch) = USART_BUFF_SIZE * 2;
+            DMA_CHxCTL(dmax, rx_dma_ch) |= DMA_CHXCTL_CHEN;
+
+            USART_CTL2(usartx) |= USART_CTL2_DENR | USART_CTL2_DENT;
+        } else {
+            usart_control[idx].dma_idx = DMA_INVALID_IDX;
+            USART_CTL0(usartx) |= USART_CTL0_RBNEIE | USART_CTL0_TCIE;
+        }
+        
+        USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
+        USART_CTL0(usartx) |= USART_CTL0_UEN;
     }
-    
-    USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
-    USART_CTL0(usartx) |= USART_CTL0_UEN;
     
     return temp / USART_BAUD(usartx);
 }
@@ -553,7 +587,7 @@ static void stream_onrx(void *param)
         size = min(vsfhal_usart_rx_get_data_size(idx), USART_BUFF_SIZE);
         if (size) {
             size = vsfhal_usart_rx_bytes(idx, buf, size);
-            if (size)
+            if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
                 VSF_STREAM_WRITE(stream, buf, size);
         }
     } else if (stream->op == &vsf_block_stream_op) {
@@ -561,7 +595,7 @@ static void stream_onrx(void *param)
         size = VSF_STREAM_GET_WBUF(stream, &buf);
         if (size) {
             size = vsfhal_usart_rx_bytes(idx, buf, size);
-            if (size)
+            if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
                 VSF_STREAM_WRITE(stream, buf, size);
         } else {
             uint8_t discard[USART_BUFF_SIZE];
