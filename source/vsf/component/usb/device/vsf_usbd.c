@@ -1084,6 +1084,7 @@ static void __vk_usbd_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
             if (stream_ep->size > 0) {
                 stream_ep->cur_size = stream_ep->size;
                 stream_ep->on_finish = __vk_usbd_stream_rx_on_trans_finish;
+                stream_ep->use_as__vk_usbd_trans_t.zlp = true;
                 vk_usbd_ep_send(dev, &stream_ep->use_as__vk_usbd_trans_t);
             }
         }
