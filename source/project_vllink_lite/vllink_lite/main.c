@@ -135,7 +135,7 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
                 vsfhal_usart_config(PERIPHERAL_UART_EXT_IDX, usrapp.usart_ext_baud, usrapp.usart_ext_mode);
             if (baudrate)
                 *baudrate = usrapp.usart_ext_baud;
-            vsfhal_usart_stream_init(PERIPHERAL_UART_EXT_IDX, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
+            vsfhal_usart_stream_init(PERIPHERAL_UART_EXT_IDX, USART_STREAM_EDA_PRIORITY, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
         } else if (baudrate && *baudrate != usrapp.usart_ext_baud) {
             usrapp.usart_ext_baud = *baudrate;
             if (return_actual_baud)
@@ -162,7 +162,7 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
                 vsfhal_usart_config(PERIPHERAL_UART_SWO_IDX, usrapp.usart_swo_baud, usrapp.usart_swo_mode);
             if (baudrate)
                 *baudrate = usrapp.usart_swo_baud;
-            vsfhal_usart_stream_init(PERIPHERAL_UART_SWO_IDX, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
+            vsfhal_usart_stream_init(PERIPHERAL_UART_SWO_IDX, USART_STREAM_EDA_PRIORITY, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
         } else if (baudrate && *baudrate != usrapp.usart_swo_baud) {
             usrapp.usart_swo_baud = *baudrate;
             if (return_actual_baud)

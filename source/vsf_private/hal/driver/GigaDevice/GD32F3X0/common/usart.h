@@ -69,7 +69,7 @@ uint16_t vsfhal_usart_tx_get_free_size(enum usart_idx_t idx);
 uint16_t vsfhal_usart_rx_bytes(enum usart_idx_t idx, uint8_t *data, uint16_t size);
 uint16_t vsfhal_usart_rx_get_data_size(enum usart_idx_t idx);
 #if USART_STREAM_ENABLE
-void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx);
+void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t eda_priority, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx);
 #endif
 #endif
 

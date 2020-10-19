@@ -467,9 +467,10 @@ vsf_err_t vk_dwcotg_dcd_ep_transaction_read_buffer(vk_dwcotg_dcd_t *dwcotg_dcd, 
 vsf_err_t vk_dwcotg_dcd_ep_transaction_enable_out(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer)
 {
     VSF_USB_ASSERT(!(ep & 0x80));
-    VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
-    
+
     uint_fast8_t ep_idx = ep;
+    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
+    
     uint_fast16_t ep_size = vk_dwcotg_dcd_ep_get_size(dwcotg_dcd, ep);
     struct dwcotg_dev_out_ep_regs_t *out_regs = &dwcotg_dcd->reg.dev.ep.out_regs[ep_idx];
     
@@ -485,7 +486,7 @@ vsf_err_t vk_dwcotg_dcd_ep_transaction_set_data_size(vk_dwcotg_dcd_t *dwcotg_dcd
     VSF_USB_ASSERT(ep & 0x80);
     
     uint_fast8_t ep_idx = ep & 0x0F;
-    VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
+    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
     
     struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[ep_idx];
 
@@ -503,7 +504,7 @@ vsf_err_t vk_dwcotg_dcd_ep_transaction_write_buffer(vk_dwcotg_dcd_t *dwcotg_dcd,
     
     uint32_t data;
     uint_fast8_t ep_idx = ep & 0x0F; 
-    VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
+    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
 
     struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[ep_idx];
 
@@ -524,9 +525,10 @@ vsf_err_t vk_dwcotg_dcd_ep_transaction_write_buffer(vk_dwcotg_dcd_t *dwcotg_dcd,
 uint_fast32_t vk_dwcotg_dcd_ep_get_data_size(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep)
 {
     VSF_USB_ASSERT(!(ep & 0x80));
-    VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
     
     uint_fast8_t ep_idx = ep;
+    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
+    
     return dwcotg_dcd->out_size[ep_idx];
 }
 
@@ -757,7 +759,7 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
         //case RXSTAT_GOUT_NAK:
         //case RXSTAT_SETUP_COMP:
         default:
-            VSF_HAL_ASSERT(false);
+            //VSF_HAL_ASSERT(false);
             break;
         }
 

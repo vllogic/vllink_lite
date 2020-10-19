@@ -13,6 +13,7 @@
 #define GPIOE_ENABLE            0
 
 #define USART_STREAM_ENABLE     1
+#define USART_STREAM_EDA_PRIORITY   vsf_prio_1      // same as VSF_USBD_CFG_EDA_PRIORITY
 #define USART_BUFF_SIZE         64
 #define USART0_ENABLE           1
 #   define USART0_DMA_ENABLE    1

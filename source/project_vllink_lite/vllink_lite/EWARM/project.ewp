@@ -302,11 +302,11 @@
                 </option>
                 <option>
                     <name>IExtraOptionsCheck</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>IExtraOptions</name>
-                    <state>--no_unaligned_access</state>
+                    <state></state>
                 </option>
                 <option>
                     <name>CCLangConformance</name>

@@ -6,6 +6,10 @@
 #include "io.h"
 #include "dma.h"
 
+#if USART_STREAM_ENABLE
+#   include "vsf.h" // use eda
+#endif
+
 /*============================ MACROS ========================================*/
 
 #ifndef USART_BUFF_SIZE
@@ -19,6 +23,7 @@ typedef struct usart_control_t {
 #if USART_STREAM_ENABLE
     vsf_stream_t *tx;
     vsf_stream_t *rx;
+    vsf_eda_t eda;
 #endif
     void (*ontx)(void *);
     void (*onrx)(void *);
@@ -549,11 +554,10 @@ ROOT void TIMER6_IRQHandler(void)
 #endif  // USART3_ENABLE || USART4_ENABLE
 
 #if USART_STREAM_ENABLE
-static void stream_ontx(void *param)
+
+static void stream_dotx(usart_control_t *ctrl, vsf_stream_t *stream)
 {
     uint32_t size;
-    usart_control_t *ctrl = param;
-    vsf_stream_t *stream = ctrl->tx;
     enum usart_idx_t idx = ((uint32_t)ctrl - (uint32_t)usart_control) / sizeof(usart_control_t);
 
     size = vsfhal_usart_tx_get_free_size(idx);
@@ -575,11 +579,9 @@ static void stream_ontx(void *param)
     }
 }
 
-static void stream_onrx(void *param)
+static void stream_dorx(usart_control_t *ctrl, vsf_stream_t *stream)
 {
     uint32_t size;
-    usart_control_t *ctrl = param;
-    vsf_stream_t *stream = ctrl->rx;
     enum usart_idx_t idx = ((uint32_t)ctrl - (uint32_t)usart_control) / sizeof(usart_control_t);
 
     if (stream->op == &vsf_fifo_stream_op) {
@@ -604,20 +606,69 @@ static void stream_onrx(void *param)
     }
 }
 
-static void tx_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
-{
-    usart_control_t *ctrl = param;
-    vsf_stream_t *stream = ctrl->tx;
+enum {
+    VSF_EVT_TX_STREAM_ONRX      = VSF_EVT_USER + 0,
+    VSF_EVT_TX_STREAM_ONTX      = VSF_EVT_USER + 1,
+    VSF_EVT_RX_STREAM_ONRX      = VSF_EVT_USER + 2,
+    VSF_EVT_RX_STREAM_ONTX      = VSF_EVT_USER + 3,
+};
 
-    if (evt == VSF_STREAM_ON_RX) {
-        if (VSF_STREAM_GET_DATA_SIZE(stream)) {
-            stream_ontx(ctrl);
+static void usart_stream_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
+{
+    usart_control_t *ctrl = container_of(eda, usart_control_t, eda);
+    vsf_stream_t *tx_stream = ctrl->tx;
+    vsf_stream_t *rx_stream = ctrl->rx;
+
+    switch (evt) {
+    case VSF_EVT_INIT:
+        break;
+    case VSF_EVT_TX_STREAM_ONRX:
+    case VSF_EVT_TX_STREAM_ONTX:
+        if (VSF_STREAM_GET_DATA_SIZE(tx_stream)) {
+            stream_dotx(ctrl, tx_stream);
         }
+        break;
+    case VSF_EVT_RX_STREAM_ONRX:
+        stream_dorx(ctrl, rx_stream);
+        break;
+    case VSF_EVT_RX_STREAM_ONTX:
+        if (VSF_STREAM_GET_DATA_SIZE(rx_stream)) {
+            // used to call __vsf_stream_on_write
+            vsf_stream_set_rx_threshold(rx_stream, rx_stream->rx.threshold);
+        }
+        break;
     }
 }
 
-//static void rx_stream_tx_evthandler(void *param, vsf_stream_evt_t evt) {}
+static void tx_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
+{
+    usart_control_t *ctrl = param;
 
+    if (evt == VSF_STREAM_ON_RX) {
+        vsf_eda_post_evt(&ctrl->eda, VSF_EVT_TX_STREAM_ONRX);
+    }
+}
+
+static void rx_stream_tx_evthandler(void *param, vsf_stream_evt_t evt)
+{
+    usart_control_t *ctrl = param;
+
+    if (evt == VSF_STREAM_ON_TX) {
+        vsf_eda_post_evt(&ctrl->eda, VSF_EVT_RX_STREAM_ONTX);
+    }
+}
+
+static void stream_ontx(void *param)
+{
+    usart_control_t *ctrl = param;
+    vsf_eda_post_evt(&ctrl->eda, VSF_EVT_TX_STREAM_ONTX);
+}
+
+static void stream_onrx(void *param)
+{
+    usart_control_t *ctrl = param;
+    vsf_eda_post_evt(&ctrl->eda, VSF_EVT_RX_STREAM_ONRX);
+}
 
 static void vsfhal_usart_stream_fini(enum usart_idx_t idx)
 {
@@ -635,12 +686,18 @@ static void vsfhal_usart_stream_fini(enum usart_idx_t idx)
     }
 }
 
-void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx)
+void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t eda_priority, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx)
 {
     vsfhal_usart_stream_fini(idx);
     
     if (!tx && !rx)
         return;
+
+    const vsf_eda_cfg_t cfg = {
+        .fn.evthandler  = usart_stream_evthandler,
+        .priority       = eda_priority,
+    };
+    vsf_eda_init_ex(&usart_control[idx].eda, (vsf_eda_cfg_t *)&cfg);
 
     usart_control[idx].tx = tx;
     usart_control[idx].rx = rx;
@@ -652,8 +709,8 @@ void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t int_priority, vsf_st
         VSF_STREAM_CONNECT_RX(tx);
     }
     if (rx) {
-        //rx->tx.evthandler = rx_stream_tx_evthandler;
-        //rx->tx.param = &usart_control[idx];
+        rx->tx.evthandler = rx_stream_tx_evthandler;
+        rx->tx.param = &usart_control[idx];
         VSF_STREAM_CONNECT_TX(rx);
     }
 }
