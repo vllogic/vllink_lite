@@ -139,7 +139,8 @@ static uint_fast32_t    usb_dc##__N##_ep_get_data_size(uint_fast8_t ep);        
 static vsf_err_t    usb_dc##__N##_ep_transaction_read_buffer(uint_fast8_t ep,   \
                                                             uint8_t *buffer,    \
                                                             uint_fast16_t size);\
-static vsf_err_t    usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep);   \
+static vsf_err_t    usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep,    \
+                                                            uint8_t *buffer);   \
                                                                                 \
 static vsf_err_t    usb_dc##__N##_ep_transaction_set_data_size(                 \
                                                             uint_fast8_t ep,    \
@@ -244,8 +245,9 @@ static vsf_err_t usb_dc##__N##_ep_transaction_read_buffer(                      
                                                     uint8_t *buffer,            \
                                                     uint_fast16_t size)         \
 { return __HEADER##_ep_transaction_read_buffer(&(__OBJ), ep, buffer, size); }   \
-static vsf_err_t usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep)       \
-{ return __HEADER##_ep_transaction_enable_out(&(__OBJ), ep); }                  \
+static vsf_err_t usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep,       \
+                                                            uint8_t *buffer)    \
+{ return __HEADER##_ep_transaction_enable_out(&(__OBJ), ep, buffer); }          \
 static vsf_err_t usb_dc##__N##_ep_transaction_set_data_size(uint_fast8_t ep,    \
                                                             uint_fast16_t size) \
 { return __HEADER##_ep_transaction_set_data_size(&(__OBJ), ep, size); }         \
@@ -365,7 +367,8 @@ def_interface(i_usb_dc_t)
             vsf_err_t   (*ReadBuffer)       (uint_fast8_t ep, 
                                              uint8_t *buffer, 
                                              uint_fast16_t size);
-            vsf_err_t   (*EnableOut)        (uint_fast8_t ep);
+            vsf_err_t   (*EnableOut)        (uint_fast8_t ep,
+                                             uint8_t *buffer);
             vsf_err_t   (*SetDataSize)      (uint_fast8_t ep, 
                                              uint_fast16_t size);
             vsf_err_t   (*WriteBuffer)      (uint_fast8_t ep, 

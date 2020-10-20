@@ -183,7 +183,7 @@ declare_vsf_task(dap_task_t);
 
 typedef struct dap_param_t {
     uint16_t (*get_serial)(uint8_t *serial);
-    void (*config_usart)(enum usart_idx_t idx, uint32_t *mode, uint32_t *baudrate, vsf_stream_t *tx, vsf_stream_t *rx);
+    void (*config_usart)(enum usart_idx_t idx, uint32_t *mode, uint32_t *baudrate, vsf_stream_t *tx, vsf_stream_t *rx, bool return_actual_baud);
     uint32_t (*get_usart_baud)(enum usart_idx_t idx, uint32_t baudrate);
 
 #if VENDOR_UART
@@ -287,7 +287,7 @@ void dap_init(dap_t *dap, vsf_prio_t prio);
 vsf_err_t dap_requset(dap_t *dap, vsf_sem_t *response_sem,
         void (*response)(void* p, uint8_t* buf, uint16_t size),
         void* response_param, uint8_t* buf, uint16_t pkt_size);
-
+vsf_err_t dap_requset_sync(dap_t *dap, uint8_t *request_buf, uint8_t *response_buf, uint16_t pkt_size);
 void dap_test(dap_t *dap, uint8_t port, uint16_t speed_khz);
 
 #ifdef __cplusplus

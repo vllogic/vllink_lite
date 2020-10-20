@@ -219,6 +219,7 @@ vsfhal_clk_info_t *vsfhal_clk_info_get(void)
     return &vsfhal_clk_info;
 }
 
+#ifdef PROJ_CFG_GD32F3X0_AHP_APB_UNFIXED
 void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
 {
     uint32_t temp;
@@ -248,29 +249,25 @@ void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
         while (!(RCU_CTL0 & RCU_CTL0_PLLSTB));
 
         // config usart
-        {
-            if (USART_CTL0(USART0) & USART_CTL0_UEN) {
-                temp = 64000000 / USART_BAUD(USART0);
-                USART_CTL0(USART0) &= ~USART_CTL0_UEN;
-                USART_BAUD(USART0) = 48000000 / temp;
-                USART_CTL0(USART0) |= USART_CTL0_UEN;
-            }
-            if (USART_CTL0(USART1) & USART_CTL0_UEN) {
-                temp = 64000000 / USART_BAUD(USART1);
-                USART_CTL0(USART1) &= ~USART_CTL0_UEN;
-                USART_BAUD(USART1) = 48000000 / temp;
-                USART_CTL0(USART1) |= USART_CTL0_UEN;
-            }
+        if (USART_CTL0(USART0) & USART_CTL0_UEN) {
+            temp = 64000000 / USART_BAUD(USART0);
+            USART_CTL0(USART0) &= ~USART_CTL0_UEN;
+            USART_BAUD(USART0) = 48000000 / temp;
+            USART_CTL0(USART0) |= USART_CTL0_UEN;
+        }
+        if (USART_CTL0(USART1) & USART_CTL0_UEN) {
+            temp = 64000000 / USART_BAUD(USART1);
+            USART_CTL0(USART1) &= ~USART_CTL0_UEN;
+            USART_BAUD(USART1) = 48000000 / temp;
+            USART_CTL0(USART1) |= USART_CTL0_UEN;
         }
 
         // config timer
-        {
-            temp = 64000000 / 2 / (TIMER_PSC(TIMER5) + 1);
-            TIMER_PSC(TIMER5) = 48000000 / 2 / temp - 1;
-            
-            temp = 64000000 / 2 / (TIMER_PSC(TIMER13) + 1);
-            TIMER_PSC(TIMER13) = 48000000 / 2 / temp - 1;
-        }
+        temp = 64000000 / 2 / (TIMER_PSC(TIMER5) + 1);
+        TIMER_PSC(TIMER5) = 48000000 / 2 / temp - 1;
+        
+        temp = 64000000 / 2 / (TIMER_PSC(TIMER13) + 1);
+        TIMER_PSC(TIMER13) = 48000000 / 2 / temp - 1;
         
         RCU_CFG0 |= RCU_CKSYSSRC_PLL;
         while ((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
@@ -304,29 +301,25 @@ void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
         while (!(RCU_CTL0 & RCU_CTL0_PLLSTB));
 
         // config usart
-        {
-            if (USART_CTL0(USART0) & USART_CTL0_UEN) {
-                temp = 48000000 / USART_BAUD(USART0);
-                USART_CTL0(USART0) &= ~USART_CTL0_UEN;
-                USART_BAUD(USART0) = 64000000 / temp;
-                USART_CTL0(USART0) |= USART_CTL0_UEN;
-            }
-            if (USART_CTL0(USART1) & USART_CTL0_UEN) {
-                temp = 48000000 / USART_BAUD(USART1);
-                USART_CTL0(USART1) &= ~USART_CTL0_UEN;
-                USART_BAUD(USART1) = 64000000 / temp;
-                USART_CTL0(USART1) |= USART_CTL0_UEN;
-            }
+        if (USART_CTL0(USART0) & USART_CTL0_UEN) {
+            temp = 48000000 / USART_BAUD(USART0);
+            USART_CTL0(USART0) &= ~USART_CTL0_UEN;
+            USART_BAUD(USART0) = 64000000 / temp;
+            USART_CTL0(USART0) |= USART_CTL0_UEN;
+        }
+        if (USART_CTL0(USART1) & USART_CTL0_UEN) {
+            temp = 48000000 / USART_BAUD(USART1);
+            USART_CTL0(USART1) &= ~USART_CTL0_UEN;
+            USART_BAUD(USART1) = 64000000 / temp;
+            USART_CTL0(USART1) |= USART_CTL0_UEN;
         }
 
         // config timer
-        {
-            temp = 48000000 / 2 / (TIMER_PSC(TIMER5) + 1);
-            TIMER_PSC(TIMER5) = 64000000 / 2 / temp - 1;
-            
-            temp = 48000000 / 2 / (TIMER_PSC(TIMER13) + 1);
-            TIMER_PSC(TIMER13) = 64000000 / 2 / temp - 1;
-        }
+        temp = 48000000 / 2 / (TIMER_PSC(TIMER5) + 1);
+        TIMER_PSC(TIMER5) = 64000000 / 2 / temp - 1;
+        
+        temp = 48000000 / 2 / (TIMER_PSC(TIMER13) + 1);
+        TIMER_PSC(TIMER13) = 64000000 / 2 / temp - 1;
 
         RCU_CFG0 |= RCU_CKSYSSRC_PLL;
         while ((RCU_CFG0 & RCU_SCSS_PLL) != RCU_SCSS_PLL);
@@ -340,6 +333,7 @@ void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz)
         vsf_set_interrupt(gint_state);
     }
 }
+#endif
 
 uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size)
 {

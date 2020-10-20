@@ -66,7 +66,16 @@ project(${PROJ_NAME} C CXX ASM)
 #message(STATUS "${PROJECT_BINARY_DIR}")
 
 set(SOURCE_FILES ../main.c)
-#list(APPEND SOURCE_FILES ../vsf_dfu.c)
+list(APPEND SOURCE_FILES
+  ../vsf_usbd_cmsis_dap_v2.c
+  ../vsf_usbd_webusb_usr.c
+  ../dap/dap.c
+  ../dap/dap_swo.c
+  ../dap/dap_vendor.c
+  ../daphost/daphost.c
+  ../daphost/daphost_jtag.c
+  ../daphost/daphost_swd.c
+)
 
 add_executable(${CMAKE_PROJECT_NAME} ${SOURCE_FILES})
 
@@ -86,7 +95,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-  vsfkernel
+  vsf
 )
 
 file(WRITE compile_definitions.h "// Auto Generate\n\n")

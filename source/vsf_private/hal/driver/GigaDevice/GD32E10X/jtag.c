@@ -171,6 +171,7 @@ static void delay_jtag_250khz_188khz(uint16_t dummy)
     while (--temp);
 }
 
+#ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
 const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 32000,}, // 64M / 2 = 32M
     {48000000, 24000,}, // 48M / 2 = 24M
@@ -189,6 +190,18 @@ const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
     {64000000, 250,},   // 64M / 256 = 250K
     {48000000, 188,},   // 48M / 256 = 187.5K
 };
+#else
+const static uint32_t spi_khz_and_apb_clk_table_list[][2] = {
+    {64000000, 32000,}, // 64M / 2 = 32M
+    {64000000, 16000,}, // 64M / 4 = 16M
+    {64000000, 8000,},  // 64M / 8 = 8M
+    {64000000, 4000,},  // 64M / 16 = 4M
+    {64000000, 2000,},  // 64M / 32 = 2M
+    {64000000, 1000,},  // 64M / 64 = 1M
+    {64000000, 500,},   // 64M / 128 = 500K
+    {64000000, 250,},   // 64M / 256 = 250K
+};
+#endif
 
 void vsfhal_jtag_config(uint16_t kHz, uint16_t retry, uint8_t idle)
 {
@@ -204,9 +217,11 @@ void vsfhal_jtag_config(uint16_t kHz, uint16_t retry, uint8_t idle)
             break;
         }
     }
+    
+    #ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED
     temp = temp / 2;
-
     vsfhal_clk_reconfig_apb(apb);
+    #endif
 
     info = vsfhal_clk_info_get();
 

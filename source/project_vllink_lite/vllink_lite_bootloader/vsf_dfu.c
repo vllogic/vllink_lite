@@ -47,7 +47,7 @@ enum {
 };
 
 static const uint8_t __usbd_dev_desc[] = {
-    USB_DESC_DEV(0x0210, 0, 0, 0, APP_CFG_USBD_EP0_SIZE, APP_CFG_USBD_VID, APP_CFG_USBD_PID, 0x0000, 1, 2, 3, 1)
+    USB_DESC_DEV(0x0210, 0, 0, 0, APP_CFG_USBD_EP0_SIZE, APP_CFG_USBD_VID, APP_CFG_USBD_PID, APP_CFG_USBD_BCD, 1, 2, 3, 1)
 };
 static const uint8_t __usbd_cfg_desc[] = {
     USB_DESC_CFG(USB_DT_CONFIG_SIZE + USB_DT_INTERFACE_SIZE + 9, 1, 1, 0, USB_CONFIG_ATT_ONE, 100)

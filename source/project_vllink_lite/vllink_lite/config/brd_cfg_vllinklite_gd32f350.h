@@ -12,7 +12,8 @@
 #define GPIOF_ENABLE            0
 
 #define USART_STREAM_ENABLE     1
-#define USART_BUFF_SIZE         32
+#define USART_STREAM_EDA_PRIORITY   vsf_prio_1      // same as VSF_USBD_CFG_EDA_PRIORITY
+#define USART_BUFF_SIZE         64
 #define USART0_ENABLE           1
 #   define USART0_DMA_ENABLE    1
 #   define USART0_TXD_IO_IDX    GPIOA_IDX 
@@ -29,7 +30,7 @@
 #   define USART0_RTS_IO_AF     (IO_AF | IO_AF_1)
 #define USART1_ENABLE           1
 #   define USART1_DMA_ENABLE    1
-#   define USART1_TXD_IO_IDX    GPIOA_IDX 
+#   define USART1_TXD_IO_IDX    GPIO_INVALID_IDX 
 #   define USART1_TXD_IO_PIN    2
 #   define USART1_TXD_IO_AF     (IO_AF | IO_AF_1)
 #   define USART1_RXD_IO_IDX    GPIOA_IDX 
@@ -101,7 +102,7 @@
 #define PERIPHERAL_GPIO_TMS_MO_PIN          5
 #define PERIPHERAL_GPIO_TMS_MI_IDX          GPIOB_IDX
 #define PERIPHERAL_GPIO_TMS_MI_PIN          4
-#define PERIPHERAL_GPIO_TCK_SWD_IDX         GPIOB_IDX
+#define PERIPHERAL_GPIO_TCK_SWD_IDX         GPIOA_IDX
 #define PERIPHERAL_GPIO_TCK_SWD_PIN         5
 #define PERIPHERAL_GPIO_TCK_JTAG_IDX        PERIPHERAL_GPIO_TCK_SWD_IDX
 #define PERIPHERAL_GPIO_TCK_JTAG_PIN        PERIPHERAL_GPIO_TCK_SWD_PIN
@@ -146,46 +147,50 @@
 #   define PERIPHERAL_KEY_IsPress()         (vsfhal_gpio_read(PERIPHERAL_KEY_IDX, 1 << PERIPHERAL_KEY_PIN) ? false : true)
 #endif
 
-#if PERIPHERAL_LED_VALID_LEVEL
+#if PERIPHERAL_LED_RED_VALID_LVL
 #   define PERIPHERAL_LED_RED_INIT()        do {vsfhal_gpio_init(PERIPHERAL_LED_RED_IDX); vsfhal_gpio_config(PERIPHERAL_LED_RED_IDX, 0x1 << PERIPHERAL_LED_RED_PIN, IO_OUTPUT_PP);} while (0)
 #   define PERIPHERAL_LED_RED_ON()          vsfhal_gpio_set(PERIPHERAL_LED_RED_IDX, 1 << PERIPHERAL_LED_RED_PIN)
 #   define PERIPHERAL_LED_RED_OFF()         vsfhal_gpio_clear(PERIPHERAL_LED_RED_IDX, 1 << PERIPHERAL_LED_RED_PIN)
-#   define PERIPHERAL_LED_GREEN_INIT()      do {vsfhal_gpio_init(PERIPHERAL_LED_GREEN_IDX); vsfhal_gpio_config(PERIPHERAL_LED_GREEN_IDX, 0x1 << PERIPHERAL_LED_GREEN_PIN, IO_OUTPUT_PP);} while (0)
-#   define PERIPHERAL_LED_GREEN_ON()        vsfhal_gpio_set(PERIPHERAL_LED_GREEN_IDX, 1 << PERIPHERAL_LED_GREEN_PIN)
-#   define PERIPHERAL_LED_GREEN_OFF()       vsfhal_gpio_clear(PERIPHERAL_LED_GREEN_IDX, 1 << PERIPHERAL_LED_GREEN_PIN)
 #else
 #   define PERIPHERAL_LED_RED_INIT()        do {vsfhal_gpio_init(PERIPHERAL_LED_RED_IDX); vsfhal_gpio_config(PERIPHERAL_LED_RED_IDX, 0x1 << PERIPHERAL_LED_RED_PIN, IO_OUTPUT_OD);} while (0)
 #   define PERIPHERAL_LED_RED_ON()          vsfhal_gpio_clear(PERIPHERAL_LED_RED_IDX, 1 << PERIPHERAL_LED_RED_PIN)
 #   define PERIPHERAL_LED_RED_OFF()         vsfhal_gpio_set(PERIPHERAL_LED_RED_IDX, 1 << PERIPHERAL_LED_RED_PIN)
+#endif
+
+#if PERIPHERAL_LED_GREEN_VALID_LVL
+#   define PERIPHERAL_LED_GREEN_INIT()      do {vsfhal_gpio_init(PERIPHERAL_LED_GREEN_IDX); vsfhal_gpio_config(PERIPHERAL_LED_GREEN_IDX, 0x1 << PERIPHERAL_LED_GREEN_PIN, IO_OUTPUT_PP);} while (0)
+#   define PERIPHERAL_LED_GREEN_ON()        vsfhal_gpio_set(PERIPHERAL_LED_GREEN_IDX, 1 << PERIPHERAL_LED_GREEN_PIN)
+#   define PERIPHERAL_LED_GREEN_OFF()       vsfhal_gpio_clear(PERIPHERAL_LED_GREEN_IDX, 1 << PERIPHERAL_LED_GREEN_PIN)
+#else
 #   define PERIPHERAL_LED_GREEN_INIT()      do {vsfhal_gpio_init(PERIPHERAL_LED_GREEN_IDX); vsfhal_gpio_config(PERIPHERAL_LED_GREEN_IDX, 0x1 << PERIPHERAL_LED_GREEN_PIN, IO_OUTPUT_OD);} while (0)
 #   define PERIPHERAL_LED_GREEN_ON()        vsfhal_gpio_clear(PERIPHERAL_LED_GREEN_IDX, 1 << PERIPHERAL_LED_GREEN_PIN)
 #   define PERIPHERAL_LED_GREEN_OFF()       vsfhal_gpio_set(PERIPHERAL_LED_GREEN_IDX, 1 << PERIPHERAL_LED_GREEN_PIN)
 #endif
 
-#define PERIPHERAL_GPIO_TDI_INIT()          do {vsfhal_gpio_init(PERIPHERAL_GPIO_TDI_IDX); vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TDI_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TDI_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TDI_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_OUTPUT_PP);} while (0)
+#define PERIPHERAL_GPIO_TDI_INIT()          do {vsfhal_gpio_init(PERIPHERAL_GPIO_TDI_IDX); vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TDI_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TDI_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TDI_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TDI_IDX, 0x1 << PERIPHERAL_GPIO_TDI_PIN, IO_OUTPUT_PP | IO_SPEED_50M);} while (0)
 #define PERIPHERAL_GPIO_TDI_SET()           do {vsfhal_gpio_set(PERIPHERAL_GPIO_TDI_IDX, 1 << PERIPHERAL_GPIO_TDI_PIN);} while (0)
 #define PERIPHERAL_GPIO_TDI_CLEAR()         do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TDI_IDX, 1 << PERIPHERAL_GPIO_TDI_PIN);} while (0)
 #define PERIPHERAL_GPIO_TDI_READ()          (vsfhal_gpio_read(PERIPHERAL_GPIO_TDI_IDX, 1 << PERIPHERAL_GPIO_TDI_PIN) >> PERIPHERAL_GPIO_TDI_PIN)
 
 #define PERIPHERAL_GPIO_TMS_INIT()          do {vsfhal_gpio_init(PERIPHERAL_GPIO_TMS_MO_IDX);\
                                                 vsfhal_gpio_init(PERIPHERAL_GPIO_TMS_MI_IDX);\
-                                                vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT);\
+                                                vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);\
                                                 vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TMS_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TMS_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TMS_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_OUTPUT_PP);} while (0)
+#define PERIPHERAL_GPIO_TMS_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TMS_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TMS_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_OUTPUT_PP | IO_SPEED_50M);} while (0)
 #define PERIPHERAL_GPIO_TMS_SET()           do {vsfhal_gpio_set(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);} while (0)
 #define PERIPHERAL_GPIO_TMS_CLEAR()         do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);} while (0)
 #define PERIPHERAL_GPIO_TMS_READ()          (vsfhal_gpio_read(PERIPHERAL_GPIO_TMS_MI_IDX, 1 << PERIPHERAL_GPIO_TMS_MI_PIN) >> PERIPHERAL_GPIO_TMS_MI_PIN)
 
 #define PERIPHERAL_GPIO_TCK_INIT()          do {vsfhal_gpio_init(PERIPHERAL_GPIO_TCK_SWD_IDX);\
-                                                vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TCK_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TCK_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);} while (0)
-#define PERIPHERAL_GPIO_TCK_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_OUTPUT_PP);} while (0)
+                                                vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TCK_FINI()          do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TCK_SET_INPUT()     do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT | IO_SPEED_50M);} while (0)
+#define PERIPHERAL_GPIO_TCK_SET_OUTPUT()    do {vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_OUTPUT_PP | IO_SPEED_50M);} while (0)
 #define PERIPHERAL_GPIO_TCK_SET()           do {vsfhal_gpio_set(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);} while (0)
 #define PERIPHERAL_GPIO_TCK_CLEAR()         do {vsfhal_gpio_clear(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);} while (0)
 #define PERIPHERAL_GPIO_TCK_READ()          (vsfhal_gpio_read(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN) >> PERIPHERAL_GPIO_TCK_SWD_PIN)

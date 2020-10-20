@@ -6,6 +6,10 @@
 #include "io.h"
 #include "dma.h"
 
+#if USART_STREAM_ENABLE
+#   include "vsf.h" // use eda
+#endif
+
 /*============================ MACROS ========================================*/
 
 #ifndef USART_BUFF_SIZE
@@ -19,6 +23,7 @@ typedef struct usart_control_t {
 #if USART_STREAM_ENABLE
     vsf_stream_t *tx;
     vsf_stream_t *rx;
+    vsf_eda_t eda;
 #endif
     void (*ontx)(void *);
     void (*onrx)(void *);
@@ -158,65 +163,84 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
     uint8_t dma_idx = DMA_INVALID_IDX;
     struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
 
-    USART_CTL0(usartx) = 0;
-    USART_STAT(usartx) = 0;
-    USART_CTL0(usartx) = ((mode << 8) & (USART_CTL0_PM | USART_CTL0_PCEN)) |
-            USART_CTL0_TEN | USART_CTL0_REN | USART_CTL0_RTIE;
-    USART_CTL1(usartx) = ((mode << 8) & USART_CTL1_STB) | USART_CTL1_RTEN;
-    USART_CTL1(usartx) |= mode & (USART_CTL1_MSBF | USART_CTL1_DINV | USART_CTL1_TINV | USART_CTL1_RINV);
-    USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN);
-    USART_RT(usartx) = 20;
-
-    switch (idx) {
-    #if USART0_ENABLE
-    case USART0_IDX:
-        temp = info->apb2_freq_hz;
-        #if USART0_DMA_ENABLE
-        dma_idx = DMA0_IDX;
+    if (mode == USART_RESET_BAUD_ONLY) {
+        switch (idx) {
+        #if USART0_ENABLE
+        case USART0_IDX:
+            temp = info->apb2_freq_hz;
+            break;
         #endif
-        break;
-    #endif
-    #if USART1_ENABLE
-    case USART1_IDX:
-        temp = info->apb1_freq_hz;
-        #if USART1_DMA_ENABLE
-        dma_idx = DMA0_IDX;
+        #if USART1_ENABLE
+        case USART1_IDX:
+            temp = info->apb1_freq_hz;
+            break;
         #endif
-        enable_overtimer(temp);
-        break;
-    #endif
-    }
-    
-    if (dma_idx != DMA_INVALID_IDX) {
-        uint8_t tx_dma_ch = usart_dma_channel[idx][0];
-        uint8_t rx_dma_ch = usart_dma_channel[idx][1];
+        }
 
-        usart_control[idx].dma_idx = dma_idx;
-        usart_control[idx].tx_dma_ch = tx_dma_ch;
-        usart_control[idx].rx_dma_ch = rx_dma_ch;
-        
-        // dma & dma channel config
-        DMA_CHxCTL(DMA, tx_dma_ch) = 0;
-        DMA_CHxCTL(DMA, tx_dma_ch) = DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE;
-        DMA_CHxPADDR(DMA, tx_dma_ch) = (uint32_t)(usartx + 0x28U);
-        
-        DMA_CHxCTL(DMA, rx_dma_ch) = 0;
-        DMA_CHxCTL(DMA, rx_dma_ch) = DMA_CHXCTL_CMEN | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_HTFIE;
-        DMA_CHxPADDR(DMA, rx_dma_ch) = (uint32_t)(usartx + 0x24U);
-        DMA_CHxMADDR(DMA, rx_dma_ch) = (uint32_t)usart_control[idx].rx_buff;
-        DMA_CHxCNT(DMA, rx_dma_ch) = USART_BUFF_SIZE * 2;
-        DMA_CHxCTL(DMA, rx_dma_ch) |= DMA_CHXCTL_CHEN;
-
-        USART_CTL2(usartx) |= USART_CTL2_DENR | USART_CTL2_DENT;
+        USART_CTL0(usartx) &= ~USART_CTL0_UEN;
+        USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
+        USART_CTL0(usartx) |= USART_CTL0_UEN;
     } else {
-        usart_control[idx].dma_idx = DMA_INVALID_IDX;
-        USART_CTL0(usartx) |= USART_CTL0_RBNEIE | USART_CTL0_TCIE;
-    }
+        USART_CTL0(usartx) = 0;
+        USART_STAT(usartx) = 0;
+        USART_CTL0(usartx) = ((mode << 8) & (USART_CTL0_PM | USART_CTL0_PCEN)) |
+                USART_CTL0_TEN | USART_CTL0_REN | USART_CTL0_RTIE;
+        USART_CTL1(usartx) = ((mode << 8) & USART_CTL1_STB) | USART_CTL1_RTEN;
+        USART_CTL1(usartx) |= mode & (USART_CTL1_MSBF | USART_CTL1_DINV | USART_CTL1_TINV | USART_CTL1_RINV);
+        USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN);
+        USART_RT(usartx) = 20;
 
-    USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
-    USART_CMD(usartx) = USART_CMD_ABDCMD | USART_CMD_SBKCMD | USART_CMD_MMCMD | USART_CMD_RXFCMD | USART_CMD_TXFCMD;
-    USART_RFCS(usartx) |= USART_RFCS_RFEN;
-    USART_CTL0(usartx) |= USART_CTL0_UEN;
+        switch (idx) {
+        #if USART0_ENABLE
+        case USART0_IDX:
+            temp = info->apb2_freq_hz;
+            #if USART0_DMA_ENABLE
+            dma_idx = DMA0_IDX;
+            #endif
+            break;
+        #endif
+        #if USART1_ENABLE
+        case USART1_IDX:
+            temp = info->apb1_freq_hz;
+            #if USART1_DMA_ENABLE
+            dma_idx = DMA0_IDX;
+            #endif
+            enable_overtimer(temp);
+            break;
+        #endif
+        }
+        
+        if (dma_idx != DMA_INVALID_IDX) {
+            uint8_t tx_dma_ch = usart_dma_channel[idx][0];
+            uint8_t rx_dma_ch = usart_dma_channel[idx][1];
+
+            usart_control[idx].dma_idx = dma_idx;
+            usart_control[idx].tx_dma_ch = tx_dma_ch;
+            usart_control[idx].rx_dma_ch = rx_dma_ch;
+            
+            // dma & dma channel config
+            DMA_CHxCTL(DMA, tx_dma_ch) = 0;
+            DMA_CHxCTL(DMA, tx_dma_ch) = DMA_CHXCTL_DIR | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE;
+            DMA_CHxPADDR(DMA, tx_dma_ch) = (uint32_t)(usartx + 0x28U);
+            
+            DMA_CHxCTL(DMA, rx_dma_ch) = 0;
+            DMA_CHxCTL(DMA, rx_dma_ch) = DMA_CHXCTL_CMEN | DMA_CHXCTL_MNAGA | DMA_CHXCTL_FTFIE | DMA_CHXCTL_HTFIE;
+            DMA_CHxPADDR(DMA, rx_dma_ch) = (uint32_t)(usartx + 0x24U);
+            DMA_CHxMADDR(DMA, rx_dma_ch) = (uint32_t)usart_control[idx].rx_buff;
+            DMA_CHxCNT(DMA, rx_dma_ch) = USART_BUFF_SIZE * 2;
+            DMA_CHxCTL(DMA, rx_dma_ch) |= DMA_CHXCTL_CHEN;
+
+            USART_CTL2(usartx) |= USART_CTL2_DENR | USART_CTL2_DENT;
+        } else {
+            usart_control[idx].dma_idx = DMA_INVALID_IDX;
+            USART_CTL0(usartx) |= USART_CTL0_RBNEIE | USART_CTL0_TCIE;
+        }
+
+        USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
+        USART_CMD(usartx) = USART_CMD_ABDCMD | USART_CMD_SBKCMD | USART_CMD_MMCMD | USART_CMD_RXFCMD | USART_CMD_TXFCMD;
+        USART_RFCS(usartx) |= USART_RFCS_RFEN;
+        USART_CTL0(usartx) |= USART_CTL0_UEN;
+    }
 
     return temp / USART_BAUD(usartx);
 }
@@ -364,11 +388,10 @@ ROOT void TIMER5_DAC_IRQHandler(void)
 #endif  // USART1_ENABLE
 
 #if USART_STREAM_ENABLE
-static void stream_ontx(void *param)
+
+static void stream_dotx(usart_control_t *ctrl, vsf_stream_t *stream)
 {
     uint32_t size;
-    usart_control_t *ctrl = param;
-    vsf_stream_t *stream = ctrl->tx;
     enum usart_idx_t idx = ((uint32_t)ctrl - (uint32_t)usart_control) / sizeof(usart_control_t);
 
     size = vsfhal_usart_tx_get_free_size(idx);
@@ -390,11 +413,9 @@ static void stream_ontx(void *param)
     }
 }
 
-static void stream_onrx(void *param)
+static void stream_dorx(usart_control_t *ctrl, vsf_stream_t *stream)
 {
     uint32_t size;
-    usart_control_t *ctrl = param;
-    vsf_stream_t *stream = ctrl->rx;
     enum usart_idx_t idx = ((uint32_t)ctrl - (uint32_t)usart_control) / sizeof(usart_control_t);
 
     if (stream->op == &vsf_fifo_stream_op) {
@@ -402,7 +423,7 @@ static void stream_onrx(void *param)
         size = min(vsfhal_usart_rx_get_data_size(idx), USART_BUFF_SIZE);
         if (size) {
             size = vsfhal_usart_rx_bytes(idx, buf, size);
-            if (size)
+            if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
                 VSF_STREAM_WRITE(stream, buf, size);
         }
     } else if (stream->op == &vsf_block_stream_op) {
@@ -410,7 +431,7 @@ static void stream_onrx(void *param)
         size = VSF_STREAM_GET_WBUF(stream, &buf);
         if (size) {
             size = vsfhal_usart_rx_bytes(idx, buf, size);
-            if (size)
+            if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
                 VSF_STREAM_WRITE(stream, buf, size);
         } else {
             uint8_t discard[USART_BUFF_SIZE];
@@ -419,20 +440,69 @@ static void stream_onrx(void *param)
     }
 }
 
-static void tx_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
-{
-    usart_control_t *ctrl = param;
-    vsf_stream_t *stream = ctrl->tx;
+enum {
+    VSF_EVT_TX_STREAM_ONRX      = VSF_EVT_USER + 0,
+    VSF_EVT_TX_STREAM_ONTX      = VSF_EVT_USER + 1,
+    VSF_EVT_RX_STREAM_ONRX      = VSF_EVT_USER + 2,
+    VSF_EVT_RX_STREAM_ONTX      = VSF_EVT_USER + 3,
+};
 
-    if (evt == VSF_STREAM_ON_RX) {
-        if (VSF_STREAM_GET_DATA_SIZE(stream)) {
-            stream_ontx(ctrl);
+static void usart_stream_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
+{
+    usart_control_t *ctrl = container_of(eda, usart_control_t, eda);
+    vsf_stream_t *tx_stream = ctrl->tx;
+    vsf_stream_t *rx_stream = ctrl->rx;
+
+    switch (evt) {
+    case VSF_EVT_INIT:
+        break;
+    case VSF_EVT_TX_STREAM_ONRX:
+    case VSF_EVT_TX_STREAM_ONTX:
+        if (VSF_STREAM_GET_DATA_SIZE(tx_stream)) {
+            stream_dotx(ctrl, tx_stream);
         }
+        break;
+    case VSF_EVT_RX_STREAM_ONRX:
+        stream_dorx(ctrl, rx_stream);
+        break;
+    case VSF_EVT_RX_STREAM_ONTX:
+        if (VSF_STREAM_GET_DATA_SIZE(rx_stream)) {
+            // used to call __vsf_stream_on_write
+            vsf_stream_set_rx_threshold(rx_stream, rx_stream->rx.threshold);
+        }
+        break;
     }
 }
 
-//static void rx_stream_tx_evthandler(void *param, vsf_stream_evt_t evt) {}
+static void tx_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
+{
+    usart_control_t *ctrl = param;
 
+    if (evt == VSF_STREAM_ON_RX) {
+        vsf_eda_post_evt(&ctrl->eda, VSF_EVT_TX_STREAM_ONRX);
+    }
+}
+
+static void rx_stream_tx_evthandler(void *param, vsf_stream_evt_t evt)
+{
+    usart_control_t *ctrl = param;
+
+    if (evt == VSF_STREAM_ON_TX) {
+        vsf_eda_post_evt(&ctrl->eda, VSF_EVT_RX_STREAM_ONTX);
+    }
+}
+
+static void stream_ontx(void *param)
+{
+    usart_control_t *ctrl = param;
+    vsf_eda_post_evt(&ctrl->eda, VSF_EVT_TX_STREAM_ONTX);
+}
+
+static void stream_onrx(void *param)
+{
+    usart_control_t *ctrl = param;
+    vsf_eda_post_evt(&ctrl->eda, VSF_EVT_RX_STREAM_ONRX);
+}
 
 static void vsfhal_usart_stream_fini(enum usart_idx_t idx)
 {
@@ -450,12 +520,18 @@ static void vsfhal_usart_stream_fini(enum usart_idx_t idx)
     }
 }
 
-void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx)
+void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t eda_priority, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx)
 {
     vsfhal_usart_stream_fini(idx);
     
     if (!tx && !rx)
         return;
+
+    const vsf_eda_cfg_t cfg = {
+        .fn.evthandler  = usart_stream_evthandler,
+        .priority       = eda_priority,
+    };
+    vsf_eda_init_ex(&usart_control[idx].eda, (vsf_eda_cfg_t *)&cfg);
 
     usart_control[idx].tx = tx;
     usart_control[idx].rx = rx;
@@ -467,8 +543,8 @@ void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t int_priority, vsf_st
         VSF_STREAM_CONNECT_RX(tx);
     }
     if (rx) {
-        //rx->tx.evthandler = rx_stream_tx_evthandler;
-        //rx->tx.param = &usart_control[idx];
+        rx->tx.evthandler = rx_stream_tx_evthandler;
+        rx->tx.param = &usart_control[idx];
         VSF_STREAM_CONNECT_TX(rx);
     }
 }

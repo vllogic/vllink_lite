@@ -15,34 +15,26 @@
 #define GD32E10X_CLKEN_PLL1             (1UL << 6)
 #define GD32E10X_CLKEN_PLL2             (1UL << 7)
 
-enum gd32e10x_hclksrc_t
-{
-	GD32E10X_HCLKSRC_HSI8M      = 0,
-	GD32E10X_HCLKSRC_HSE        = 1,
-	GD32E10X_HCLKSRC_PLL        = 2,
-};
+#define GD32E10X_HCLKSRC_HSI8M          0
+#define GD32E10X_HCLKSRC_HSE            1
+#define GD32E10X_HCLKSRC_PLL            2
 
-enum gd32e10x_pllsrc_t
-{
-	GD32E10X_PLLSRC_HSI8M_D2    = 0,
-	GD32E10X_PLLSRC_HSE         = 1,
-	GD32E10X_PLLSRC_HSI48M      = 2,
-};
+#define GD32E10X_PLLSRC_HSI8M_D2        0
+#define GD32E10X_PLLSRC_HSE             1
+#define GD32E10X_PLLSRC_HSI48M          2
 
-enum gd32e10x_usbsrc_t
-{
-	GD32E10X_USBSRC_PLL         = 0,
-	GD32E10X_USBSRC_HSI48M      = 1,
-};
+#define GD32E10X_USBSRC_PLL             0
+#define GD32E10X_USBSRC_HSI48M          1
 
-#if defined(PROJ_CFG_GD32E10X_HSI48M_USB_PLL_160M_OVERCLOCK)
+
+#if defined(PROJ_CFG_GD32E10X_HSI48M_USB_PLL_168M_OVERCLOCK)
 #	define CHIP_CLKEN                      (GD32E10X_CLKEN_HSI48M | GD32E10X_CLKEN_PLL0)
 #	define CHIP_HCLKSRC                    GD32E10X_HCLKSRC_PLL
 #	define CHIP_PLLSRC                     GD32E10X_PLLSRC_HSI48M
 #	define CHIP_USBSRC                     GD32E10X_USBSRC_HSI48M
 #	define CHIP_LSE_FREQ_HZ                (32768)
 #	define CHIP_HSE_FREQ_HZ                (12 * 1000 * 1000)
-#	define CHIP_PLL_FREQ_HZ                (160 * 1000 * 1000)
+#	define CHIP_PLL_FREQ_HZ                (168 * 1000 * 1000)
 #	define CHIP_AHB_FREQ_HZ                (CHIP_PLL_FREQ_HZ)
 #	define CHIP_APB1_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #	define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
@@ -101,7 +93,21 @@ enum gd32e10x_usbsrc_t
 #	define CHIP_AHB_FREQ_HZ                (CHIP_PLL_FREQ_HZ)
 #	define CHIP_APB1_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #	define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
+#elif defined(PROJ_CFG_GD32E10X_HSI48M_USB_PLL_72M)
+#	define CHIP_CLKEN                      (GD32E10X_CLKEN_HSI48M | GD32E10X_CLKEN_PLL0)
+#	define CHIP_HCLKSRC                    GD32E10X_HCLKSRC_PLL
+#	define CHIP_PLLSRC                     GD32E10X_PLLSRC_HSI48M
+#	define CHIP_USBSRC                     GD32E10X_USBSRC_HSI48M
+#	define CHIP_LSE_FREQ_HZ                (32768)
+#	define CHIP_HSE_FREQ_HZ                (12 * 1000 * 1000)
+#	define CHIP_PLL_FREQ_HZ                (72 * 1000 * 1000)
+#	define CHIP_AHB_FREQ_HZ                (CHIP_PLL_FREQ_HZ)
+#	define CHIP_APB1_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
+#	define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #endif
 
+#if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
+#   define VSF_USE_USB_DEVICE_DCD_DWCOTG    ENABLED
+#endif
 
 #endif // __CHIP_CFG_XXX_H__

@@ -86,7 +86,7 @@ int main(void)
         uint32_t sp_addr = *(uint32_t *)(FIRMWARE_AREA_ADDR);
         
         if ((app_main_addr >= FIRMWARE_AREA_ADDR) && (app_main_addr < (FIRMWARE_AREA_ADDR + FIRMWARE_AREA_SIZE_MAX)) && 
-                (sp_addr >= FIRMWARE_SP_ADDR) && (sp_addr < (FIRMWARE_SP_ADDR + FIRMWARE_SP_SIZE_MAX))) {
+                (sp_addr >= FIRMWARE_SP_ADDR) && (sp_addr <= (FIRMWARE_SP_ADDR + FIRMWARE_SP_SIZE_MAX))) {
             uint32_t (*app_main)(void) = (uint32_t(*)(void))app_main_addr;
             __set_MSP(sp_addr);
             app_main();

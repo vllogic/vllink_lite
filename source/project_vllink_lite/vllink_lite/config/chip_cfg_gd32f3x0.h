@@ -72,5 +72,8 @@
 #   define CHIP_APB2_FREQ_HZ               (CHIP_AHB_FREQ_HZ / 2)
 #endif
 
+#if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
+#   define VSF_USE_USB_DEVICE_DCD_DWCOTG    ENABLED
+#endif
 
 #endif // __CHIP_CFG_XXX_H__

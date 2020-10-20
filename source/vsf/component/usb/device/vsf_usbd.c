@@ -144,7 +144,7 @@ vsf_err_t vk_usbd_ep_recv(vk_usbd_dev_t *dev, vk_usbd_trans_t *trans)
                 trans->use_as__vsf_mem_t.size);
     } else {
         trans->cur = trans->use_as__vsf_mem_t.buffer;
-        err = vk_usbd_drv_ep_transaction_enable_out(trans->ep);
+        err = vk_usbd_drv_ep_transaction_enable_out(trans->ep, trans->cur);
     }
     if (VSF_ERR_NONE != err) {
         vsf_slist_remove(vk_usbd_trans_t, node, &dev->trans_list, trans);
@@ -825,7 +825,7 @@ static void __vk_usbd_evthandler(vsf_eda_t *eda, vsf_evt_t evt_eda)
 
                     // TODO: check trans->zlp
                     if ((trans->use_as__vsf_mem_t.size > 0) && (pkg_size == ep_size)) {
-                        vk_usbd_drv_ep_transaction_enable_out(ep);
+                        vk_usbd_drv_ep_transaction_enable_out(ep, trans->cur);
                     } else {
                         __vk_usbd_trans_finish(dev, trans);
                     }
@@ -1084,6 +1084,7 @@ static void __vk_usbd_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
             if (stream_ep->size > 0) {
                 stream_ep->cur_size = stream_ep->size;
                 stream_ep->on_finish = __vk_usbd_stream_rx_on_trans_finish;
+                stream_ep->use_as__vk_usbd_trans_t.zlp = true;
                 vk_usbd_ep_send(dev, &stream_ep->use_as__vk_usbd_trans_t);
             }
         }

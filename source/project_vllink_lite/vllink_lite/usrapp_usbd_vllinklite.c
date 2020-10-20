@@ -16,7 +16,9 @@ typedef struct usbd_vllinklite_const_t {
         uint8_t str_cmsis_dap_v2[26];
         uint8_t str_webusb[36];
         uint8_t str_cdcext[28];
+        #ifdef APP_CFG_CDCSHELL_SUPPORT
         uint8_t str_cdcshell[32];
+        #endif
         vk_usbd_desc_t std_desc[APP_CFG_USBD_DESC_COUNT];
     } usbd;
 } usbd_vllinklite_const_t;
@@ -38,7 +40,7 @@ typedef struct usbd_vllinklite_t {
             vk_usbd_cdcacm_t param;
             vsf_block_stream_t ext2usb;
             vsf_block_stream_t usb2ext;
-            uint8_t ext2usb_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 3];
+            uint8_t ext2usb_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 6];
             uint8_t usb2ext_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 3];
         } cdcext;
         #endif
@@ -47,7 +49,7 @@ typedef struct usbd_vllinklite_t {
             vk_usbd_cdcacm_t param;
             vsf_block_stream_t shell2usb;
             vsf_block_stream_t usb2shell;
-            uint8_t shell2usb_buf[(APP_CFG_CDCSHELL_PKT_SIZE + 4) * 3];
+            uint8_t shell2usb_buf[(APP_CFG_CDCSHELL_PKT_SIZE + 4) * 8];
             uint8_t usb2shell_buf[(APP_CFG_CDCSHELL_PKT_SIZE + 4) * 3];
         } cdcshell;
         #endif
@@ -156,7 +158,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x07,	// bLength: Endpoint Descriptor size
             USB_DT_ENDPOINT,
                     // bDescriptorType: Endpoint
-            0x82,	// bEndpointAddress:
+            0x80 | APP_CFG_CDCEXT_DATA_IN_EP,	// bEndpointAddress:
             0x02,	// bmAttributes: Bulk
             APP_CFG_CDCEXT_PKT_SIZE,		// wMaxPacketSize:
             0x00,
@@ -166,7 +168,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x07,	// bLength: Endpoint Descriptor size
             USB_DT_ENDPOINT,
                     // bDescriptorType: Endpoint
-            0x02,	// bEndpointAddress:
+            APP_CFG_CDCEXT_DATA_OUT_EP,	// bEndpointAddress:
             0x02,	// bmAttributes: Bulk
             APP_CFG_CDCEXT_PKT_SIZE,		// wMaxPacketSize:
             0x00,
@@ -181,7 +183,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x01,	// bNumEndpoints: One endpoints used
             0x02,	// bInterfaceClass: Communication Interface Class
             0x02,	// bInterfaceSubClass: Abstract Control Model
-            0x01,	// bInterfaceProtocol: Common AT commands
+            0x00,	// bInterfaceProtocol: 
             0x00,	// iInterface:
 
             // Header Functional Descriptor
@@ -195,7 +197,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x05,	// bFunctionLength
             0x24,	// bDescriptorType: CS_INTERFACE
             0x01,	// bDescriptorSubtype: Call Management Func Desc
-            0x00,	// bmCapabilities: D0+D1
+            0x01,	// bmCapabilities: 
             0x01,	// bDataInterface: 1
 
             // ACM Functional Descriptor
@@ -215,7 +217,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x07,	// bLength: Endpoint Descriptor size
             USB_DT_ENDPOINT,
                     // bDescriptorType: Endpoint
-            0x84,	// bEndpointAddress:
+            0x80 | APP_CFG_CDCEXT_NOTIFY_EP,	// bEndpointAddress:
             0x03,	// bmAttributes: Interrupt
             8,		// wMaxPacketSize:
             0x00,
@@ -249,7 +251,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x07,	// bLength: Endpoint Descriptor size
             USB_DT_ENDPOINT,
                     // bDescriptorType: Endpoint
-            0x83,	// bEndpointAddress:
+            0x80 | APP_CFG_CDCSHELL_DATA_IN_EP,	// bEndpointAddress:
             0x02,	// bmAttributes: Bulk
             APP_CFG_CDCSHELL_PKT_SIZE,		// wMaxPacketSize:
             0x00,
@@ -259,7 +261,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x07,	// bLength: Endpoint Descriptor size
             USB_DT_ENDPOINT,
                     // bDescriptorType: Endpoint
-            0x03,	// bEndpointAddress:
+            APP_CFG_CDCSHELL_DATA_OUT_EP,	// bEndpointAddress:
             0x02,	// bmAttributes: Bulk
             APP_CFG_CDCSHELL_PKT_SIZE,		// wMaxPacketSize:
             0x00,
@@ -274,7 +276,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x01,	// bNumEndpoints: One endpoints used
             0x02,	// bInterfaceClass: Communication Interface Class
             0x02,	// bInterfaceSubClass: Abstract Control Model
-            0x01,	// bInterfaceProtocol: Common AT commands
+            0x00,	// bInterfaceProtocol:
             0x00,	// iInterface:
 
             // Header Functional Descriptor
@@ -288,7 +290,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x05,	// bFunctionLength
             0x24,	// bDescriptorType: CS_INTERFACE
             0x01,	// bDescriptorSubtype: Call Management Func Desc
-            0x00,	// bmCapabilities: D0+D1
+            0x01,	// bmCapabilities: 
             0x01,	// bDataInterface: 1
 
             // ACM Functional Descriptor
@@ -308,7 +310,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             0x07,	// bLength: Endpoint Descriptor size
             USB_DT_ENDPOINT,
                     // bDescriptorType: Endpoint
-            0x85,	// bEndpointAddress:
+            0x80 | APP_CFG_CDCSHELL_NOTIFY_EP,	// bEndpointAddress:
             0x03,	// bmAttributes: Interrupt
             8,		// wMaxPacketSize:
             0x00,
@@ -469,12 +471,14 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
             'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0,
             'D', 0, 'C', 0, 'E', 0, 'x', 0, 't', 0,
         },
+        #ifdef APP_CFG_CDCSHELL_SUPPORT
         .str_cdcshell            = {
             32,
             USB_DT_STRING,
            'V', 0, 'l', 0, 'l', 0, 'i', 0, 'n', 0, 'k', 0, '-', 0, 'C', 0,
            'D', 0, 'C', 0, 'S', 0, 'h', 0, 'e', 0, 'l', 0, 'l', 0,
         },
+        #endif
         .std_desc               = {
             VSF_USBD_DESC_DEVICE(__usrapp_usbd_vllinklite_const.usbd.dev_desc, sizeof(__usrapp_usbd_vllinklite_const.usbd.dev_desc)),
             VSF_USBD_DESC_CONFIG(0, __usrapp_usbd_vllinklite_const.usbd.config_desc, sizeof(__usrapp_usbd_vllinklite_const.usbd.config_desc)),
@@ -500,7 +504,7 @@ static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
     },
 };
 
-static usbd_vllinklite_t __usrapp_usbd_vllinklite = {
+usbd_vllinklite_t __usrapp_usbd_vllinklite = {
     .usbd                       = {
         .dev.speed              = USB_DC_SPEED_HIGH,
         .dev.num_of_config      = dimof(__usrapp_usbd_vllinklite.usbd.config),
@@ -558,9 +562,9 @@ static usbd_vllinklite_t __usrapp_usbd_vllinklite = {
         #ifdef APP_CFG_CDCEXT_SUPPORT
         .cdcext.param           = {
             .ep                 = {
-                .notify         = 4,        // wake ep
-                .out            = 2,
-                .in             = 2,
+                .notify         = APP_CFG_CDCEXT_NOTIFY_EP,        // wake ep
+                .out            = APP_CFG_CDCEXT_DATA_OUT_EP,
+                .in             = APP_CFG_CDCEXT_DATA_IN_EP,
             },
             .line_coding        = {
                 .bitrate        = PERIPHERAL_UART_BAUD_DEFAULT,
@@ -588,9 +592,9 @@ static usbd_vllinklite_t __usrapp_usbd_vllinklite = {
         #ifdef APP_CFG_CDCSHELL_SUPPORT
         .cdcshell.param         = {
             .ep                 = {
-                .notify         = 5,        // wake ep
-                .out            = 3,
-                .in             = 3,
+                .notify         = APP_CFG_CDCSHELL_NOTIFY_EP,        // wake ep
+                .out            = APP_CFG_CDCSHELL_DATA_OUT_EP,
+                .in             = APP_CFG_CDCSHELL_DATA_IN_EP,
             },
             .line_coding        = {
                 .bitrate        = PERIPHERAL_UART_BAUD_DEFAULT,
@@ -631,4 +635,10 @@ vsf_err_t vsf_usbd_vendor_prepare(vk_usbd_dev_t *dev)
         }
     }
     return VSF_ERR_FAIL;
+}
+
+// double tx ep fifo size
+uint_fast16_t vsf_dwcotg_dcd_get_fifo_size(uint_fast8_t ep, usb_ep_type_t type, uint_fast16_t size)
+{
+    return size * 2;
 }

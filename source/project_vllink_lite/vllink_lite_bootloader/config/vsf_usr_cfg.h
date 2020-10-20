@@ -42,7 +42,6 @@
 #   define VSF_HEAP_CFG_MCB_MAGIC_EN                    DISABLED
 #   define VSF_HEAP_SIZE                                0x1000
 
-#define VSF_KERNEL_CFG_SUPPORT_MSG_QUEUE                DISABLED
 #define VSF_USE_KERNEL_SIMPLE_SHELL                     ENABLED
 #define VSF_KERNEL_CFG_SUPPORT_THREAD                   DISABLED
 
@@ -60,15 +59,6 @@
 
 #define VSF_USE_TRACE                                   DISABLED
 #define VSF_USE_SERVICE_VSFSTREAM                       DISABLED
-
-
-#define APP_CFG_USBD_VID                                0x1209
-#define APP_CFG_USBD_PID                                0x6666
-#define APP_CFG_USBD_EP0_SIZE                           64
-#define APP_CFG_USBD_VENDOR_STR                         u"vsf"
-#define APP_CFG_USBD_PRODUCT_STR                        u"vsf_dfu"
-#define APP_CFG_USBD_SERIAL_STR                         u"0000"
-#define APP_CFG_USBD_WEBUSB_URL                         "vllogic.github.io/webdfu/"
 
 
 /*============================ INCLUDES ======================================*/
