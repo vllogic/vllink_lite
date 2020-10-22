@@ -20,7 +20,7 @@
 ## 安装并配置
 1. 下载OpenOCD-ESP32 (CMSIS-DAP v2兼容) ，并解压至`D:\OneDrive\OpenOCD-20200108`
 2. 打开VSCode，安装`Espressif IDF`扩展
-3. 打开左侧活动栏中的`ESP-IDF Explorer`
+3. 打开左侧活动栏中的`ESP-IDF Explorer`，或者按F1,键入">ESP-IDF: Configure ESP-IDF extension"
 
    ![idf_start](./idf_start.png)
 4. 点击Start
