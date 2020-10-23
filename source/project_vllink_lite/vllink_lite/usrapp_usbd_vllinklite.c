@@ -573,6 +573,7 @@ usbd_vllinklite_t __usrapp_usbd_vllinklite = {
                 .datalen        = 8,
             },
             .callback.set_line_coding   = usrapp_cdcext_set_line_coding,
+            .callback.set_control_line  = usrapp_cdcext_set_control_line,
             .stream.tx.stream   = (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb,
             .stream.rx.stream   = (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext,
         },

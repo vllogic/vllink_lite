@@ -19,6 +19,7 @@ static uint16_t usrapp_get_serial(uint8_t *serial);
 static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *baudrate, vsf_stream_t *tx, vsf_stream_t *rx, bool return_actual_baud);
 static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate);
 static vsf_err_t usrapp_cdcext_set_line_coding(usb_cdcacm_line_coding_t *line_coding);
+static vsf_err_t usrapp_cdcext_set_control_line(uint8_t control_line);
 static vsf_err_t usrapp_cdcshell_set_line_coding(usb_cdcacm_line_coding_t *line_coding);
 
 /*============================ MACROS ========================================*/
@@ -225,6 +226,7 @@ static void connect_usbd(vsf_callback_timer_t *timer)
 #endif
 }
 
+// USB_CDCACM_REQ_SET_LINE_CODING
 static vsf_err_t usrapp_cdcext_set_line_coding(usb_cdcacm_line_coding_t *line_coding)
 {
 /*
@@ -275,6 +277,29 @@ struct usb_cdcacm_line_coding_t {
             (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext,
             (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb, false);
 
+    return VSF_ERR_NONE;
+}
+
+// USB_CDCACM_REQ_SET_CONTROL_LINE_STATE
+static vsf_err_t usrapp_cdcext_set_control_line(uint8_t control_line)
+{
+/*
+	control_line:
+		bit0: dtr
+		bit1: rts
+*/
+    #ifdef PERIPHERAL_UART_EXT_DTR_IDX
+    if (control_line & (0x1 << 0))
+        vsfhal_gpio_set(PERIPHERAL_UART_EXT_DTR_IDX, 1 << PERIPHERAL_UART_EXT_DTR_PIN);
+    else
+        vsfhal_gpio_clear(PERIPHERAL_UART_EXT_DTR_IDX, 1 << PERIPHERAL_UART_EXT_DTR_PIN);
+    #endif
+    #ifdef PERIPHERAL_UART_EXT_RTS_IDX
+    if (control_line & (0x1 << 1))
+        vsfhal_gpio_set(PERIPHERAL_UART_EXT_RTS_IDX, 1 << PERIPHERAL_UART_EXT_RTS_PIN);
+    else
+        vsfhal_gpio_clear(PERIPHERAL_UART_EXT_RTS_IDX, 1 << PERIPHERAL_UART_EXT_RTS_PIN);
+    #endif
     return VSF_ERR_NONE;
 }
 
@@ -387,6 +412,17 @@ int main(void)
     PERIPHERAL_LED_GREEN_INIT();
     PERIPHERAL_LED_RED_OFF();
     PERIPHERAL_LED_GREEN_OFF();
+
+    #ifdef PERIPHERAL_UART_EXT_DTR_IDX
+    vsfhal_gpio_init(PERIPHERAL_UART_EXT_DTR_IDX);
+    vsfhal_gpio_config(PERIPHERAL_UART_EXT_DTR_IDX, 0x1 << PERIPHERAL_UART_EXT_DTR_PIN, PERIPHERAL_UART_EXT_DTR_CONFIG);
+    vsfhal_gpio_set(PERIPHERAL_UART_EXT_DTR_IDX, 1 << PERIPHERAL_UART_EXT_DTR_PIN);
+    #endif
+    #ifdef PERIPHERAL_UART_EXT_RTS_IDX
+    vsfhal_gpio_init(PERIPHERAL_UART_EXT_RTS_IDX);
+    vsfhal_gpio_config(PERIPHERAL_UART_EXT_RTS_IDX, 0x1 << PERIPHERAL_UART_EXT_RTS_PIN, PERIPHERAL_UART_EXT_RTS_CONFIG);
+    vsfhal_gpio_set(PERIPHERAL_UART_EXT_RTS_IDX, 1 << PERIPHERAL_UART_EXT_RTS_PIN);
+    #endif
 
     #if VENDOR_UART
     VSF_STREAM_INIT(&usrapp.dap.dap_param.ext_tx);
