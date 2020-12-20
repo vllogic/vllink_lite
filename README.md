@@ -2,7 +2,7 @@
 
 ## 简介
 
-Vllink Lite是一款低成本高性能开源调试器。**在PCBA成本控制在￥5.0以内的同时，SWD调试速度可达Jlink V8的125%**。目前调试器主控可选GD32F350G8U6/GD32F350C8T6/GD32E103Tx/GD32E103Cx，并提供对应的硬件图纸。其中GD32E103系列主控拥有更大RAM、ROM，可以集成更多功能。
+Vllink Lite是一款低成本高性能开源调试器。**在PCBA成本控制在￥5.0以内的同时，SWD调试速度可达Jlink V8的125%**。目前调试器主控可选GD32F350G8U6/GD32F350C8T6/GD32E103Tx/GD32E103Cx，并提供对应的硬件图纸，现阶段建议使用**GD32F350**方案。
 
 ## 硬件参考设计
 
@@ -10,7 +10,7 @@ Vllink Lite是一款低成本高性能开源调试器。**在PCBA成本控制在
 GD32F350G8淘宝零售价格已低于￥3.8，SOF校准免晶振，适合作为成本敏感的集成式调试器。
 
 ### 2. [Vllink Lite.R4.GD32E103Tx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103tx)
-相比GD32F350，提供更大RAM与ROM，预留IO连接SPI Flash。
+相比GD32F350，拥有更大RAM与ROM，预留IO连接SPI Flash。
 
 ### 3. [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103cx)
 LQFP封装，预留独立SPI连接SPI Flash。
@@ -28,7 +28,7 @@ LQFP封装，预留独立SPI连接SPI Flash。
 * CMSIS-DAP V2的SWO功能，在MDK-ARM下测试可用
 * CDC-UART，连接硬件串口：`TXD` `RXD`
 
-## 额外功能（限GD32E103）
+## 额外功能（限GD32E103，计划中）
 * 内置SWD Host、JTAG Host
 * 支持RAMIO，即通过调试口访问目标芯片的特定RAM，实现数据交互，类似RTT(J-Link)及Nuconsole(Nu-Link)
 * 第二路复用串口，TX:`TRST`、RX:`TDO/SWO`
