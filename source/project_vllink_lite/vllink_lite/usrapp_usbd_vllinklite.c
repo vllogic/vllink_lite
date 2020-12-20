@@ -40,7 +40,7 @@ typedef struct usbd_vllinklite_t {
             vk_usbd_cdcacm_t param;
             vsf_block_stream_t ext2usb;
             vsf_block_stream_t usb2ext;
-            uint8_t ext2usb_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 6];
+            uint8_t ext2usb_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 4];
             uint8_t usb2ext_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 3];
         } cdcext;
         #endif

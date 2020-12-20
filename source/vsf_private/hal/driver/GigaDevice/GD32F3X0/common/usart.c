@@ -30,6 +30,10 @@ typedef struct usart_control_t {
     void *param;
     uint8_t tx_buff[USART_BUFF_SIZE];
     uint8_t rx_buff[USART_BUFF_SIZE * 2];
+#if USART_STREAM_ENABLE
+    uint8_t stream_rx_buff[USART_BUFF_SIZE];
+    uint8_t stream_rx_size;
+#endif
     uint8_t rx_buff_w_pos;  // Non-DMA RX
     uint8_t rx_buff_r_pos;
     uint8_t tx_size;
@@ -179,6 +183,7 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
 
         USART_CTL0(usartx) &= ~USART_CTL0_UEN;
         USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
+        USART_RT(usartx) = min(0xffffff, baudrate * 2 / 10000);      // 200us
         USART_CTL0(usartx) |= USART_CTL0_UEN;
     } else {
         USART_CTL0(usartx) = 0;
@@ -188,7 +193,7 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
         USART_CTL1(usartx) = ((mode << 8) & USART_CTL1_STB) | USART_CTL1_RTEN;
         USART_CTL1(usartx) |= mode & (USART_CTL1_MSBF | USART_CTL1_DINV | USART_CTL1_TINV | USART_CTL1_RINV);
         USART_CTL2(usartx) = (mode >> 4) & (USART_CTL2_CTSEN | USART_CTL2_RTSEN | USART_CTL2_HDEN);
-        USART_RT(usartx) = 20;
+        USART_RT(usartx) = min(0xffffff, baudrate * 2 / 10000);      // 200us
 
         switch (idx) {
         #if USART0_ENABLE
@@ -419,25 +424,18 @@ static void stream_dorx(usart_control_t *ctrl, vsf_stream_t *stream)
     enum usart_idx_t idx = ((uint32_t)ctrl - (uint32_t)usart_control) / sizeof(usart_control_t);
 
     if (stream->op == &vsf_fifo_stream_op) {
-        uint8_t buf[USART_BUFF_SIZE];
-        size = min(vsfhal_usart_rx_get_data_size(idx), USART_BUFF_SIZE);
-        if (size) {
-            size = vsfhal_usart_rx_bytes(idx, buf, size);
-            if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
-                VSF_STREAM_WRITE(stream, buf, size);
-        }
+        size = ctrl->stream_rx_size;
+        if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
+            VSF_STREAM_WRITE(stream, ctrl->stream_rx_buff, size);
     } else if (stream->op == &vsf_block_stream_op) {
         uint8_t *buf;
-        size = VSF_STREAM_GET_WBUF(stream, &buf);
-        if (size) {
-            size = vsfhal_usart_rx_bytes(idx, buf, size);
-            if (size && VSF_STREAM_IS_RX_CONNECTED(stream))
-                VSF_STREAM_WRITE(stream, buf, size);
-        } else {
-            uint8_t discard[USART_BUFF_SIZE];
-            vsfhal_usart_rx_bytes(idx, discard, USART_BUFF_SIZE);
+        size = min(VSF_STREAM_GET_WBUF(stream, &buf), ctrl->stream_rx_size);
+        if (size && VSF_STREAM_IS_RX_CONNECTED(stream)) {
+            memcpy(buf, ctrl->stream_rx_buff, size);
+            VSF_STREAM_WRITE(stream, buf, size);
         }
     }
+    ctrl->stream_rx_size = 0;
 }
 
 enum {
@@ -501,7 +499,15 @@ static void stream_ontx(void *param)
 static void stream_onrx(void *param)
 {
     usart_control_t *ctrl = param;
-    vsf_eda_post_evt(&ctrl->eda, VSF_EVT_RX_STREAM_ONRX);
+    if (ctrl->stream_rx_size == 0) {
+        uint32_t size;
+        enum usart_idx_t idx = ((uint32_t)ctrl - (uint32_t)usart_control) / sizeof(usart_control_t);
+        size = min(vsfhal_usart_rx_get_data_size(idx), USART_BUFF_SIZE);
+        if (size) {
+            ctrl->stream_rx_size = vsfhal_usart_rx_bytes(idx, ctrl->stream_rx_buff, size);
+            vsf_eda_post_evt(&ctrl->eda, VSF_EVT_RX_STREAM_ONRX);
+        }
+    }
 }
 
 static void vsfhal_usart_stream_fini(enum usart_idx_t idx)
