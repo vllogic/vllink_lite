@@ -10,16 +10,12 @@ Vllink Lite是一款低成本高性能开源调试器。**在PCBA成本控制在
 GD32F350G8淘宝零售价格已低于￥3.8，SOF校准免晶振，适合作为成本敏感的集成式调试器。
 
 ### 2. [Vllink Lite.R4.GD32E103Tx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103tx)
-相比GD32F350，拥有更大RAM与ROM，预留IO连接SPI Flash。
-
-### 3. [Vllink Lite.R4.GD32E103Cx](https://github.com/vllogic/vllink_lite/tree/master/hardware/vllink_lite.r4.gd32e103cx)
-LQFP封装，预留独立SPI连接SPI Flash。
+相比GD32F350，拥有更大RAM与ROM，预留IO连接SPI Flash。**需要注意的是，GD32E103的USB部分尚存BUG，当DAP与CDC同时使用时，二者数据会生产干扰，目前不建议日常使用。**
 
 ### 仿真及实拍图
 ![3D](./hardware/vllink_lite.r4.gd32f350xx/vllink_lite.r4.gd32f350xx.top45.png)
 ![BOTTOM](./hardware/vllink_lite.r4.gd32f350xx/vllink_lite.r4.gd32f350xx.bottom.png)
 ![PCBA](./hardware/vllink_lite.r3/vllink_lite.r3.pcba.png)
-![PCBA](./hardware/vllink_lite.r4.gd32e103tx/vllink_lite.r4.gd32e103tx.pcba.png)
 
 ## 基本功能
 
@@ -28,11 +24,11 @@ LQFP封装，预留独立SPI连接SPI Flash。
 * CMSIS-DAP V2的SWO功能，在MDK-ARM下测试可用
 * CDC-UART，连接硬件串口：`TXD` `RXD`
 
-## 额外功能（限GD32E103，计划中）
-* 内置SWD Host、JTAG Host
-* 支持RAMIO，即通过调试口访问目标芯片的特定RAM，实现数据交互，类似RTT(J-Link)及Nuconsole(Nu-Link)
-* 第二路复用串口，TX:`TRST`、RX:`TDO/SWO`
-* CDC-Shell，简易Shell，用以访问第二路串口或者RAMIO
+## ~~额外功能（限GD32E103，计划中）~~
+* ~~内置SWD Host、JTAG Host~~
+* ~~支持RAMIO，即通过调试口访问目标芯片的特定RAM，实现数据交互，类似RTT(J-Link)及Nuconsole(Nu-Link)~~
+* ~~第二路复用串口，TX:`TRST`、RX:`TDO/SWO`~~
+* ~~CDC-Shell，简易Shell，用以访问第二路串口或者RAMIO~~
 
 ## 调试速度测试
 
