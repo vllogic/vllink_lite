@@ -56,7 +56,12 @@ typedef struct vsf_rtos_t {
 /*============================ GLOBAL VARIABLES ==============================*/
 /*============================ LOCAL VARIABLES ===============================*/
 
+#ifndef VSF_ARCH_RTOS_CFG_MALLOC_API
 static NO_INIT vsf_rtos_t __vsf_rtos;
+static vsf_rtos_t *__vsf_rtos_p = &__vsf_rtos;
+#else
+static NO_INIT vsf_rtos_t *__vsf_rtos_p;
+#endif
 
 /*============================ PROTOTYPES ====================================*/
 /*============================ IMPLEMENTATION ================================*/
@@ -72,11 +77,22 @@ static NO_INIT vsf_rtos_t __vsf_rtos;
  */
 bool vsf_arch_low_level_init(void)
 {
-    memset(&__vsf_rtos, 0, sizeof(__vsf_rtos));
-    __vsf_rtos.prio_base = vsf_arch_prio_invalid;
-    __vsf_arch_irq_request_init(&__vsf_rtos.wakeup.request, true);
+#ifdef VSF_ARCH_RTOS_CFG_MALLOC_API
+    __vsf_rtos_p = VSF_ARCH_RTOS_CFG_MALLOC_API(sizeof(vsf_rtos_t));
+#endif
+    memset(__vsf_rtos_p, 0, sizeof(vsf_rtos_t));
+#if (VSF_ARCH_SWI_NUM > 0) && defined(VSF_ARCH_RTOS_CFG_MALLOC_ALIGNED_API)
+    extern void* VSF_ARCH_RTOS_CFG_MALLOC_ALIGNED_API(size_t alignment, size_t n);
+    for (int i = 0; i < VSF_ARCH_SWI_NUM; i++) {
+        __vsf_rtos_p->swi[i].thread.stack = VSF_ARCH_RTOS_CFG_MALLOC_ALIGNED_API(1 << VSF_ARCH_CFG_STACK_ALIGN_BIT,
+                sizeof(VSF_ARCH_RTOS_STACK_T) * VSF_ARCH_RTOS_CFG_STACK_DEPTH);
+    }
+#endif
+
+    __vsf_rtos_p->prio_base = vsf_arch_prio_invalid;
+    __vsf_arch_irq_request_init(&__vsf_rtos_p->wakeup.request, true);
 #if VSF_ARCH_RTOS_CFG_MODE == VSF_ARCH_RTOS_MODE_REQUEST
-    __vsf_arch_irq_request_init(&__vsf_rtos.prio_change_req, false);
+    __vsf_arch_irq_request_init(&__vsf_rtos_p->prio_change_req, false);
 #endif
     return __vsf_arch_model_low_level_init();
 }
@@ -93,8 +109,8 @@ static void __vsf_arch_swi_thread(void *arg)
     while (1) {
         __vsf_arch_irq_request_pend(&ctx->use_as__vsf_arch_irq_request_t);
 #if VSF_ARCH_RTOS_CFG_MODE == VSF_ARCH_RTOS_MODE_REQUEST
-        while (ctx->priority <= __vsf_rtos.prio_base) {
-            __vsf_arch_irq_request_pend(&__vsf_rtos.prio_change_req);
+        while (ctx->priority <= __vsf_rtos_p->prio_base) {
+            __vsf_arch_irq_request_pend(&__vsf_rtos_p->prio_change_req);
         }
 #endif
 
@@ -110,8 +126,8 @@ static void __vsf_arch_swi_thread(void *arg)
  */
 vsf_err_t vsf_arch_swi_init(uint_fast8_t idx, vsf_arch_prio_t priority, vsf_swi_handler_t *handler, void *param)
 {
-    if (idx < dimof(__vsf_rtos.swi)) {
-        vsf_arch_swi_ctx_t *ctx = &__vsf_rtos.swi[idx];
+    if (idx < dimof(__vsf_rtos_p->swi)) {
+        vsf_arch_swi_ctx_t *ctx = &__vsf_rtos_p->swi[idx];
 
         ctx->handler = handler;
         ctx->param = param;
@@ -124,10 +140,15 @@ vsf_err_t vsf_arch_swi_init(uint_fast8_t idx, vsf_arch_prio_t priority, vsf_swi_
 
             sprintf(swi_name, "vsf_swi%d", idx);
             __vsf_arch_irq_request_init(&ctx->use_as__vsf_arch_irq_request_t, true);
+#ifndef VSF_ARCH_RTOS_CFG_MALLOC_ALIGNED_API
             __vsf_arch_irq_thread_start((vsf_arch_irq_thread_t *)&ctx->thread, swi_name,
                     __vsf_arch_swi_thread, priority, ctx->thread.stack, dimof(ctx->thread.stack));
+#else
+            __vsf_arch_irq_thread_start((vsf_arch_irq_thread_t *)&ctx->thread, swi_name,
+                    __vsf_arch_swi_thread, priority, ctx->thread.stack, VSF_ARCH_RTOS_CFG_STACK_DEPTH);
+#endif
 #if VSF_ARCH_RTOS_CFG_MODE == VSF_ARCH_RTOS_MODE_SUSPEND_RESUME
-            if (ctx->priority <= __vsf_rtos.prio_base) {
+            if (ctx->priority <= __vsf_rtos_p->prio_base) {
                 __vsf_arch_irq_thread_suspend((vsf_arch_irq_thread_t *)&ctx->thread);
             }
 #endif
@@ -147,8 +168,8 @@ vsf_err_t vsf_arch_swi_init(uint_fast8_t idx, vsf_arch_prio_t priority, vsf_swi_
  */
 void vsf_arch_swi_trigger(uint_fast8_t idx)
 {
-    if (idx < dimof(__vsf_rtos.swi)) {
-        __vsf_arch_irq_request_send(&__vsf_rtos.swi[idx].use_as__vsf_arch_irq_request_t);
+    if (idx < dimof(__vsf_rtos_p->swi)) {
+        __vsf_arch_irq_request_send(&__vsf_rtos_p->swi[idx].use_as__vsf_arch_irq_request_t);
         return;
     }
     VSF_ARCH_ASSERT(false);
@@ -156,15 +177,15 @@ void vsf_arch_swi_trigger(uint_fast8_t idx)
 
 vsf_arch_prio_t vsf_set_base_priority(vsf_arch_prio_t priority)
 {
-    vsf_arch_prio_t orig = __vsf_rtos.prio_base;
+    vsf_arch_prio_t orig = __vsf_rtos_p->prio_base;
 
     if (orig != priority) {
-        __vsf_rtos.prio_base = priority;
+        __vsf_rtos_p->prio_base = priority;
 
 #if VSF_ARCH_RTOS_CFG_MODE == VSF_ARCH_RTOS_MODE_SUSPEND_RESUME
-        vsf_arch_swi_ctx_t *ctx = &__vsf_rtos.swi[0];
+        vsf_arch_swi_ctx_t *ctx = &__vsf_rtos_p->swi[0];
         // simply suspend thread with lower priority, resume thread with higher priority
-        for (uint_fast8_t i = 0; i < dimof(__vsf_rtos.swi); i++, ctx++) {
+        for (uint_fast8_t i = 0; i < dimof(__vsf_rtos_p->swi); i++, ctx++) {
             if (    ctx->is_inited
                 // do not process current irq_thread, which has same priority as current thread
                 && (    __vsf_arch_model_get_current_priority()
@@ -178,8 +199,8 @@ vsf_arch_prio_t vsf_set_base_priority(vsf_arch_prio_t priority)
             }
         }
 #else
-        __vsf_arch_irq_request_send(&__vsf_rtos.prio_change_req);
-        __vsf_arch_irq_request_reset(&__vsf_rtos.prio_change_req);
+        __vsf_arch_irq_request_send(&__vsf_rtos_p->prio_change_req);
+        __vsf_arch_irq_request_reset(&__vsf_rtos_p->prio_change_req);
 #endif
     }
     return orig;
@@ -194,13 +215,13 @@ void vsf_arch_sleep(uint32_t mode)
 {
     UNUSED_PARAM(mode);
     vsf_enable_interrupt();
-    __vsf_arch_irq_request_pend(&__vsf_rtos.wakeup.request);
+    __vsf_arch_irq_request_pend(&__vsf_rtos_p->wakeup.request);
     vsf_disable_interrupt();
 }
 
 void vsf_arch_wakeup(void)
 {
-    __vsf_arch_irq_request_send(&__vsf_rtos.wakeup.request);
+    __vsf_arch_irq_request_send(&__vsf_rtos_p->wakeup.request);
 }
 
 /* EOF */
