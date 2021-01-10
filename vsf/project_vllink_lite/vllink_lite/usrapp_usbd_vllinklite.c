@@ -23,6 +23,18 @@ typedef struct usbd_vllinklite_const_t {
     } usbd;
 } usbd_vllinklite_const_t;
 
+
+#ifdef APP_CFG_CDCEXT_SUPPORT
+describe_block_stream(cdcext_ext2usb_stream, 4, APP_CFG_CDCEXT_PKT_SIZE)
+describe_block_stream(cdcext_usb2ext_stream, 3, APP_CFG_CDCEXT_PKT_SIZE)
+#endif
+
+#ifdef APP_CFG_CDCSHELL_SUPPORT
+describe_block_stream(cdcshell_shell2usb_stream, 4, APP_CFG_CDCEXT_PKT_SIZE)
+describe_block_stream(cdcshell_usb2shell_stream, 3, APP_CFG_CDCEXT_PKT_SIZE)
+#endif
+
+
 typedef struct usbd_vllinklite_t {
     struct {
         vk_usbd_dev_t dev;
@@ -36,22 +48,10 @@ typedef struct usbd_vllinklite_t {
         vk_usbd_webusb_t webusb;
         #endif
         #ifdef APP_CFG_CDCEXT_SUPPORT
-        struct {
-            vk_usbd_cdcacm_t param;
-            vsf_block_stream_t ext2usb;
-            vsf_block_stream_t usb2ext;
-            uint8_t ext2usb_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 4];
-            uint8_t usb2ext_buf[(APP_CFG_CDCEXT_PKT_SIZE + 4) * 3];
-        } cdcext;
+        vk_usbd_cdcacm_t cdcext;
         #endif
         #ifdef APP_CFG_CDCSHELL_SUPPORT
-        struct {
-            vk_usbd_cdcacm_t param;
-            vsf_block_stream_t shell2usb;
-            vsf_block_stream_t usb2shell;
-            uint8_t shell2usb_buf[(APP_CFG_CDCSHELL_PKT_SIZE + 4) * 8];
-            uint8_t usb2shell_buf[(APP_CFG_CDCSHELL_PKT_SIZE + 4) * 3];
-        } cdcshell;
+        vk_usbd_cdcacm_t cdcshell;
         #endif
     } usbd;
 } usbd_vllinklite_t;
@@ -530,21 +530,21 @@ usbd_vllinklite_t __usrapp_usbd_vllinklite = {
         .ifs[0 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT].\
                 class_op        = &vk_usbd_cdcacm_data,
         .ifs[0 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT].\
-                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcext.param,
+                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcext,
         .ifs[1 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT].\
                 class_op        = &vk_usbd_cdcacm_control,
         .ifs[1 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT].\
-                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcext.param,
+                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcext,
         #endif
         #ifdef APP_CFG_CDCSHELL_SUPPORT
         .ifs[0 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT + CDCEXT_INTERFACE_COUNT].\
                 class_op        = &vk_usbd_cdcacm_data,
         .ifs[0 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT + CDCEXT_INTERFACE_COUNT].\
-                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcshell.param,
+                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcshell,
         .ifs[1 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT + CDCEXT_INTERFACE_COUNT].\
                 class_op        = &vk_usbd_cdcacm_control,
         .ifs[1 + CMSIS_DAP_V2_INTERFACE_COUNT + WEBUSB_INTERFACE_COUNT + CDCEXT_INTERFACE_COUNT].\
-                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcshell.param,
+                class_param     = &__usrapp_usbd_vllinklite.usbd.cdcshell,
         #endif
 
         #ifdef APP_CFG_CMSIS_DAP_V2_SUPPORT
@@ -560,7 +560,7 @@ usbd_vllinklite_t __usrapp_usbd_vllinklite = {
         },
         #endif
         #ifdef APP_CFG_CDCEXT_SUPPORT
-        .cdcext.param           = {
+        .cdcext                 = {
             .ep                 = {
                 .notify         = APP_CFG_CDCEXT_NOTIFY_EP,        // wake ep
                 .out            = APP_CFG_CDCEXT_DATA_OUT_EP,
@@ -574,24 +574,12 @@ usbd_vllinklite_t __usrapp_usbd_vllinklite = {
             },
             .callback.set_line_coding   = usrapp_cdcext_set_line_coding,
             .callback.set_control_line  = usrapp_cdcext_set_control_line,
-            .stream.tx.stream   = (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb,
-            .stream.rx.stream   = (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext,
-        },
-        .cdcext.ext2usb         = {
-            .op                 = &vsf_block_stream_op,
-            .buffer             = __usrapp_usbd_vllinklite.usbd.cdcext.ext2usb_buf,
-            .size               = sizeof(__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb_buf),
-            .block_size         = APP_CFG_CDCEXT_PKT_SIZE,
-        },
-        .cdcext.usb2ext         = {
-            .op                 = &vsf_block_stream_op,
-            .buffer             = __usrapp_usbd_vllinklite.usbd.cdcext.usb2ext_buf,
-            .size               = sizeof(__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext_buf),
-            .block_size         = APP_CFG_CDCEXT_PKT_SIZE,
+            .stream.tx.stream   = (vsf_stream_t *)&cdcext_ext2usb_stream, 
+            .stream.rx.stream   = (vsf_stream_t *)&cdcext_usb2ext_stream,
         },
         #endif
         #ifdef APP_CFG_CDCSHELL_SUPPORT
-        .cdcshell.param         = {
+        .cdcshell               = {
             .ep                 = {
                 .notify         = APP_CFG_CDCSHELL_NOTIFY_EP,        // wake ep
                 .out            = APP_CFG_CDCSHELL_DATA_OUT_EP,
@@ -604,20 +592,8 @@ usbd_vllinklite_t __usrapp_usbd_vllinklite = {
                 .datalen        = 8,
             },
             .callback.set_line_coding   = usrapp_cdcshell_set_line_coding,
-            .stream.tx.stream   = (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcshell.shell2usb,
-            .stream.rx.stream   = (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcshell.usb2shell,
-        },
-        .cdcshell.shell2usb     = {
-            .op                 = &vsf_block_stream_op,
-            .buffer             = __usrapp_usbd_vllinklite.usbd.cdcshell.shell2usb_buf,
-            .size               = sizeof(__usrapp_usbd_vllinklite.usbd.cdcshell.shell2usb_buf),
-            .block_size         = APP_CFG_CDCSHELL_PKT_SIZE,
-        },
-        .cdcshell.usb2shell     = {
-            .op                 = &vsf_block_stream_op,
-            .buffer             = __usrapp_usbd_vllinklite.usbd.cdcshell.usb2shell_buf,
-            .size               = sizeof(__usrapp_usbd_vllinklite.usbd.cdcshell.usb2shell_buf),
-            .block_size         = APP_CFG_CDCSHELL_PKT_SIZE,
+            .stream.tx.stream   = (vsf_stream_t *)&cdcshell_shell2usb_stream, 
+            .stream.rx.stream   = (vsf_stream_t *)&cdcshell_usb2shell_stream,
         },
         #endif
     },

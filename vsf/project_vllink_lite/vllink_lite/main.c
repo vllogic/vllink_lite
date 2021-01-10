@@ -136,7 +136,7 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
                 vsfhal_usart_config(PERIPHERAL_UART_EXT_IDX, usrapp.usart_ext_baud, usrapp.usart_ext_mode);
             if (baudrate)
                 *baudrate = usrapp.usart_ext_baud;
-            vsfhal_usart_stream_init(PERIPHERAL_UART_EXT_IDX, USART_STREAM_EDA_PRIORITY, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
+            vsfhal_usart_stream_config(PERIPHERAL_UART_EXT_IDX, USART_STREAM_EDA_PRIORITY, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
         } else if (baudrate && *baudrate != usrapp.usart_ext_baud) {
             usrapp.usart_ext_baud = *baudrate;
             if (return_actual_baud)
@@ -163,7 +163,7 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
                 vsfhal_usart_config(PERIPHERAL_UART_SWO_IDX, usrapp.usart_swo_baud, usrapp.usart_swo_mode);
             if (baudrate)
                 *baudrate = usrapp.usart_swo_baud;
-            vsfhal_usart_stream_init(PERIPHERAL_UART_SWO_IDX, USART_STREAM_EDA_PRIORITY, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
+            vsfhal_usart_stream_config(PERIPHERAL_UART_SWO_IDX, USART_STREAM_EDA_PRIORITY, PERIPHERAL_UART_EXT_PRIORITY, tx, rx);
         } else if (baudrate && *baudrate != usrapp.usart_swo_baud) {
             usrapp.usart_swo_baud = *baudrate;
             if (return_actual_baud)
@@ -274,8 +274,8 @@ struct usb_cdcacm_line_coding_t {
         mode |= PERIPHERAL_UART_PARITY_NONE;
 
     usrapp_config_usart(PERIPHERAL_UART_EXT_IDX, &mode, &baudrate,
-            (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext,
-            (vsf_stream_t *)&__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb, false);
+            (vsf_stream_t *)&cdcext_usb2ext_stream,
+            (vsf_stream_t *)&cdcext_ext2usb_stream, false);
 
     return VSF_ERR_NONE;
 }
@@ -395,7 +395,7 @@ void vsf_ptshell_init(vsf_ptshell_t *ptshell)
         .priority       = vsf_prio_0,
     };
     
-    vsf_eda_init_ex(&ptshell->eda, (vsf_eda_cfg_t *)&cfg);
+    vsf_eda_start(&ptshell->eda, (vsf_eda_cfg_t *)&cfg);
 }
 
 #endif
@@ -433,11 +433,14 @@ int main(void)
     VSF_STREAM_INIT(&usrapp.dap.dap_param.swo_rx);
     #endif
 
-    VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcext.usb2ext);
-    VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcext.ext2usb);
+
+    #ifdef APP_CFG_CDCEXT_SUPPORT
+    VSF_STREAM_INIT(&cdcext_ext2usb_stream);
+    VSF_STREAM_INIT(&cdcext_usb2ext_stream);
+    #endif
     #ifdef APP_CFG_CDCSHELL_SUPPORT
-    VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcshell.usb2shell);
-    VSF_STREAM_INIT(&__usrapp_usbd_vllinklite.usbd.cdcshell.shell2usb);
+    VSF_STREAM_INIT(&cdcshell_shell2usb_stream);
+    VSF_STREAM_INIT(&cdcshell_usb2shell_stream);
     #endif
 
     dap_init(&usrapp.dap, vsf_prio_0);

@@ -3011,6 +3011,42 @@
                 </file>
             </group>
             <group>
+                <name>simple_stream</name>
+                <group>
+                    <name>block_stream</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\block_stream\vsf_block_stream.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\block_stream\vsf_block_stream.h</name>
+                    </file>
+                </group>
+                <group>
+                    <name>fifo_stream</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\fifo_stream\vsf_fifo_stream.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\fifo_stream\vsf_fifo_stream.h</name>
+                    </file>
+                </group>
+                <group>
+                    <name>mem_stream</name>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\mem_stream\vsf_mem_stream.c</name>
+                    </file>
+                    <file>
+                        <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\mem_stream\vsf_mem_stream.h</name>
+                    </file>
+                </group>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\vsf_simple_stream.c</name>
+                </file>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\service\simple_stream\vsf_simple_stream.h</name>
+                </file>
+            </group>
+            <group>
                 <name>stream</name>
                 <group>
                     <name>pbuf_queue</name>
@@ -3056,33 +3092,6 @@
                 </file>
                 <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\service\trace\vsf_trace.h</name>
-                </file>
-            </group>
-            <group>
-                <name>vsfstream</name>
-                <group>
-                    <name>fifo_steam</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\fifo_stream\vsf_fifo_stream.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\fifo_stream\vsf_fifo_stream.h</name>
-                    </file>
-                </group>
-                <group>
-                    <name>mem_stream</name>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\mem_stream\vsf_mem_stream.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\mem_stream\vsf_mem_stream.h</name>
-                    </file>
-                </group>
-                <file>
-                    <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\vsfstream.c</name>
-                </file>
-                <file>
-                    <name>$PROJ_DIR$\..\..\..\vsf\service\vsfstream\vsfstream.h</name>
                 </file>
             </group>
             <file>
@@ -3408,15 +3417,12 @@
                         <name>$PROJ_DIR$\..\..\..\vsf\utilities\compiler\arm\retarget_io.c</name>
                     </file>
                     <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\utilities\compiler\arm\signal.c</name>
-                    </file>
-                    <file>
-                        <name>$PROJ_DIR$\..\..\..\vsf\utilities\compiler\arm\signal.h</name>
-                    </file>
-                    <file>
                         <name>$PROJ_DIR$\..\..\..\vsf\utilities\compiler\arm\type.h</name>
                     </file>
                 </group>
+                <file>
+                    <name>$PROJ_DIR$\..\..\..\vsf\utilities\compiler\compiler.h</name>
+                </file>
             </group>
             <group>
                 <name>language_extension</name>

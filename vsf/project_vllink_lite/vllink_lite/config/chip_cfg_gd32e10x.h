@@ -107,7 +107,7 @@
 #endif
 
 #if (VSF_USE_USB_DEVICE == ENABLED) || (VSF_USE_USB_HOST == ENABLED)
-#   define VSF_USE_USB_DEVICE_DCD_DWCOTG    ENABLED
+#   define VSF_USBD_USE_DCD_DWCOTG          ENABLED
 #endif
 
 #endif // __CHIP_CFG_XXX_H__

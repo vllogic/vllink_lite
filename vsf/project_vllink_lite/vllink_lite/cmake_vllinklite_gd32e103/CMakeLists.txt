@@ -13,26 +13,29 @@ cmake_minimum_required(VERSION 3.13)
 #     "rm -rf ./build" or "rm -r -fo ./build"
 
 # How to config chip:
-#   VSFHAL_CHIP_VENDOR -> chip vendor [arm, GigaDevice, Nuvoton, ST, TI, ...]
-#   VSFHAL_CHIP_SERIES -> chip series [GD32VF103, STM32F7X0, AM335X, ...]
-#   VSFHAL_CHIP_NAME -> chip full name [GD32VF103C8, STM32F730, AM3352, ...]
-#   VSFHAL_ARCH_SERIES -> chip arch series [arm, mcs51, rv, x86, ...]
-#   VSFHAL_ARCH_NAME -> chip arch name [cortex-m0, cortex-m0plus, cortex-m3, 
+#   VSF_HAL_CHIP_VENDOR -> chip vendor [arm, GigaDevice, Nuvoton, ST, TI, ...]
+#   VSF_HAL_CHIP_SERIES -> chip series [GD32VF103, STM32F7X0, AM335X, ...]
+#   VSF_HAL_CHIP_NAME -> chip full name [GD32VF103C8, STM32F730, AM3352, ...]
+#   VSF_ARCH_SERIES -> chip arch series [arm, mcs51, rv, x86, ...]
+#   VSF_ARCH_NAME -> chip arch name [cortex-m0, cortex-m0plus, cortex-m3, 
 #     cortex-m4, cortex-m7, cortex-m23, cortex-m33, cortex-r4, ...]
 
 # select chip and arch
-set(VSFHAL_CHIP_VENDOR      GigaDevice)
-set(VSFHAL_CHIP_SERIES      GD32E10X)
-#set(VSFHAL_CHIP_NAME        GD32E103)
-set(VSFHAL_ARCH_SERIES      arm)
-set(VSFHAL_ARCH_NAME        cortex-m4)
+set(VSF_HAL_CHIP_VENDOR       GigaDevice)
+set(VSF_HAL_CHIP_SERIES       GD32E10X)
+#set(VSF_HAL_CHIP_NAME        GD32E103)
+set(VSF_ARCH_SERIES           arm)
+set(VSF_ARCH_NAME             cortex-m4)
+
+# set VSF_LIB_NAME
+set(VSF_LIB_NAME              vsf)
 
 set(PROJ_COMPILE_DEFINITIONS
   PROJ_CFG_VLLINKLITE
   BRD_CFG_VLLINKLITE_GD32E103
 )
 
-if(${VSFHAL_ARCH_SERIES} STREQUAL "arm")
+if(${VSF_ARCH_SERIES} STREQUAL "arm")
   #set(ARM_FLOATING_HARDWARE     "")
   set(ARM_FLOATING_HARDWARE     -mfpu=fpv4-sp-d16)
   #set(ARM_FLOATING_ABI          soft)
@@ -49,10 +52,10 @@ endif()
 set(VSF_BASE ${CMAKE_CURRENT_LIST_DIR}/../../.. CACHE PATH "VSF Base Directory")
 
 # select toolchain
-if(${VSFHAL_ARCH_SERIES} STREQUAL "arm")
+if(${VSF_ARCH_SERIES} STREQUAL "arm")
   include(${VSF_BASE}/cmake/gnuarmemb.cmake)
 else()
-  message(FATAL_ERROR "Unknown ARCH: ${VSFHAL_ARCH_SERIES}")
+  message(FATAL_ERROR "Unknown ARCH: ${VSF_ARCH_SERIES}")
 endif()
 
 # select toolchain
@@ -95,7 +98,7 @@ target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC
 )
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE
-  vsf
+  ${VSF_LIB_NAME}
 )
 
 file(WRITE compile_definitions.h "// Auto Generate\n\n")
