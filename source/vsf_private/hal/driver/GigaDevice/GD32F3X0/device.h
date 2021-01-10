@@ -1,17 +1,24 @@
-#ifndef __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
-#define __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
-
 /*============================ INCLUDES ======================================*/
+
 #include "hal/vsf_hal_cfg.h"
 
 /*============================ MACROS ========================================*/
 
+#if defined(__VSF_HEADER_ONLY_SHOW_ARCH_INFO__)
+
 /*\note first define basic info for arch. */
-#define VSF_ARCH_PRI_NUM            16
-#define VSF_ARCH_PRI_BIT            4
+#define VSF_ARCH_PRI_NUM         16
+#define VSF_ARCH_PRI_BIT         4
 
 // software interrupt provided by a dedicated device
-#define VSF_DEV_SWI_NUM             10
+#define VSF_DEV_SWI_NUM          10
+
+#else
+
+#ifndef __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
+#define __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
+
+// software interrupt provided by a dedicated device
 #define VSF_DEV_SWI_LIST            SWI0_IRQn,SWI1_IRQn,SWI2_IRQn,SWI3_IRQn,SWI4_IRQn,SWI5_IRQn,SWI6_IRQn,SWI7_IRQn,SWI8_IRQn,SWI9_IRQn
 
 /*============================ INCLUDES ======================================*/
@@ -103,5 +110,6 @@ void vsfhal_clk_reconfig_apb(uint32_t apb_freq_hz);
 #endif
 uint32_t vsfhal_uid_read(uint8_t *buffer, uint32_t size);
 
-#endif
+#endif      // __HAL_DEVICE_GIGADEVICE_GD32F3X0_H__
+#endif      // __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
 /* EOF */

@@ -20,7 +20,7 @@
 //#include "../../common.h"
 #include "./usbd.h"
 
-#if VSF_USE_USB_DEVICE == ENABLED && VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
+#if VSF_USE_USB_DEVICE == ENABLED && VSF_USBD_USE_DCD_DWCOTG == ENABLED
 
 // for vk_dwcotg_dc_ip_info_t
 #include "component/usb/driver/otg/dwcotg/vsf_dwcotg_dcd.h"
@@ -74,4 +74,4 @@ void gd32e10x_usbd_irq(gd32e10x_usb_t *dc)
     gd32e10x_usb_irq(dc);
 }
 
-#endif      // VSF_USE_USB_DEVICE && VSF_USE_USB_DEVICE_DCD_DWCOTG
+#endif      // VSF_USE_USB_DEVICE && VSF_USBD_USE_DCD_DWCOTG

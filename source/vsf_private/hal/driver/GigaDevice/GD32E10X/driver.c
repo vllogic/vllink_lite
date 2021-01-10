@@ -1,6 +1,6 @@
 /*============================ INCLUDES ======================================*/
-#include "hal/vsf_hal_cfg.h"
-#include "./device.h"
+
+#include "./driver.h"
 
 /*============================ MACROS ========================================*/
 /*============================ MACROFIED FUNCTIONS ===========================*/
@@ -241,6 +241,12 @@ bool vsf_driver_init(void)
 vsfhal_clk_info_t *vsfhal_clk_info_get(void)
 {
 	return &vsfhal_clk_info;
+}
+
+void vsf_arch_sleep(uint32_t mode)
+{
+    UNUSED_PARAM(mode);
+    //__WFE();
 }
 
 #ifdef PROJ_CFG_GD32E10X_AHP_APB_UNFIXED

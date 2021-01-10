@@ -20,6 +20,10 @@
 /*============================ TYPES =========================================*/
 
 typedef struct usart_control_t {
+    uint32_t inited : 1;
+    uint32_t fill : 7;
+    uint32_t baudrate : 24;
+    uint32_t mode;
 #if USART_STREAM_ENABLE
     vsf_stream_t *tx;
     vsf_stream_t *rx;
@@ -113,6 +117,9 @@ void vsfhal_usart_init(enum usart_idx_t idx)
 {
     VSF_HAL_ASSERT(idx < USART_IDX_NUM);
 
+    if (usart_control[idx].inited)
+        return;
+
     switch (idx) {
     #if USART0_ENABLE
     case USART0_IDX:
@@ -173,6 +180,7 @@ void vsfhal_usart_init(enum usart_idx_t idx)
     #endif
     }
     memset(&usart_control[idx], 0, sizeof(usart_control_t));
+    usart_control[idx].inited = 1;
 }
 
 void vsfhal_usart_fini(enum usart_idx_t idx)
@@ -214,6 +222,7 @@ void vsfhal_usart_fini(enum usart_idx_t idx)
         break;
     #endif
     }
+    usart_control[idx].inited = 0;
 }
 
 #if USART3_ENABLE || USART4_ENABLE
@@ -687,12 +696,12 @@ static void vsfhal_usart_stream_fini(enum usart_idx_t idx)
     }
     if (usart_control[idx].rx) {
         VSF_STREAM_DISCONNECT_TX(usart_control[idx].rx);
-        usart_control[idx].rx->rx.evthandler = NULL;
-        usart_control[idx].rx->rx.param = NULL;
+        usart_control[idx].rx->tx.evthandler = NULL;
+        usart_control[idx].rx->tx.param = NULL;
     }
 }
 
-void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t eda_priority, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx)
+void vsfhal_usart_stream_config(enum usart_idx_t idx, int32_t eda_priority, int32_t int_priority, vsf_stream_t *tx, vsf_stream_t *rx)
 {
     vsfhal_usart_stream_fini(idx);
     
@@ -703,7 +712,7 @@ void vsfhal_usart_stream_init(enum usart_idx_t idx, int32_t eda_priority, int32_
         .fn.evthandler  = usart_stream_evthandler,
         .priority       = eda_priority,
     };
-    vsf_eda_init_ex(&usart_control[idx].eda, (vsf_eda_cfg_t *)&cfg);
+    vsf_eda_start(&usart_control[idx].eda, (vsf_eda_cfg_t *)&cfg);
 
     usart_control[idx].tx = tx;
     usart_control[idx].rx = rx;
