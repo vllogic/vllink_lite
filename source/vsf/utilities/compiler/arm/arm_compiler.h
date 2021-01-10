@@ -130,6 +130,7 @@ extern "C" {
 
 //! \brief none standard memory types
 #if __IS_COMPILER_IAR__
+#   define LOW_LEVEL_INIT_RET_T int
 #   define ROM_FLASH            _Pragma(__STR(location=".rom.flash")) const
 #   define ROM_EEPROM           _Pragma(__STR(location=".rom.eeprom")) const
 #   define NO_INIT              __no_init
@@ -388,10 +389,6 @@ __attribute__((always_inline, __noreturn__)) static inline void __cmsis_start(vo
 #ifdef __cplusplus
 }
 #endif
-
-/*============================ INCLUDES ======================================*/
-//! \brief for interrupt 
-#include "./signal.h"
 
 #endif  /* end of __USE_ARM_COMPILER_H_PART_2__ */
 

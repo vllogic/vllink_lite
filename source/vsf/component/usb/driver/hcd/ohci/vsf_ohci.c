@@ -18,7 +18,7 @@
 /*============================ INCLUDES ======================================*/
 #include "component/usb/vsf_usb_cfg.h"
 
-#if VSF_USE_USB_HOST == ENABLED && VSF_USE_USB_HOST_HCD_OHCI == ENABLED
+#if VSF_USE_USB_HOST == ENABLED && VSF_USBH_USE_HCD_OHCI == ENABLED
 
 #define __VSF_USBH_CLASS_IMPLEMENT_HCD__
 #define __VSF_EDA_CLASS_INHERIT__
@@ -358,6 +358,7 @@ static vsf_err_t __ohci_init_evthandler(vsf_eda_t *eda, vsf_evt_t evt, vk_usbh_h
 static vsf_err_t __ohci_fini(vk_usbh_hcd_t *hcd);
 static vsf_err_t __ohci_suspend(vk_usbh_hcd_t *hcd);
 static vsf_err_t __ohci_resume(vk_usbh_hcd_t *hcd);
+static uint_fast16_t __ohci_get_frame_number(vk_usbh_hcd_t *hcd);
 static vk_usbh_hcd_urb_t * __ohci_alloc_urb(vk_usbh_hcd_t *hcd);
 static void __ohci_free_urb(vk_usbh_hcd_t *hcd, vk_usbh_hcd_urb_t *urb);
 static vsf_err_t __ohci_submit_urb(vk_usbh_hcd_t *hcd, vk_usbh_hcd_urb_t *urb);
@@ -371,6 +372,7 @@ const vk_usbh_hcd_drv_t vk_ohci_drv = {
     .fini = __ohci_fini,
     .suspend = __ohci_suspend,
     .resume = __ohci_resume,
+    .get_frame_number = __ohci_get_frame_number,
     .alloc_urb = __ohci_alloc_urb,
     .free_urb = __ohci_free_urb,
     .submit_urb = __ohci_submit_urb,
@@ -1076,8 +1078,7 @@ static uint_fast32_t __ohci_start(vk_ohci_t *ohci)
 static void __ohci_ed_free_evthanlder(vsf_eda_t *eda, vsf_evt_t evt)
 {
     switch (evt) {
-        case VSF_EVT_MESSAGE:
-        {
+        case VSF_EVT_MESSAGE: {
             ohci_ed_t *ed, *ed_dellist = vsf_eda_get_cur_msg();
             vk_usbh_hcd_urb_t *urb;
             ohci_urb_t *urb_ohci;
@@ -1088,7 +1089,6 @@ static void __ohci_ed_free_evthanlder(vsf_eda_t *eda, vsf_evt_t evt)
 
                 urb_ohci = ed->td_dummy->urb_ohci;
                 urb = container_of(urb_ohci, vk_usbh_hcd_urb_t, priv);
-                vk_usbh_hcd_urb_free_buffer(urb);
                 __ohci_ed_fini(urb_ohci);
                 __ohci_free_urb_do(urb);
             }
@@ -1176,6 +1176,12 @@ static vsf_err_t __ohci_resume(vk_usbh_hcd_t *hcd)
     return VSF_ERR_NONE;
 }
 
+static uint_fast16_t __ohci_get_frame_number(vk_usbh_hcd_t *hcd)
+{
+    vk_ohci_t *ohci = hcd->priv;
+    return ohci->frame_no;
+}
+
 static vk_usbh_hcd_urb_t * __ohci_alloc_urb(vk_usbh_hcd_t *hcd)
 {
     uint_fast32_t size;
@@ -1199,6 +1205,7 @@ static vk_usbh_hcd_urb_t * __ohci_alloc_urb(vk_usbh_hcd_t *hcd)
 static void __ohci_free_urb_do(vk_usbh_hcd_urb_t *urb)
 {
     ohci_urb_t *urb_ohci = (ohci_urb_t *)urb->priv;
+    vk_usbh_hcd_urb_free_buffer(urb);
     vsf_usbh_free(urb_ohci->ed);
 }
 
@@ -1221,7 +1228,6 @@ static void __ohci_free_urb(vk_usbh_hcd_t *hcd, vk_usbh_hcd_urb_t *urb)
             __ohci_ed_start_unlink(ohci, urb_ohci);
         }
     } else {
-        vk_usbh_hcd_urb_free_buffer(urb);
         __ohci_free_urb_do(urb);
     }
 }

@@ -21,8 +21,8 @@
 
 #if VSF_USE_MAL == ENABLED
 
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
-#   define __VSFSTREAM_CLASS_INHERIT__
+#if VSF_USE_SIMPLE_STREAM == ENABLED
+#   define __VSF_SIMPLE_STREAM_CLASS_INHERIT__
 #   include "service/vsf_service.h"
 #endif
 
@@ -35,14 +35,14 @@
 #   error VSF_KERNEL_CFG_EDA_SUPPORT_SUB_CALL is needed to use scsi
 #endif
 
-#if VSF_USE_KERNEL_SIMPLE_SHELL != ENABLED
-#   error VSF_USE_KERNEL_SIMPLE_SHELL must be enabled
+#if VSF_KERNEL_USE_SIMPLE_SHELL != ENABLED
+#   error VSF_KERNEL_USE_SIMPLE_SHELL must be enabled
 #endif
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
 enum {
     VSF_EVT_MAL_READ        = VSF_EVT_USER + 0,
     VSF_EVT_MAL_WRITE       = VSF_EVT_USER + 1,
@@ -121,7 +121,7 @@ vsf_err_t vk_mal_write(vk_mal_t *pthis, uint_fast64_t addr, uint_fast32_t size, 
     return err;
 }
 
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
 static void __vk_mal_stream_tx_evthandler(void *param, vsf_stream_evt_t evt)
 {
     vk_mal_stream_t *pthis = (vk_mal_stream_t *)param;
@@ -142,6 +142,35 @@ static void __vk_mal_stream_tx_evthandler(void *param, vsf_stream_evt_t evt)
         break;
     }
 }
+
+static void __vk_mal_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
+{
+    vk_mal_stream_t *pthis = (vk_mal_stream_t *)param;
+    vk_mal_t *mal = pthis->mal;
+    vsf_stream_t *stream = pthis->stream;
+
+    switch (evt) {
+    case VSF_STREAM_ON_CONNECT:
+    case VSF_STREAM_ON_IN:
+        if (pthis->size > 0) {
+            pthis->cur_size = vsf_stream_get_rbuf(stream, &pthis->cur_buff);
+            if (pthis->cur_size < vk_mal_blksz(mal, pthis->addr, 0, VSF_MAL_OP_WRITE)) {
+                break;
+            }
+
+            vsf_eda_post_evt(pthis->cur_eda, VSF_EVT_MAL_WRITE);
+        }
+        break;
+    }
+}
+
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-align"
+#elif   __IS_COMPILER_LLVM__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wcast-align"
+#endif
 
 __vsf_component_peda_private_entry(__vk_mal_read_stream)
 {
@@ -180,38 +209,6 @@ __vsf_component_peda_private_entry(__vk_mal_read_stream)
     vsf_peda_end();
 }
 
-vsf_err_t vk_mal_read_stream(vk_mal_stream_t *pthis, uint_fast64_t addr, uint_fast32_t size, vsf_stream_t *stream)
-{
-    vsf_err_t err;
-    VSF_MAL_ASSERT(pthis != NULL);
-    pthis->addr = addr;
-    pthis->size = size;
-    pthis->stream = stream;
-    __vsf_component_call_peda(__vk_mal_read_stream, err, pthis)
-    return err;
-}
-
-static void __vk_mal_stream_rx_evthandler(void *param, vsf_stream_evt_t evt)
-{
-    vk_mal_stream_t *pthis = (vk_mal_stream_t *)param;
-    vk_mal_t *mal = pthis->mal;
-    vsf_stream_t *stream = pthis->stream;
-
-    switch (evt) {
-    case VSF_STREAM_ON_CONNECT:
-    case VSF_STREAM_ON_IN:
-        if (pthis->size > 0) {
-            pthis->cur_size = vsf_stream_get_rbuf(stream, &pthis->cur_buff);
-            if (pthis->cur_size < vk_mal_blksz(mal, pthis->addr, 0, VSF_MAL_OP_WRITE)) {
-                break;
-            }
-
-            vsf_eda_post_evt(pthis->cur_eda, VSF_EVT_MAL_WRITE);
-        }
-        break;
-    }
-}
-
 __vsf_component_peda_private_entry(__vk_mal_write_stream)
 {
     vsf_peda_begin();
@@ -247,6 +244,23 @@ __vsf_component_peda_private_entry(__vk_mal_write_stream)
         break;
     }
     vsf_peda_end();
+}
+
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#elif   __IS_COMPILER_LLVM__
+#   pragma clang diagnostic pop
+#endif
+
+vsf_err_t vk_mal_read_stream(vk_mal_stream_t *pthis, uint_fast64_t addr, uint_fast32_t size, vsf_stream_t *stream)
+{
+    vsf_err_t err;
+    VSF_MAL_ASSERT(pthis != NULL);
+    pthis->addr = addr;
+    pthis->size = size;
+    pthis->stream = stream;
+    __vsf_component_call_peda(__vk_mal_read_stream, err, pthis)
+    return err;
 }
 
 vsf_err_t vk_mal_write_stream(vk_mal_stream_t *pthis, uint_fast64_t addr, uint_fast32_t size, vsf_stream_t *stream)

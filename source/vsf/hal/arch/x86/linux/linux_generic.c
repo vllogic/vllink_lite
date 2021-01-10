@@ -17,7 +17,7 @@
 
 /*============================ INCLUDES ======================================*/
 
-#define VSF_ARCH_WIN_IMPLEMENT
+#define __VSF_ARCH_LINUX_IMPLEMENT
 #include "hal/arch/vsf_arch_abstraction.h"
 #include "hal/arch/__vsf_arch_interface.h"
 
@@ -34,6 +34,10 @@
 
 #ifndef VSF_ARCH_CFG_THREAD_NUM
 #   define VSF_ARCH_CFG_THREAD_NUM          32
+#endif
+
+#ifndef VSF_ARCH_CFG_IRQ_REQUEST_NUM
+#   define VSF_ARCH_CFG_IRQ_REQUEST_NUM     32
 #endif
 
 #ifndef VSF_ARCH_CFG_TRACE_FUNC
@@ -93,9 +97,22 @@ typedef struct vsf_arch_thread_t {
     void *param;
 } vsf_arch_thread_t;
 
+dcl_vsf_bitmap(vsf_arch_irq_request_bitmap, VSF_ARCH_CFG_IRQ_REQUEST_NUM)
+
+typedef struct vsf_arch_irq_request_priv_t {
+    pthread_cond_t cond;
+    pthread_mutex_t mutex;
+} vsf_arch_irq_request_priv_t;
+
 typedef struct vsf_arch_t {
-    vsf_arch_thread_t thread_pool[VSF_ARCH_CFG_THREAD_NUM];
-    vsf_bitmap(vsf_arch_thread_bitmap) thread_bitmap;
+    struct {
+        vsf_arch_thread_t pool[VSF_ARCH_CFG_THREAD_NUM];
+        vsf_bitmap(vsf_arch_thread_bitmap) bitmap;
+    } thread;
+    struct {
+        vsf_arch_irq_request_priv_t pool[VSF_ARCH_CFG_IRQ_REQUEST_NUM];
+        vsf_bitmap(vsf_arch_irq_request_bitmap) bitmap;
+    } irq_request;
 
     vsf_arch_systimer_ctx_t systimer;
 } vsf_arch_t;
@@ -107,52 +124,94 @@ static NO_INIT vsf_arch_t __vsf_arch;
 
 /*============================ IMPLEMENTATION ================================*/
 
+static int __vsf_arch_get_thread_idx(vsf_arch_thread_t *thread)
+{
+    int idx = thread - __vsf_arch.thread.pool;
+    if ((idx >= 0) && (idx <= dimof(__vsf_arch.thread.pool))) {
+        return idx;
+    }
+    return -1;
+}
+
 /*----------------------------------------------------------------------------*
  * infrastructure                                                             *
  *----------------------------------------------------------------------------*/
 
 void __vsf_arch_irq_request_init(vsf_arch_irq_request_t *request)
 {
-    request->triggered = false;
-    pthread_mutex_init(&request->mutex, NULL);
-    pthread_cond_init(&request->cond, NULL);
+    VSF_HAL_ASSERT(!request->is_inited);
+
+    __vsf_arch_crit_enter(__vsf_arch_common.lock);
+        request->id = vsf_bitmap_ffz(&__vsf_arch.irq_request.bitmap, VSF_ARCH_CFG_IRQ_REQUEST_NUM);
+        if (request->id >= 0) {
+            vsf_bitmap_set(&__vsf_arch.irq_request.bitmap, request->id);
+        }
+    __vsf_arch_crit_leave(__vsf_arch_common.lock);
+    VSF_ARCH_ASSERT(request->id >= 0);
+
+    pthread_cond_t *cond = &__vsf_arch.irq_request.pool[request->id].cond;
+    pthread_mutex_t *mutex = &__vsf_arch.irq_request.pool[request->id].mutex;
+
+    request->is_triggered = false;
+    pthread_mutex_init(mutex, NULL);
+    pthread_cond_init(cond, NULL);
+    request->is_inited = true;
 }
 
 void __vsf_arch_irq_request_fini(vsf_arch_irq_request_t *request)
 {
-    pthread_cond_destroy(&request->cond);
+    VSF_HAL_ASSERT(request->is_inited);
+    pthread_cond_t *cond = &__vsf_arch.irq_request.pool[request->id].cond;
+
+    pthread_cond_destroy(cond);
+
+    __vsf_arch_crit_enter(__vsf_arch_common.lock);
+        vsf_bitmap_clear(&__vsf_arch.irq_request.bitmap, request->id);
+    __vsf_arch_crit_leave(__vsf_arch_common.lock);
+
+    request->is_inited = false;
 }
 
 void __vsf_arch_irq_request_pend(vsf_arch_irq_request_t *request)
 {
-    vsf_arch_request_trace("irq_request pend\n");
-    pthread_mutex_lock(&request->mutex);
-        while (!request->triggered) {
-            vsf_arch_request_trace("irq_request wait\n");
-            pthread_cond_wait(&request->cond, &request->mutex);
+    VSF_HAL_ASSERT(request->is_inited);
+    pthread_cond_t *cond = &__vsf_arch.irq_request.pool[request->id].cond;
+    pthread_mutex_t *mutex = &__vsf_arch.irq_request.pool[request->id].mutex;
+    int idx = __vsf_arch_get_thread_idx(request->arch_thread);
+
+    vsf_arch_request_trace("irq_request%d pend\n", idx);
+    pthread_mutex_lock(mutex);
+        while (!request->is_triggered) {
+            vsf_arch_request_trace("irq_request%d wait\n", idx);
+            pthread_cond_wait(cond, mutex);
         }
-        request->triggered = false;
-    pthread_mutex_unlock(&request->mutex);
-    vsf_arch_request_trace("irq_request got\n");
+        request->is_triggered = false;
+    pthread_mutex_unlock(mutex);
+    vsf_arch_request_trace("irq_request%d got\n", idx);
 }
 
 void __vsf_arch_irq_request_send(vsf_arch_irq_request_t *request)
 {
-    vsf_arch_request_trace("irq_request send\n");
-    pthread_mutex_lock(&request->mutex);
-        request->triggered = true;
-        vsf_arch_request_trace("irq_request signal\n");
-        pthread_cond_signal(&request->cond);
-    pthread_mutex_unlock(&request->mutex);
-    vsf_arch_request_trace("irq_request sent\n");
+    VSF_HAL_ASSERT(request->is_inited);
+    pthread_cond_t *cond = &__vsf_arch.irq_request.pool[request->id].cond;
+    pthread_mutex_t *mutex = &__vsf_arch.irq_request.pool[request->id].mutex;
+    int idx = __vsf_arch_get_thread_idx(request->arch_thread);
+
+    vsf_arch_request_trace("irq_request%d send\n", idx);
+    pthread_mutex_lock(mutex);
+        request->is_triggered = true;
+        vsf_arch_request_trace("irq_request%d signal\n", idx);
+    pthread_mutex_unlock(mutex);
+    pthread_cond_signal(cond);
+    vsf_arch_request_trace("irq_request%d sent\n", idx);
 }
 
 static void * __vsf_arch_irq_entry(void *arg)
 {
     vsf_arch_thread_t *thread = arg;
-    int idx = thread - __vsf_arch.thread_pool;
-    VSF_HAL_ASSERT(idx < VSF_ARCH_CFG_THREAD_NUM);
+    int idx = __vsf_arch_get_thread_idx(thread);
 
+    thread->start_request.arch_thread = thread;
     __vsf_arch_irq_request_pend(&thread->start_request);
 
     vsf_arch_irq_thread_t *irq_thread = thread->param;
@@ -162,7 +221,7 @@ static void * __vsf_arch_irq_entry(void *arg)
     }
 
     __vsf_arch_crit_enter(__vsf_arch_common.lock);
-        vsf_bitmap_clear(&__vsf_arch.thread_bitmap, idx);
+        vsf_bitmap_clear(&__vsf_arch.thread.bitmap, idx);
     __vsf_arch_crit_leave(__vsf_arch_common.lock);
 
     pthread_detach(pthread_self());
@@ -175,20 +234,21 @@ static vsf_err_t __vsf_arch_create_irq_thread(vsf_arch_irq_thread_t *irq_thread,
     int idx;
 
     __vsf_arch_crit_enter(__vsf_arch_common.lock);
-        idx = vsf_bitmap_ffz(&__vsf_arch.thread_bitmap, VSF_ARCH_CFG_THREAD_NUM);
+        idx = vsf_bitmap_ffz(&__vsf_arch.thread.bitmap, VSF_ARCH_CFG_THREAD_NUM);
         if (idx >= 0) {
-            vsf_bitmap_set(&__vsf_arch.thread_bitmap, idx);
+            vsf_bitmap_set(&__vsf_arch.thread.bitmap, idx);
         }
     __vsf_arch_crit_leave(__vsf_arch_common.lock);
 
     if (idx >= 0) {
-        thread = &__vsf_arch.thread_pool[idx];
+        thread = &__vsf_arch.thread.pool[idx];
         thread->param = irq_thread;
         irq_thread->entry = entry;
         vsf_arch_irq_trace("irq_thread_init %s\n", irq_thread->name);
         __vsf_arch_irq_request_send(&thread->start_request);
         return VSF_ERR_NONE;
     }
+    VSF_ARCH_ASSERT(false);
     return VSF_ERR_NOT_ENOUGH_RESOURCES;
 }
 
@@ -304,7 +364,7 @@ uint_fast32_t vsf_systimer_tick_to_ms(vsf_systimer_cnt_t tick)
 
 void vsf_systimer_prio_set(vsf_arch_prio_t priority)
 {
-    
+
 }
 
 #endif
@@ -316,19 +376,24 @@ void vsf_systimer_prio_set(vsf_arch_prio_t priority)
  */
 bool vsf_arch_low_level_init(void)
 {
-    memset(&__vsf_arch.systimer, 0, sizeof(__vsf_arch.systimer));
+    memset(&__vsf_arch, 0, sizeof(__vsf_arch));
     strcpy((char *)__vsf_arch_common.por_thread.name, "por");
 
     // create thread pool
-    vsf_bitmap_clear(&__vsf_arch.thread_bitmap, VSF_ARCH_CFG_THREAD_NUM);
-    for (int i = 0; i < dimof(__vsf_arch.thread_pool); i++) {
-        if (0 != pthread_create(&__vsf_arch.thread_pool[i].pthread, NULL, __vsf_arch_irq_entry, &__vsf_arch.thread_pool[i])) {
+    vsf_bitmap_clear(&__vsf_arch.irq_request.bitmap, VSF_ARCH_CFG_IRQ_REQUEST_NUM);
+    vsf_bitmap_clear(&__vsf_arch.thread.bitmap, VSF_ARCH_CFG_THREAD_NUM);
+
+    // __vsf_arch_low_level_init MUST be called before using __vsf_arch_common.lock
+    __vsf_arch_low_level_init();
+
+    for (int i = 0; i < dimof(__vsf_arch.thread.pool); i++) {
+        __vsf_arch_irq_request_init(&__vsf_arch.thread.pool[i].start_request);
+        if (0 != pthread_create(&__vsf_arch.thread.pool[i].pthread, NULL, __vsf_arch_irq_entry, &__vsf_arch.thread.pool[i])) {
             VSF_HAL_ASSERT(false);
-            return VSF_ERR_FAIL;
+            return false;
         }
-        __vsf_arch_irq_request_init(&__vsf_arch.thread_pool[i].start_request);
     }
-    return __vsf_arch_low_level_init();
+    return true;
 }
 
 /* EOF */

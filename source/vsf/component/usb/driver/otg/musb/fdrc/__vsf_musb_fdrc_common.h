@@ -23,9 +23,9 @@
 #include "component/usb/vsf_usb_cfg.h"
 
 #if     (   (VSF_USE_USB_DEVICE == ENABLED)                                     \
-        && (VSF_USE_USB_DEVICE_DCD_MUSB_FDRC == ENABLED))                       \
+        && (VSF_USBD_USE_DCD_MUSB_FDRC == ENABLED))                             \
     ||  (   (VSF_USE_USB_HOST == ENABLED)                                       \
-        && (VSF_USE_USB_HOST_HCD_MUSB_FDRC == ENABLED))
+        && (VSF_USBH_USE_HCD_MUSB_FDRC == ENABLED))
 
 #include "hal/vsf_hal.h"
 
@@ -177,9 +177,9 @@ typedef struct vk_musb_fdrc_reg_t {
             volatile uint8_t RxCSR2;
             volatile uint8_t RxCount1;
             volatile uint8_t RxCount2;
-            volatile uint8_t TxType;        // for host onkly
+            volatile uint8_t TxType;        // for host only
             volatile uint8_t TxInterval;    // for host only
-            volatile uint8_t RxType;        // for host onkly
+            volatile uint8_t RxType;        // for host only
             volatile uint8_t RxInterval;    // for host only
             volatile uint8_t TxFIFO1;
             volatile uint8_t TxFIFO2;

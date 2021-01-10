@@ -1,6 +1,6 @@
 # CMakeLists head
 
-target_sources(vsf INTERFACE
+target_sources(${VSF_LIB_NAME} INTERFACE
     retarget_io.c
-    signal.c
+    mcs51_interrupt.c
 )

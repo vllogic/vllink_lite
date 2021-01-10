@@ -19,7 +19,7 @@
 
 #include "../../vsf_mal_cfg.h"
 
-#if VSF_USE_MAL == ENABLED && VSF_USE_FS == ENABLED && VSF_USE_FILE_MAL == ENABLED
+#if VSF_USE_MAL == ENABLED && VSF_USE_FS == ENABLED && VSF_MAL_USE_FILE_MAL == ENABLED
 
 #define __VSF_MAL_CLASS_INHERIT__
 #define __VSF_FILE_MAL_CLASS_IMPLEMENT
@@ -31,7 +31,7 @@
 
 #if VSF_FILE_MAL_CFG_DEBUG == ENABLED
 #   define __vk_file_mal_trace(...)                                             \
-            vsf_trace(VSF_TRACE_DEBUG, "file_mal: " __VA_ARGS__)
+            vsf_trace_debug("file_mal: " __VA_ARGS__)
 #else
 #   define __vk_file_mal_trace(...)
 #endif
@@ -48,6 +48,11 @@ dcl_vsf_peda_methods(static, __vk_file_mal_write)
 
 /*============================ GLOBAL VARIABLES ==============================*/
 
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+
 const vk_mal_drv_t vk_file_mal_drv = {
     .blksz          = __vk_file_mal_blksz,
     .init           = (vsf_peda_evthandler_t)vsf_peda_func(__vk_file_mal_init),
@@ -56,6 +61,10 @@ const vk_mal_drv_t vk_file_mal_drv = {
     .write          = (vsf_peda_evthandler_t)vsf_peda_func(__vk_file_mal_write),
 };
 
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#endif
+
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
 
@@ -63,6 +72,14 @@ static uint_fast32_t __vk_file_mal_blksz(vk_mal_t *mal, uint_fast64_t addr, uint
 {
     return ((vk_file_mal_t *)mal)->block_size;
 }
+
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-align"
+#elif   __IS_COMPILER_LLVM__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wcast-align"
+#endif
 
 __vsf_component_peda_ifs_entry(__vk_file_mal_init, vk_mal_init)
 {
@@ -111,5 +128,11 @@ __vsf_component_peda_ifs_entry(__vk_file_mal_write, vk_mal_write)
     }
     vsf_peda_end();
 }
+
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#elif   __IS_COMPILER_LLVM__
+#   pragma clang diagnostic pop
+#endif
 
 #endif

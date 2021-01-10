@@ -19,10 +19,11 @@
 
 #include "../../vsf_input_cfg.h"
 
-#if VSF_USE_INPUT == ENABLED && VSF_USE_INPUT_HID == ENABLED
+#if VSF_USE_INPUT == ENABLED && VSF_INPUT_USE_HID == ENABLED
 
 #include "service/vsf_service.h"
 #include "hal/vsf_hal.h"
+#include "component/input/vsf_input.h"
 #include "./vsf_input_hid.h"
 
 /*============================ MACROS ========================================*/
@@ -119,7 +120,7 @@ void vsf_hid_on_report_input(vk_hid_evt_t *hid_evt)
 #if VSF_HID_CFG_TRACE == ENABLED
     if (hid_evt->id != 0) {
         uint_fast32_t mask = (1 << hid_evt->usage->bit_length) - 1;
-        vsf_trace(VSF_TRACE_DEBUG, "hid: usage(%d/%d:%d/%d,%d-%d) %d -> %d\n",
+        vsf_trace_debug("hid: usage(%d/%d:%d/%d,%d-%d) %d -> %d\n",
             hid_get_generic_usage_page(hid_evt), hid_get_generic_usage_id(hid_evt),
             hid_get_usage_page(hid_evt), hid_get_usage_id(hid_evt),
             hid_evt->usage->bit_offset, hid_evt->usage->bit_length,
@@ -234,12 +235,17 @@ static vk_hid_report_t * __vk_hid_get_report(vk_input_hid_t *dev, vk_hid_desc_t 
     return report;
 }
 
+#if __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-align"
+#endif
+
 static vsf_err_t __vk_hid_parse_item(vk_input_hid_t *dev,
         vk_hid_desc_t *desc, uint_fast8_t tag, uint_fast32_t size, uint8_t *buf)
 {
     vk_hid_report_t *report;
     vk_hid_usage_t *usage;
-    uint_fast32_t value, ival;
+    uint_fast32_t value = 0, ival;
 
     if (size == 1) {
         value = *buf;
@@ -468,6 +474,10 @@ static vsf_err_t __vk_hid_parse_item(vk_input_hid_t *dev,
     return VSF_ERR_NONE;
 }
 
+#if __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#endif
+
 void vk_hid_new_dev(vk_input_hid_t *dev)
 {
     vsf_hid_on_new_dev(dev);
@@ -493,9 +503,9 @@ void vk_hid_free_dev(vk_input_hid_t *dev)
     vsf_slist_init(&dev->report_list);
 }
 
-static uint_fast32_t __vk_hid_get_max_input_size(vk_input_hid_t *dev)
+static uint_fast8_t __vk_hid_get_max_input_size(vk_input_hid_t *dev)
 {
-    uint_fast32_t maxsize = 0;
+    uint_fast8_t maxsize = 0;
 
     __vsf_slist_foreach_unsafe(vk_hid_report_t, report_node, &dev->report_list) {
         if (_->bitlen > maxsize) {
@@ -505,12 +515,12 @@ static uint_fast32_t __vk_hid_get_max_input_size(vk_input_hid_t *dev)
     return (maxsize + 7) >> 3;
 }
 
-uint_fast32_t vk_hid_parse_desc(vk_input_hid_t *dev, uint8_t *desc_buf, uint_fast32_t len)
+uint_fast8_t vk_hid_parse_desc(vk_input_hid_t *dev, uint8_t *desc_buf, uint_fast32_t len)
 {
     vk_hid_desc_t *desc = vsf_heap_malloc(sizeof(vk_hid_desc_t));
     uint8_t *end = desc_buf + len;
     int item_size;
-    vsf_err_t err;
+    vsf_err_t err = VSF_ERR_NONE;
 
     if (desc == NULL) { return 0; }
     memset(desc, 0, sizeof(*desc));
@@ -598,4 +608,4 @@ void vk_hid_process_input(vk_input_hid_t *dev, uint8_t *buf, uint_fast32_t len)
     memcpy(report->value, buf, len);
 }
 
-#endif      // VSF_USE_INPUT && VSF_USE_INPUT_HID
+#endif      // VSF_USE_INPUT && VSF_INPUT_USE_HID

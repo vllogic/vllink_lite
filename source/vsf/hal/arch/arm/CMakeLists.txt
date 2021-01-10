@@ -23,21 +23,20 @@ set(ARCH_SUB_FOR_cortex-r4        cortex-r    )
 # TODO support cortex-a
 
 
-if(ARCH_FOR_${VSFHAL_ARCH_NAME})
-    set(ARCH_FLAG -march=${ARCH_FOR_${VSFHAL_ARCH_NAME}})
-    set(ARCH_SUB ${ARCH_SUB_FOR_${VSFHAL_ARCH_NAME}})
+if(ARCH_FOR_${VSF_HAL_PROCESSOR_NAME})
+    set(ARCH_FLAG -march=${ARCH_FOR_${VSF_HAL_PROCESSOR_NAME}})
+    set(ARCH_SUB ${ARCH_SUB_FOR_${VSF_HAL_PROCESSOR_NAME}})
 endif()
 
-#[[
-vsf_compile_options(
-  -mabi=aapcs
-  ${ARCH_FLAG}
+
+target_compile_options( vsf
+  INTERFACE -mabi=aapcs
+  INTERFACE ${ARCH_FLAG}
 )
 
-vsf_link_options(
-  -mabi=aapcs
-  ${ARCH_FLAG}
+target_link_options( vsf
+  INTERFACE -mabi=aapcs
+  INTERFACE ${ARCH_FLAG}
 )
-]]
 
 add_subdirectory_existed(${ARCH_SUB})

@@ -22,7 +22,7 @@
 
 #include "component/usb/vsf_usb_cfg.h"
 
-#if VSF_USE_USB_DEVICE == ENABLED && VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
+#if VSF_USE_USB_DEVICE == ENABLED && VSF_USBD_USE_DCD_DWCOTG == ENABLED
 
 #include "./vsf_dwcotg_common.h"
 
@@ -89,12 +89,7 @@ def_simple_class(vk_dwcotg_dcd_t) {
         uint16_t buffer_word_pos;
         bool dma_en;
         ctrl_transfer_state_t ctrl_transfer_state;
-#if 0
         vk_dwcotg_dcd_trans_t trans[2 * VSF_DWCOTG_DCD_CFG_EP_NUM];
-#else
-        uint8_t *out_buf[VSF_DWCOTG_DCD_CFG_EP_NUM];
-        uint16_t out_size[VSF_DWCOTG_DCD_CFG_EP_NUM];
-#endif
     )
 };
 
@@ -130,7 +125,7 @@ extern vsf_err_t vk_dwcotg_dcd_ep_clear_stall(vk_dwcotg_dcd_t *dwcotg_dcd, uint_
 extern uint_fast32_t vk_dwcotg_dcd_ep_get_data_size(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep);
 
 extern vsf_err_t vk_dwcotg_dcd_ep_transaction_read_buffer(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer, uint_fast16_t size);
-extern vsf_err_t vk_dwcotg_dcd_ep_transaction_enable_out(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer);
+extern vsf_err_t vk_dwcotg_dcd_ep_transaction_enable_out(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep);
 extern vsf_err_t vk_dwcotg_dcd_ep_transaction_set_data_size(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint_fast16_t size);
 extern vsf_err_t vk_dwcotg_dcd_ep_transaction_write_buffer(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer, uint_fast16_t size);
 

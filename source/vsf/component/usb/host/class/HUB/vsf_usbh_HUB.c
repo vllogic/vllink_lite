@@ -19,7 +19,7 @@
 
 #include "component/usb/vsf_usb_cfg.h"
 
-#if VSF_USE_USB_HOST == ENABLED && VSF_USE_USB_HOST_HUB == ENABLED
+#if VSF_USE_USB_HOST == ENABLED && VSF_USBH_USE_HUB == ENABLED
 
 #define __VSF_EDA_CLASS_INHERIT__
 #define __VSF_USBH_CLASS_IMPLEMENT_CLASS__
@@ -251,11 +251,10 @@ static void __vk_usbh_hub_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
             vsf_teda_set_timer_ms(20);
             break;
         case HUB_STAT_RESET_CHILD_WAIT_GET_PORT_STATUS:
-            // clear reset mask here
-            hub->reset_mask &= ~(1 << (hub->cur_dev_idx - 1));
-
             // check port status after reset
             if (hub->hub_portsts.wPortStatus & USB_PORT_STAT_ENABLE) {
+                hub->reset_mask &= ~(1 << (hub->cur_dev_idx - 1));
+
                 // reset ready
                 if (hub->is_child_connecting) {
                     // reset child while connecting
@@ -353,6 +352,13 @@ static void __vk_usbh_hub_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
             break;
         }
         break;
+    case VSF_EVT_USER:
+        if (!hub->is_waiting_next_round) {
+            break;
+        }
+
+        // cancel timer and force to polling next
+        vsf_teda_cancel_timer();
     case VSF_EVT_TIMER:
         switch (hub->state) {
         default:
@@ -511,8 +517,7 @@ vsf_err_t vk_usbh_hub_reset_dev(vk_usbh_dev_t *dev)
             hub->reset_mask |= (1 << index);
             __vsf_sched_safe(
                 if (hub->is_waiting_next_round) {
-                    vsf_teda_cancel_timer(&hub->teda);
-                    vsf_eda_post_evt(&hub->teda.use_as__vsf_eda_t, VSF_EVT_TIMER);
+                    vsf_eda_post_evt(&hub->teda.use_as__vsf_eda_t, VSF_EVT_USER);
                 } else {
                     hub->is_go_on_next_round = true;
                 }

@@ -1,11 +1,10 @@
 # CMakeLists head
 
-target_sources(vsf INTERFACE
+target_sources(${VSF_LIB_NAME} INTERFACE
     retarget_io.c
-    signal.c
 )
 
-target_include_directories(vsf INTERFACE
+target_include_directories(${VSF_LIB_NAME} INTERFACE
   CMSIS/Core/Include
   CMSIS/DSP/Include
   CMSIS/NN/Include

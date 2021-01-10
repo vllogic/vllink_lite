@@ -19,7 +19,7 @@
 
 #include "../../vsf_scsi_cfg.h"
 
-#if VSF_USE_SCSI == ENABLED && VSF_USE_MAL == ENABLED && VSF_USE_MAL_SCSI == ENABLED
+#if VSF_USE_SCSI == ENABLED && VSF_USE_MAL == ENABLED && VSF_SCSI_USE_MAL_SCSI == ENABLED
 
 #define __VSF_SCSI_CLASS_INHERIT__
 #define __VSF_VIRTUAL_SCSI_CLASS_INHERIT__
@@ -40,6 +40,11 @@ dcl_vsf_peda_methods(static, __vk_mal_scsi_write)
 
 /*============================ GLOBAL VARIABLES ==============================*/
 
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-function-type"
+#endif
+
 const vk_virtual_scsi_drv_t vk_mal_virtual_scsi_drv = {
     .drv_type               = VSF_VIRTUAL_SCSI_DRV_PARAM_SUBCALL,
     .param_subcall          = {
@@ -50,8 +55,20 @@ const vk_virtual_scsi_drv_t vk_mal_virtual_scsi_drv = {
     },
 };
 
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#endif
+
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
+
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-align"
+#elif   __IS_COMPILER_LLVM__
+#   pragma clang diagnostic push
+#   pragma clang diagnostic ignored "-Wcast-align"
+#endif
 
 static bool __vk_mal_scsi_buffer(vk_scsi_t *scsi, bool is_read, uint_fast64_t addr, uint_fast32_t size, vsf_mem_t *mem)
 {
@@ -69,7 +86,7 @@ __vsf_component_peda_ifs_entry(__vk_mal_scsi_init, vk_virtual_scsi_init)
 
     switch (evt) {
     case VSF_EVT_INIT:
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
         mal_scsi->mal_stream.mal = mal_scsi->mal;
 #endif
         vk_mal_init(mal_scsi->mal);
@@ -89,7 +106,7 @@ __vsf_component_peda_ifs_entry(__vk_mal_scsi_read, vk_virtual_scsi_read)
 
     switch (evt) {
     case VSF_EVT_INIT:
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
         if (mal_scsi->is_stream) {
             vk_mal_read_stream(&mal_scsi->mal_stream,
                 vsf_local.addr * param->block_size, vsf_local.size * param->block_size,
@@ -99,7 +116,7 @@ __vsf_component_peda_ifs_entry(__vk_mal_scsi_read, vk_virtual_scsi_read)
             vk_mal_read(mal_scsi->mal,
                 vsf_local.addr * param->block_size, vsf_local.size * param->block_size,
                 ((vsf_mem_t *)vsf_local.mem_stream)->buffer);
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
         }
 #endif
         break;
@@ -118,7 +135,7 @@ __vsf_component_peda_ifs_entry(__vk_mal_scsi_write, vk_virtual_scsi_write)
 
     switch (evt) {
     case VSF_EVT_INIT:
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
         if (mal_scsi->is_stream) {
             vk_mal_write_stream(&mal_scsi->mal_stream,
                 vsf_local.addr * param->block_size, vsf_local.size * param->block_size,
@@ -128,7 +145,7 @@ __vsf_component_peda_ifs_entry(__vk_mal_scsi_write, vk_virtual_scsi_write)
             vk_mal_write(mal_scsi->mal,
                 vsf_local.addr * param->block_size, vsf_local.size * param->block_size,
                 ((vsf_mem_t *)vsf_local.mem_stream)->buffer);
-#if VSF_USE_SERVICE_VSFSTREAM == ENABLED
+#if VSF_USE_SIMPLE_STREAM == ENABLED
         }
 #endif
         break;
@@ -138,5 +155,11 @@ __vsf_component_peda_ifs_entry(__vk_mal_scsi_write, vk_virtual_scsi_write)
     }
     vsf_peda_end();
 }
+
+#if     __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#elif   __IS_COMPILER_LLVM__
+#   pragma clang diagnostic pop
+#endif
 
 #endif

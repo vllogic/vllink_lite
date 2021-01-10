@@ -15,6 +15,23 @@
  *                                                                           *
  ****************************************************************************/
 
+/****************************************************************************
+*  Copyright 2020 by Gorgon Meducer (Email:embedded_zhuoran@hotmail.com)    *
+*                                                                           *
+*  Licensed under the Apache License, Version 2.0 (the "License");          *
+*  you may not use this file except in compliance with the License.         *
+*  You may obtain a copy of the License at                                  *
+*                                                                           *
+*     http://www.apache.org/licenses/LICENSE-2.0                            *
+*                                                                           *
+*  Unless required by applicable law or agreed to in writing, software      *
+*  distributed under the License is distributed on an "AS IS" BASIS,        *
+*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *
+*  See the License for the specific language governing permissions and      *
+*  limitations under the License.                                           *
+*                                                                           *
+****************************************************************************/
+
 #ifndef __VSF_TGUI_CONTROLS_CONTROL_H__
 #define __VSF_TGUI_CONTROLS_CONTROL_H__
 
@@ -37,28 +54,8 @@
 #include "utilities/ooc_class.h"
 
 /*============================ MACROS ========================================*/
-
-#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
 #define __VSF_TGUI_INTERFACE_CONTROLS_CONTROL         {                         \
-            {                                                                   \
-                VSF_MSGT_NODE_HANDLER_TYPE_FSM,                                 \
-                (vsf_msgt_method_fsm_t *)&vsf_tgui_control_msg_handler          \
-            },                                                                  \
-            (vsf_msgt_method_status_t *)&vsf_tgui_control_status_get,           \
-            (vsf_msgt_method_shoot_t *)&vsf_tgui_control_shoot                  \
-        }
-
-#define __VSF_TGUI_INTERFACE_CONTROLS_CONTAINER           {                     \
-            {                                                                   \
-                VSF_MSGT_NODE_HANDLER_TYPE_FSM,                                 \
-                (vsf_msgt_method_fsm_t *)&vsf_tgui_container_msg_handler        \
-            },                                                                  \
-            (vsf_msgt_method_status_t *)&vsf_tgui_control_status_get,           \
-            (vsf_msgt_method_shoot_t *)&vsf_tgui_control_shoot                  \
-        }
-#else
-#define __VSF_TGUI_INTERFACE_CONTROLS_CONTROL         {                         \
-            .msg_handler = {                                                \
+            .msg_handler = {                                                    \
                 VSF_MSGT_NODE_HANDLER_TYPE_FSM,                                 \
                 (vsf_msgt_method_fsm_t *)&vsf_tgui_control_msg_handler,         \
             },                                                                  \
@@ -68,7 +65,7 @@
         }
 
 #define __VSF_TGUI_INTERFACE_CONTROLS_CONTAINER           {                     \
-            .msg_handler = {                                                \
+            .msg_handler = {                                                    \
                 VSF_MSGT_NODE_HANDLER_TYPE_FSM,                                 \
                 (vsf_msgt_method_fsm_t *)&vsf_tgui_container_msg_handler,       \
             },                                                                  \
@@ -76,21 +73,47 @@
                         &vsf_tgui_control_status_get,                           \
             .Shoot = (vsf_msgt_method_shoot_t *)&vsf_tgui_control_shoot,        \
         }
-#endif
 
-#define VSF_TGUI_CTRL_STATUS_INITIALISED                _BV(0)
-#define VSF_TGUI_CTRL_STATUS_ENABLED                    _BV(1)
-#define VSF_TGUI_CTRL_STATUS_VISIBLE                    _BV(2)
-#define VSF_TGUI_CTRL_STATUS_ACTIVE                     _BV(3)
-#define VSF_TGUI_CTRL_STATUS_HIDE_CONTAINER_CONTENT     _BV(4)
+
+#define VSF_TGUI_CTRL_STATUS_INITIALISED                BIT(0)
+#define VSF_TGUI_CTRL_STATUS_ENABLED                    BIT(1)
+#define VSF_TGUI_CTRL_STATUS_VISIBLE                    BIT(2)
+#define VSF_TGUI_CTRL_STATUS_ACTIVE                     BIT(3)
+#define VSF_TGUI_CTRL_STATUS_HIDE_CONTAINER_CONTENT     BIT(4)
 
 /*============================ MACROFIED FUNCTIONS ===========================*/
 
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#if VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED
+#   define ____tgui_name_string_tag(__name, __type)                             \
+                .node_name_ptr = "["#__type"]["#__name"]",                      
+#else
+#   define ____tgui_name_string_tag(__name, __type)                               
+#endif
+
+#define __tgui_name_string_tag(__name, __type)                                  \
+            ____tgui_name_string_tag(__name, __type)
 
 #if VSF_MSG_TREE_CFG_SUPPORT_DUAL_LIST == ENABLED
-#if VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED
-#   define __tgui_control_base( __NAME,                                         \
+#   define ____tgui_node_list_init(__name, __parent_addr, __previous, __next)   \
+                .Offset = {                                                     \
+                    .previous =  (intptr_t)&((__parent_addr)->__name)           \
+                                - (intptr_t)&((__parent_addr)->__previous),     \
+                    .next =  (intptr_t)&((__parent_addr)->__next)               \
+                            - (intptr_t)&((__parent_addr)->__name),             \
+                },                                                              
+#else
+#   define ____tgui_node_list_init(__name, __parent_addr, __previous, __next)   \
+                .Offset = {                                                     \
+                    .next =  (intptr_t)&((__parent_addr)->__next)               \
+                            - (intptr_t)&((__parent_addr)->__name),             \
+                },
+#endif
+
+
+#define __tgui_node_list_init(__name, __parent_addr, __previous, __next)        \
+            ____tgui_node_list_init(__name, __parent_addr, __previous, __next)
+
+#define __tgui_control_base( __NAME,                                            \
                         __ID,                                                   \
                         __TYPE,                                                 \
                         __PARENT_ADDR,                                          \
@@ -98,16 +121,11 @@
                         __NEXT,                                                 \
                         ...)                                                    \
             .__NAME =  {                                                        \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
+                .parent_ptr = (vsf_msgt_container_t *)                          \
                                 &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .previous =  (intptr_t)&((__PARENT_ADDR)->__NAME)          \
-                                - (intptr_t)&((__PARENT_ADDR)->__PREVIOUS),     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .node_name_ptr = "["#__TYPE"]["#__NAME"]",                        \
+                .id = (__ID),                                                   \
+                __tgui_node_list_init(__NAME, __PARENT_ADDR, __PREVIOUS, __NEXT)\
+                __tgui_name_string_tag(__NAME, __TYPE)                          \
                 .bIsEnabled = true,                                             \
                 .bIsVisible = true,                                             \
                 VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
@@ -115,7 +133,7 @@
                 VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
             }
 
-#   define __tgui_control_base_const( __NAME,                                   \
+#define __tgui_control_base_const( __NAME,                                      \
                         __ID,                                                   \
                         __TYPE,                                                 \
                         __PARENT_ADDR,                                          \
@@ -123,16 +141,11 @@
                         __NEXT,                                                 \
                         ...)                                                    \
             .__NAME = (__TYPE) {                                                \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
+                .parent_ptr = (vsf_msgt_container_t *)                          \
                                 &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .previous =  (intptr_t)&((__PARENT_ADDR)->__NAME)          \
-                                - (intptr_t)&((__PARENT_ADDR)->__PREVIOUS),     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .node_name_ptr = "["#__TYPE"]["#__NAME"]",                        \
+                .id = (__ID),                                                   \
+                __tgui_node_list_init(__NAME, __PARENT_ADDR, __PREVIOUS, __NEXT)\
+                __tgui_name_string_tag(__NAME, __TYPE)                          \
                 .bIsEnabled = true,                                             \
                 .bIsVisible = true,                                             \
                 VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
@@ -140,24 +153,13 @@
                 VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
             }
 
-#else
-#   define __tgui_control_base( __NAME,                                         \
-                        __ID,                                                   \
-                        __TYPE,                                                 \
-                        __PARENT_ADDR,                                          \
-                        __PREVIOUS,                                             \
-                        __NEXT,                                                 \
-                        ...)                                                    \
-            .__NAME =  {                                                        \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
-                                &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .previous =  (intptr_t)&((__PARENT_ADDR)->__NAME)          \
-                                - (intptr_t)&((__PARENT_ADDR)->__PREVIOUS),     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
+#define __describe_tgui_control_base(   __VAR,                                  \
+                                        __ID,                                   \
+                                        __TYPE,                                 \
+                                        ...)                                    \
+            __VAR = (__TYPE) {                                                  \
+                .id = (__ID),                                                   \
+                __tgui_name_string_tag(__VAR, __TYPE)                           \
                 .bIsEnabled = true,                                             \
                 .bIsVisible = true,                                             \
                 VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
@@ -165,125 +167,32 @@
                 VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
             }
 
-#   define __tgui_control_base_const( __NAME,                                   \
-                        __ID,                                                   \
-                        __TYPE,                                                 \
-                        __PARENT_ADDR,                                          \
-                        __PREVIOUS,                                             \
-                        __NEXT,                                                 \
-                        ...)                                                    \
-            .__NAME = (__TYPE){                                                 \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
-                                &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .previous =  (intptr_t)&((__PARENT_ADDR)->__NAME)          \
-                                - (intptr_t)&((__PARENT_ADDR)->__PREVIOUS),     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .bIsEnabled = true,                                             \
-                .bIsVisible = true,                                             \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
-                __VA_ARGS__                                                     \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
-            }
-#endif
-#else
-#if VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED
-#   define __tgui_control_base( __NAME,                                         \
-                        __ID,                                                   \
-                        __TYPE,                                                 \
-                        __PARENT_ADDR,                                          \
-                        __PREVIOUS,                                             \
-                        __NEXT,                                                 \
-                        ...)                                                    \
-            .__NAME =  {                                                        \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
-                                &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .node_name_ptr = "["#__TYPE"]["#__NAME"]",                        \
-                .bIsEnabled = true,                                             \
-                .bIsVisible = true,                                             \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
-                __VA_ARGS__                                                     \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
-            }
+#define __describe_tgui_container_base( __VAR,                                  \
+                                        __ID,                                   \
+                                        __TYPE,                                 \
+                                        ...)                                    \
+            __describe_tgui_control_base(                                       \
+                    __VAR,                                                      \
+                    __ID,                                                       \
+                    __TYPE,                                                     \
+                    .is_container = true,                                       \
+                    .ContainerAttribute.bIsAutoSize = true,                     \
+                    .node_ptr =                                                 \
+                        (vsf_msgt_node_t*)                                      \
+                        &((__VAR).__TYPE##_FirstNode),                          \
+                    VSF_TGUI_V_CONTAINER_STATIC_INIT_DEFAULT                    \
+                    __VA_ARGS__                                                 \
+                    VSF_TGUI_V_CONTAINER_STATIC_INIT_OVERRIDE                   \
+                )
 
-#   define __tgui_control_base_const( __NAME,                                   \
-                        __ID,                                                   \
-                        __TYPE,                                                 \
-                        __PARENT_ADDR,                                          \
-                        __PREVIOUS,                                             \
-                        __NEXT,                                                 \
-                        ...)                                                    \
-            .__NAME = (__TYPE) {                                                \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
-                                &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .node_name_ptr = "["#__TYPE"]["#__NAME"]",                        \
-                .bIsEnabled = true,                                             \
-                .bIsVisible = true,                                             \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
-                __VA_ARGS__                                                     \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
-            }
-
-#else
-#   define __tgui_control_base( __NAME,                                         \
-                        __ID,                                                   \
-                        __TYPE,                                                 \
-                        __PARENT_ADDR,                                          \
-                        __PREVIOUS,                                             \
-                        __NEXT,                                                 \
-                        ...)                                                    \
-            .__NAME =  {                                                        \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
-                                &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .bIsEnabled = true,                                             \
-                .bIsVisible = true,                                             \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
-                __VA_ARGS__                                                     \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
-            }
-
-#   define __tgui_control_base_const( __NAME,                                   \
-                        __ID,                                                   \
-                        __TYPE,                                                 \
-                        __PARENT_ADDR,                                          \
-                        __PREVIOUS,                                             \
-                        __NEXT,                                                 \
-                        ...)                                                    \
-            .__NAME = (__TYPE){                                                 \
-                .parent_ptr = (vsf_msgt_container_t *)                            \
-                                &((__PARENT_ADDR)->use_as__vsf_msgt_node_t),    \
-                .id = (__ID),                                                 \
-                .Offset = {                                                     \
-                    .next =  (intptr_t)&((__PARENT_ADDR)->__NEXT)              \
-                            - (intptr_t)&((__PARENT_ADDR)->__NAME),             \
-                },                                                              \
-                .bIsEnabled = true,                                             \
-                .bIsVisible = true,                                             \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_DEFAULT                          \
-                __VA_ARGS__                                                     \
-                VSF_TGUI_V_CONTROL_STATIC_INIT_OVERRIDE                         \
-            }
-#endif
-#endif
-
+#define describe_tgui_container_base(   __VAR,                                  \
+                                        __ID,                                   \
+                                        __TYPE,                                 \
+                                        ...)                                    \
+            __describe_tgui_container_base( __VAR,                              \
+                                            __ID,                               \
+                                            __TYPE,                             \
+                                            __VA_ARGS__) 
 
 #define tgui_control_base(   __NAME,                                            \
                         __ID,                                                   \
@@ -316,6 +225,16 @@
                         __PREVIOUS,                                             \
                         __NEXT,                                                 \
                         __VA_ARGS__)
+
+
+#define describe_tgui_control_base( __VAR,                                      \
+                                    __ID,                                       \
+                                    __TYPE,                                     \
+                                    ...)                                        \
+             __describe_tgui_control_base(  __VAR,                              \
+                                            __ID,                               \
+                                            __TYPE,                             \
+                                            __VA_ARGS__)
 
 
 #define __tgui_control(__NAME, __PARENT_ADDR, __PREVIOUS, __NEXT, ...)          \
@@ -363,51 +282,97 @@
 
 #define use_tgui_container(__NAME, ...) __use_tgui_container(__NAME, __VA_ARGS__)
 
-#if VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED
+
+
+#define __tgui_container_base(  __NAME,                                         \
+                                __ID,                                           \
+                                __TYPE,                                         \
+                                __PARENT_ADDR,                                  \
+                                __PREVIOUS,                                     \
+                                __NEXT,                                         \
+                                ...)                                            \
+            tgui_control_base(                                                  \
+                            __NAME,                                             \
+                            __ID,                                               \
+                            __TYPE,                                             \
+                            (__PARENT_ADDR),                                    \
+                            __PREVIOUS,                                         \
+                            __NEXT,                                             \
+                            .is_container = true,                               \
+                            .ContainerAttribute.bIsAutoSize = true,             \
+                            .node_ptr =                                         \
+                                (vsf_msgt_node_t*)                              \
+                               &((__PARENT_ADDR)->__NAME.__NAME##_FirstNode),   \
+                            VSF_TGUI_V_CONTAINER_STATIC_INIT_DEFAULT            \
+                            __VA_ARGS__                                         \
+                            VSF_TGUI_V_CONTAINER_STATIC_INIT_OVERRIDE           \
+                            )
+
+#define tgui_container_base(__NAME,                                             \
+                            __ID,                                               \
+                            __TYPE,                                             \
+                            __PARENT_ADDR,                                      \
+                            __PREVIOUS,                                         \
+                            __NEXT,                                             \
+                            ...)                                                \
+            __tgui_container_base(  __NAME,                                     \
+                                    __ID,                                       \
+                                    __TYPE,                                     \
+                                    __PARENT_ADDR,                              \
+                                    __PREVIOUS,                                 \
+                                    __NEXT,                                     \
+                                    __VA_ARGS__)
+
+#define __tgui_container_base_const(__NAME,                                     \
+                                    __ID,                                       \
+                                    __TYPE,                                     \
+                                    __PARENT_ADDR,                              \
+                                    __PREVIOUS,                                 \
+                                    __NEXT,                                     \
+                                    ...)                                        \
+            tgui_control_base_const(   __NAME,                                  \
+                            __ID,                                               \
+                            __TYPE,                                             \
+                            (__PARENT_ADDR),                                    \
+                            __PREVIOUS,                                         \
+                            __NEXT,                                             \
+                            .is_container = true,                               \
+                            .ContainerAttribute.bIsAutoSize = true,             \
+                            .node_ptr =                                         \
+                                (vsf_msgt_node_t*)                              \
+                               &((__PARENT_ADDR)->__NAME.__NAME##_FirstNode),   \
+                            VSF_TGUI_V_CONTAINER_STATIC_INIT_DEFAULT            \
+                            __VA_ARGS__                                         \
+                            VSF_TGUI_V_CONTAINER_STATIC_INIT_OVERRIDE           \
+                            )
+
+#define tgui_container_base_const(__NAME,                                       \
+                                    __ID,                                       \
+                                    __TYPE,                                     \
+                                    __PARENT_ADDR,                              \
+                                    __PREVIOUS,                                 \
+                                    __NEXT,                                     \
+                                    ...)                                        \
+            __tgui_container_base_const(__NAME,                                 \
+                                        __ID,                                   \
+                                        __TYPE,                                 \
+                                        __PARENT_ADDR,                          \
+                                        __PREVIOUS,                             \
+                                        __NEXT,                                 \
+                                        __VA_ARGS__)  
+
 #   define __tgui_container(   __NAME,                                          \
                             __PARENT_ADDR,                                      \
                             __PREVIOUS,                                         \
                             __NEXT, ...)                                        \
-            tgui_control_base(   __NAME,                                        \
+            tgui_container_base(__NAME,                                         \
                             VSF_TGUI_COMPONENT_ID_CONTAINER,                    \
                             vsf_tgui_container_t,                               \
                             (__PARENT_ADDR),                                    \
                             __PREVIOUS,                                         \
                             __NEXT,                                             \
-                            .is_container = true,                               \
-                            .node_ptr =                                           \
-                                (vsf_msgt_node_t*)                              \
-                               &((__PARENT_ADDR)->__NAME.__NAME##_FirstNode),   \
-                            .node_name_ptr =                                      \
-                                "[vsf_tgui_container_t]["#__NAME"]",            \
-                            .bIsEnabled = true,                                 \
-                            .bIsVisible = true,                                 \
-                            VSF_TGUI_V_CONTAINER_STATIC_INIT_DEFAULT            \
-                            __VA_ARGS__                                         \
-                            VSF_TGUI_V_CONTAINER_STATIC_INIT_OVERRIDE           \
-                            )
-#else
-#   define __tgui_container(   __NAME,                                          \
-                            __PARENT_ADDR,                                      \
-                            __PREVIOUS,                                         \
-                            __NEXT, ...)                                        \
-        tgui_control_base(       __NAME,                                        \
-                            VSF_TGUI_COMPONENT_ID_CONTAINER,                    \
-                            vsf_tgui_container_t,                               \
-                            (__PARENT_ADDR),                                    \
-                            __PREVIOUS,                                         \
-                            __NEXT,                                             \
-                            .is_container = true,                               \
-                            .node_ptr =                                           \
-                                (vsf_msgt_node_t*)                              \
-                               &((__PARENT_ADDR)->__NAME.__NAME##_FirstNode),   \
-                            .bIsEnabled = true,                                 \
-                            .bIsVisible = true,                                 \
-                            VSF_TGUI_V_CONTAINER_STATIC_INIT_DEFAULT            \
-                            __VA_ARGS__                                         \
-                            VSF_TGUI_V_CONTAINER_STATIC_INIT_OVERRIDE           \
-                            )
-#endif
+                            __VA_ARGS__)
+
 
 #define tgui_container( __NAME,                                                 \
                         __PARENT_ADDR,                                          \
@@ -420,7 +385,6 @@
                             __NEXT,                                             \
                             __VA_ARGS__)
 
-#endif
 
 /*============================ TYPES =========================================*/
 
@@ -436,14 +400,14 @@ typedef union vsf_tgui_status_t {
         uint8_t bIsVisible                      : 1;
         uint8_t bIsActive                       : 1;
         uint8_t bIsHideContentInsideContainer   : 1;
-        uint8_t is_control_transparent           : 1;
+        uint8_t is_control_transparent          : 1;
         uint8_t                                 : 2;
         //! @}
 
         //! \name internal bits
         //! @{
-        uint8_t __is_the_first_node_for_refresh        : 1;
-        uint8_t __does_contain_builtin_structure      : 1;
+        uint8_t __is_the_first_node_for_refresh : 1;
+        uint8_t __does_contain_builtin_structure: 1;
         uint8_t                                 : 6;
         //! @}
     } Values;
@@ -457,7 +421,9 @@ typedef struct vsf_tgui_control_subcall_t {
     vsf_tgui_control_t          *control_ptr;
 } vsf_tgui_control_subcall_t;
 
-typedef fsm_rt_t vsf_tgui_controal_fsm_t(vsf_tgui_control_t* node_ptr, vsf_tgui_msg_t* ptMSG);
+typedef fsm_rt_t vsf_tgui_controal_fsm_t(
+        vsf_tgui_control_t* node_ptr, 
+        vsf_tgui_msg_t* ptMSG);
 
 typedef struct vsf_tgui_control_handler_t {
     uint16_t    u2Type              : 2;                    //!< vsf_msgt_handler_type_t
@@ -472,6 +438,10 @@ typedef struct vsf_tgui_control_handler_t {
         },
         fn
     )
+#if VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED
+    const char *handler_name_ptr;
+#endif
+
 } vsf_tgui_control_handler_t;
 
 typedef struct vsf_tgui_user_evt_handler {
@@ -480,18 +450,22 @@ typedef struct vsf_tgui_user_evt_handler {
 } vsf_tgui_user_evt_handler;
 
 
-#if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED
+#if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED  ||\
+    VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_MARGIN == ENABLED
 typedef struct vsf_tgui_margin_t {
-    uint8_t chLeft;
-    uint8_t chTop;
-    uint8_t chRight;
-    uint8_t chBottom;
+    int8_t chLeft;
+    int8_t chTop;
+    int8_t chRight;
+    int8_t chBottom;
 } vsf_tgui_margin_t;
 #endif
 
 def_class(__vsf_tgui_control_core_t,
 
     public_member(
+        implement(vsf_msgt_node_t)
+        vsf_msgt_node_t*            node_ptr;       /* do not use if unless it is a container*/
+
         implement_ex(vsf_tgui_region_t, tRegion)
 
     #if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_ANCHOR == ENABLED
@@ -511,10 +485,10 @@ def_class(__vsf_tgui_control_core_t,
             vsf_tgui_control_t *ptAlignTo;
 
             /* \note Only following mode supported:
-                    VSF_TGUI_ALIGN_LEFT     = _BV(0),
-                    VSF_TGUI_ALIGN_RIGHT    = _BV(1),
-                    VSF_TGUI_ALIGN_TOP      = _BV(2),
-                    VSF_TGUI_ALIGN_BOTTOM   = _BV(3),
+                    VSF_TGUI_ALIGN_LEFT     = BIT(0),
+                    VSF_TGUI_ALIGN_RIGHT    = BIT(1),
+                    VSF_TGUI_ALIGN_TOP      = BIT(2),
+                    VSF_TGUI_ALIGN_BOTTOM   = BIT(3),
              */
             vsf_tgui_align_mode_t  tMode;
         } tAlign;
@@ -527,6 +501,9 @@ def_class(__vsf_tgui_control_core_t,
 
         struct {
             const vsf_tgui_user_evt_handler  *ptItems;
+        #if VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED
+            const char *name_ptr;
+        #endif
             uint8_t chCount;
             uint8_t chState;
             uint8_t chIndex;
@@ -545,20 +522,20 @@ def_class(__vsf_tgui_control_core_t,
             uint8_t bIsVisible                      : 1;
             uint8_t                                 : 1;
             uint8_t bIsHideContentInsideContainer   : 1;
-            uint8_t is_control_transparent           : 1;
-            uint8_t                                 : 2;
+            uint8_t is_control_transparent          : 1;
+            uint8_t dummy_bits                      : 2;
             //! @}
         };
     };
+
+    implement(vsf_tgui_v_control_t)
 )
 end_def_class(__vsf_tgui_control_core_t)
 
 
 def_class(vsf_tgui_control_t,
     which(
-        implement(vsf_msgt_node_t)
         implement(__vsf_tgui_control_core_t)
-        implement(vsf_tgui_v_control_t)
     )
 )
 end_def_class(vsf_tgui_control_t)
@@ -567,16 +544,19 @@ declare_class(vsf_tgui_container_t)
 
 def_class(vsf_tgui_container_t,
     which(
-        implement(vsf_msgt_container_t)
-        implement(__vsf_tgui_control_core_t)
+        union {
+            inherit(vsf_msgt_container_t)
+            implement(__vsf_tgui_control_core_t)
+        };
         implement(vsf_tgui_v_container_t)
     )
 
     implement_ex(
         struct {
-            uint8_t         u5Type                          : 5;    /* vsf_tgui_container_type_t */
-            uint8_t         bIsAutoSize                     : 1;
-            uint8_t         is_forced_to_refresh_whole_background  : 1;
+            /* vsf_tgui_container_type_t */
+            uint8_t u5Type                                  : 5;    
+            uint8_t bIsAutoSize                             : 1;
+            uint8_t is_forced_to_refresh_whole_background   : 1;
             uint8_t                                         : 1;
         },
         ContainerAttribute
@@ -587,23 +567,23 @@ def_class(vsf_tgui_container_t,
     )
 
 #if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED
-    vsf_tgui_margin_t       tConatinerPadding;
+    vsf_tgui_margin_t       tContainerPadding;
 #endif
 
 
 )
 end_def_class(vsf_tgui_container_t)
 
-declare_class(vsf_tgui_top_container_t)
+declare_class(vsf_tgui_root_container_t)
 
-def_class(vsf_tgui_top_container_t,
+def_class(vsf_tgui_root_container_t,
     which(implement(vsf_tgui_container_t))
     public_member(
         vsf_tgui_t* gui_ptr;
     )
 )
 
-end_def_class(vsf_tgui_top_container_t)
+end_def_class(vsf_tgui_root_container_t)
 
 
 typedef enum vsf_tgui_control_refresh_mode_t {
@@ -679,11 +659,11 @@ bool vsf_tgui_timer_is_working(vsf_tgui_timer_t *ptTimer);
 /*----------------------------------------------------------------------------*
  *  Region                                                                    *
  *----------------------------------------------------------------------------*/
-extern 
+extern
 vsf_tgui_location_t *vsf_tgui_control_get_location(
                                     const vsf_tgui_control_t* control_ptr);
 
-extern 
+extern
 vsf_tgui_size_t *vsf_tgui_control_get_size(
                                     const vsf_tgui_control_t* control_ptr);
 
@@ -711,12 +691,26 @@ vsf_tgui_region_t * vsf_tgui_get_absolute_control_region(
                                                 vsf_tgui_region_t* ptRegionBuffer);
 
 extern
-vsf_tgui_location_t * vsf_tgui_control_get_absolute_location(
+vsf_tgui_location_t * vsf_tgui_control_calculate_absolute_location(
                                             const vsf_tgui_control_t* control_ptr,
                                             vsf_tgui_location_t* ptOffset);
 
+/*! \brief If you get a relative region inside a control, this function can calculate
+ *!        the absolute location and store the result in the region you specified.
+ *!
+ *! \NOTE  As the location info of the region you passed to this 
+ *!        function will be changed, please do **NOT** pass the control's own region 
+ *!        to this function.
+ *!        Due to this reason aforementioned, you should creat a copy of the target 
+ *!        region and use it with this function. 
+ *!
+ *! \param control_ptr  the address of the target control
+ *! \param region_ptr   the address of the region which you want to calculate
+ *! \return the same region address you passed to the function
+ *! 
+ */
 extern
-vsf_tgui_region_t* vsf_tgui_control_get_absolute_region(
+vsf_tgui_region_t* vsf_tgui_control_calculate_absolute_region(
                                                 const vsf_tgui_control_t *control_ptr,
                                                 vsf_tgui_region_t *region_ptr);
 
@@ -794,7 +788,7 @@ extern
 const vsf_tgui_control_t* __vk_tgui_control_get_next_visible_one_within_container(
                                             const vsf_tgui_control_t* item_ptr);
 
-extern const vsf_tgui_top_container_t* vk_tgui_control_get_top(
+extern const vsf_tgui_root_container_t* vk_tgui_control_get_top(
                                         const vsf_tgui_control_t* control_ptr);
 
 #if VSF_TGUI_CFG_REFRESH_SCHEME != VSF_TGUI_REFRESH_SCHEME_NONE
@@ -804,7 +798,7 @@ bool vsf_tgui_control_refresh(  const vsf_tgui_control_t *control_ptr,
 #endif
 
 extern
-bool vsf_tgui_control_send_message( const vsf_tgui_control_t* control_ptr, 
+bool vsf_tgui_control_send_message( const vsf_tgui_control_t* control_ptr,
                                     vsf_tgui_evt_t event);
 
 extern

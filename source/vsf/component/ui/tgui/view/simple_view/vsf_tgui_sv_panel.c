@@ -36,18 +36,19 @@ declare_class(vsf_tgui_t)
 
 fsm_rt_t vsf_tgui_panel_v_init(vsf_tgui_panel_t* ptPanel)
 {
-#if (VSF_TGUI_SV_CFG_RENDERING_LOG == ENABLED) && (VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED)
+#if (VSF_TGUI_CFG_SV_RENDERING_LOG == ENABLED) && (VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED)
     VSF_TGUI_LOG(VSF_TRACE_INFO, "[Simple View]%s(%p) panel init" VSF_TRACE_CFG_LINEEND,
         vsf_tgui_control_get_node_name((vsf_tgui_control_t*)ptPanel), ptPanel);
 #endif
 
     if (fsm_rt_cpl == vsf_tgui_container_v_init(&(ptPanel->use_as__vsf_tgui_container_t))) {
-#if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED
-        int16_t iWidth = ptPanel->iWidth - ptPanel->tConatinerPadding.chLeft - ptPanel->tConatinerPadding.chRight;
-#else
+#if VSF_TGUI_CFG_PANEL_HAS_LABEL == ENABLED
+    #if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED
+        int16_t iWidth = ptPanel->iWidth - ptPanel->tContainerPadding.chLeft - ptPanel->tContainerPadding.chRight;
+    #else
         int16_t iWidth = ptPanel->iWidth;
-#endif
-        /*! temporarily put this code here*/
+    #endif
+
         tgui_set_priv_label(ptPanel, tTitleLabel,
             tgui_attribute(tLabel, ptPanel->tTitle),
             tgui_region(
@@ -57,8 +58,7 @@ fsm_rt_t vsf_tgui_panel_v_init(vsf_tgui_panel_t* ptPanel)
         );
 
         vk_tgui_label_init(&(ptPanel->tTitleLabel));
-
-        ptPanel->use_as__vsf_tgui_container_t.use_as__vsf_tgui_v_container_t.bIsShowCornerTile = true;
+#endif
 
         return fsm_rt_cpl;
     }
@@ -75,7 +75,7 @@ fsm_rt_t vsf_tgui_panel_v_rendering(vsf_tgui_panel_t* ptPanel,
     VSF_TGUI_ASSERT(ptPanel != NULL);
     VSF_TGUI_ASSERT(ptDirtyRegion != NULL);
 
-#if (VSF_TGUI_SV_CFG_RENDERING_LOG == ENABLED) && (VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED)
+#if (VSF_TGUI_CFG_SV_RENDERING_LOG == ENABLED) && (VSF_TGUI_CFG_SUPPORT_NAME_STRING == ENABLED)
     VSF_TGUI_LOG(VSF_TRACE_INFO, "[Simple View]%s(%p) panel rendering" VSF_TRACE_CFG_LINEEND,
         vsf_tgui_control_get_node_name((vsf_tgui_control_t*)ptPanel), ptPanel);
 #endif
@@ -99,15 +99,15 @@ fsm_rt_t vsf_tgui_panel_v_depose(vsf_tgui_panel_t* ptPanel)
 
 fsm_rt_t vsf_tgui_panel_v_update(vsf_tgui_panel_t* ptPanel)
 {
+#if VSF_TGUI_CFG_PANEL_HAS_LABEL == ENABLED
     if (!ptPanel->tTitle.bIsAutoSize) {
-        __vsf_tgui_control_core_t *ptCore
-            = vsf_tgui_control_get_core((const vsf_tgui_control_t *)&(ptPanel->tTitleLabel));
-#if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED
-        ptCore->tRegion.tSize.iWidth = ptPanel->iWidth - ptPanel->tConatinerPadding.chLeft - ptPanel->tConatinerPadding.chRight;
-#else
-        ptCore->tRegion.tSize.iWidth = ptPanel->iWidth;
-#endif
+    #if VSF_TGUI_CFG_SUPPORT_CONTROL_LAYOUT_PADDING == ENABLED
+        ptPanel->tTitleLabel.tRegion.tSize.iWidth = ptPanel->iWidth - ptPanel->tContainerPadding.chLeft - ptPanel->tContainerPadding.chRight;
+    #else
+        ptPanel->tTitleLabel.tRegion.tSize.iWidth = ptPanel->iWidth;
+    #endif
     }
+#endif
     return fsm_rt_cpl;
 }
 

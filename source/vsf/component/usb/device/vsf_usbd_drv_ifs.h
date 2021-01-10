@@ -150,8 +150,8 @@
                 __drv->Ep.Transaction.WriteBuffer((__ep), (__buf), (__size))
 #   define vk_usbd_drv_ep_transaction_set_data_size(__ep, __size)               \
                 __drv->Ep.Transaction.SetDataSize((__ep), (__size))
-#   define vk_usbd_drv_ep_transaction_enable_out(__ep, __buf)                          \
-                __drv->Ep.Transaction.EnableOut((__ep), (__buf))
+#   define vk_usbd_drv_ep_transaction_enable_out(__ep)                          \
+                __drv->Ep.Transaction.EnableOut((__ep))
 #   define vk_usbd_drv_ep_transfer_send(__ep, __buf, __size, __zlp)             \
                 __drv->Ep.Transfer.Send((__ep), (__buf), (__size), (__zlp))
 #   define vk_usbd_drv_ep_transfer_recv(__ep, __buf, __size)                    \

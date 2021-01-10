@@ -19,122 +19,21 @@
 
 #include "component/usb/vsf_usb_cfg.h"
 
-#if VSF_USE_USB_DEVICE == ENABLED && VSF_USE_USB_DEVICE_DCD_DWCOTG == ENABLED
+#if VSF_USE_USB_DEVICE == ENABLED && VSF_USBD_USE_DCD_DWCOTG == ENABLED
 
 #define __VSF_DWCOTG_DCD_CLASS_IMPLEMENT
 #include "./vsf_dwcotg_dcd.h"
 
 /*============================ MACROS ========================================*/
-
-//#define DWCOTG_DEBUG
-//#define DWCOTG_DEBUG_DUMP_USB_ON
-//#define DWCOTG_DEBUG_DUMP_FUNC_CALL
-//#define DWCOTG_DEBUG_DUMP_DATA
-
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
-
-enum __usb_evt_t {
-    ______________,
-
-    __USB_ON_START,
-        __USB_ON_SETUP,
-        __USB_ON_MMIS,
-        __USB_ON_IN,
-        __USB_ON_OUT,
-        __USB_ON_STATUS,
-        __USB_ON_ENUMDNE,
-        __USB_ON_USBSUSP,
-        __USB_ON_WKUINTP,
-        __USB_ON_SOF,
-        __USB_ON_RST,
-        __USB_ON_IRQ,
-
-        __USB_ON_IEPINT,
-        __USB_ON_DIEPINT_INEPNE,
-        __USB_ON_DIEPINT_TXFE,
-
-        __USB_ON_OEPINT,
-        __USB_ON_DOEPINT_B2BSTUPP,
-
-        __USB_ON_RXFLVL,
-        __USB_ON_RXSTAT_SETUP_UPDT,
-        __USB_ON_RXSTAT_DATA_UPDT,
-
-        __USB_ON_ISR_IN_TRANSFER,
-        __USB_ON_ISR_OUT_TRANSFER,
-    __USB_ON_END,
-
-    __FUNC_START,
-        __FUNC_RESET,
-        __FUNC_INIT,
-        __FUNC_CONNECT,
-        __FUNC_DISCONNECT,
-        __FUNC_STATUS_STAGE,
-        __FUNC_EP_ADD,
-        __FUNC_EP_WRITE,
-        __FUNC_EP_READ,
-        __FUNC_EP_OUT_TRANSFER,
-        __FUNC_EP_IN_TRANSFER,
-        __FUNC_EP_TRANSFER_SEND,
-        __FUNC_EP_TRANSFER_RECV,
-
-        __FUNC_EP_WRITE_ENABLE_FIFO_EMPTY,
-        __FUNC_EP_WRITE_DISABLE_FIFO_EMPTY,
-    __FUNC_END,
-
-};
-
 /*============================ PROTOTYPES ====================================*/
 
 extern uint_fast16_t vsf_dwcotg_dcd_get_fifo_size(uint_fast8_t ep, usb_ep_type_t type, uint_fast16_t size);
 
 /*============================ GLOBAL VARIABLES ==============================*/
-
-#ifdef DWCOTG_DEBUG
-ROOT enum __usb_evt_t evt_buf[1024 * 2];
-uint16_t evt_index = 0;
-#endif
-
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ IMPLEMENTATION ================================*/
-
-#ifdef DWCOTG_DEBUG
-static void debug_add(uint32_t data)
-{
-    if (evt_index < dimof(evt_buf)) {
-        evt_buf[evt_index++] = (enum __usb_evt_t)data;
-    }
-}
-#else
-#   define debug_add(data)
-#endif
-
-#ifdef DWCOTG_DEBUG_DUMP_DATA
-static void debug_add_data(uint32_t data)
-{
-    debug_add(data);
-}
-#else
-#   define debug_add_data(data)
-#endif
-
-#ifdef DWCOTG_DEBUG_DUMP_DATA
-static void debug_add_evt(uint32_t evt)
-{
-#ifndef DWCOTG_DEBUG_DUMP_USB_ON
-    if (evt < __USB_ON_END) return;
-#endif
-
-#ifndef DWCOTG_DEBUG_DUMP_FUNC_CALL
-    if (evt > __USB_ON_END) return;
-#endif
-
-    debug_add_data(evt);
-}
-#else
-#   define debug_add_evt(evt)
-#endif
 
 #ifndef WEAK_VSF_DWCOTG_DCD_GET_FIFO_SIZE
 WEAK(vsf_dwcotg_dcd_get_fifo_size)
@@ -173,8 +72,6 @@ vsf_err_t vk_dwcotg_dcd_init(vk_dwcotg_dcd_t *dwcotg_dcd, usb_dc_cfg_t *cfg)
     VSF_USB_ASSERT((dwcotg_dcd != NULL) && (cfg != NULL));
     VSF_USB_ASSERT((dwcotg_dcd->param != NULL) && (dwcotg_dcd->param->op != NULL));
 
-    debug_add_evt(__FUNC_INIT);
-
     const vk_dwcotg_dcd_param_t *param = dwcotg_dcd->param;
     struct dwcotg_core_global_regs_t *global_regs;
     struct dwcotg_dev_global_regs_t *dev_global_regs;
@@ -187,6 +84,11 @@ vsf_err_t vk_dwcotg_dcd_init(vk_dwcotg_dcd_t *dwcotg_dcd, usb_dc_cfg_t *cfg)
 
     dwcotg_dcd->callback.evt_handler = cfg->evt_handler;
     dwcotg_dcd->callback.param = cfg->param;
+
+    if (param->dma_en) {
+        VSF_USB_ASSERT(info.use_as__vk_dwcotg_hw_info_t.dma_en);
+    }
+    dwcotg_dcd->dma_en = param->dma_en;
 
     {
         usb_dc_ip_cfg_t ip_cfg = {
@@ -233,7 +135,7 @@ vsf_err_t vk_dwcotg_dcd_init(vk_dwcotg_dcd_t *dwcotg_dcd, usb_dc_cfg_t *cfg)
 
     global_regs->gintmsk = USB_OTG_GINTMSK_USBRST | USB_OTG_GINTMSK_ENUMDNEM |
             USB_OTG_GINTMSK_IEPINT | USB_OTG_GINTMSK_OEPINT |
-            USB_OTG_GINTMSK_IISOIXFRM | USB_OTG_GINTMSK_PXFRM_IISOOXFRM |
+//            USB_OTG_GINTMSK_IISOIXFRM | USB_OTG_GINTMSK_PXFRM_IISOOXFRM |
             USB_OTG_GINTMSK_RXFLVLM;
 
     global_regs->gahbcfg |= USB_OTG_GAHBCFG_GINT;
@@ -247,33 +149,29 @@ void vk_dwcotg_dcd_fini(vk_dwcotg_dcd_t *dwcotg_dcd)
 
 void vk_dwcotg_dcd_reset(vk_dwcotg_dcd_t *dwcotg_dcd, usb_dc_cfg_t *cfg)
 {
-    debug_add_evt(__FUNC_RESET);
-
     struct dwcotg_dev_global_regs_t *dev_global_regs = dwcotg_dcd->reg.dev.global_regs;
     vk_dwcotg_dc_ip_info_t info;
 
     dwcotg_dcd->param->op->GetInfo(&info.use_as__usb_dc_ip_info_t);
     dwcotg_dcd->buffer_word_pos = info.buffer_word_size;
     dwcotg_dcd->ep_num = info.ep_num >> 1;
-    dwcotg_dcd->dma_en = info.dma_en;
+    dwcotg_dcd->dma_en = dwcotg_dcd->param->dma_en;
     dwcotg_dcd->ctrl_transfer_state = DWCOTG_SETUP_STAGE;
 
     for (uint_fast8_t i = 0; i < dwcotg_dcd->ep_num; i++) {
         dwcotg_dcd->reg.dev.ep.out_regs[i].doepctl |= USB_OTG_DOEPCTL_SNAK;
     }
     dev_global_regs->dcfg &= ~USB_OTG_DCFG_DAD;
-    memset(dwcotg_dcd->out_buf, 0, sizeof(dwcotg_dcd->out_buf));
+    memset(dwcotg_dcd->trans, 0, sizeof(dwcotg_dcd->trans));
 }
 
 void vk_dwcotg_dcd_connect(vk_dwcotg_dcd_t *dwcotg_dcd)
 {
-    debug_add_evt(__FUNC_CONNECT);
     dwcotg_dcd->reg.dev.global_regs->dctl &= ~USB_OTG_DCTL_SDIS;
 }
 
 void vk_dwcotg_dcd_disconnect(vk_dwcotg_dcd_t *dwcotg_dcd)
 {
-    debug_add_evt(__FUNC_DISCONNECT);
     dwcotg_dcd->reg.dev.global_regs->dctl |= USB_OTG_DCTL_SDIS;
 }
 
@@ -308,25 +206,17 @@ void vk_dwcotg_dcd_get_setup(vk_dwcotg_dcd_t *dwcotg_dcd, uint8_t *buffer)
 
 void vk_dwcotg_dcd_status_stage(vk_dwcotg_dcd_t *dwcotg_dcd, bool is_in)
 {
-    debug_add_evt(__FUNC_STATUS_STAGE);
-
     dwcotg_dcd->ctrl_transfer_state = DWCOTG_STATUS_STAGE;
     if (is_in) {
-        struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[0];
-
-        in_regs->dieptsiz = (0x1 << 19) | 0;
-        in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
+        vk_dwcotg_dcd_ep_transfer_send(dwcotg_dcd, 0x80, NULL, 0, true);
     } else {
-        struct dwcotg_dev_out_ep_regs_t *out_regs = &dwcotg_dcd->reg.dev.ep.out_regs[0];
-        out_regs->doeptsiz &= ~(USB_OTG_DOEPTSIZ_XFRSIZ | USB_OTG_DOEPTSIZ_PKTCNT);
-        out_regs->doeptsiz |= (0x1 << 19) | 0;
-        out_regs->doepctl |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK;
+        vk_dwcotg_dcd_ep_transfer_recv(dwcotg_dcd, 0, NULL, 0);
     }
 }
 
 uint_fast8_t vk_dwcotg_dcd_ep_get_feature(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint_fast8_t feature)
 {
-    return 0;
+    return USB_DC_FEATURE_TRANSFER;
 }
 
 static volatile uint32_t * __vk_dwcotg_dcd_get_ep_ctrl(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep)
@@ -341,8 +231,6 @@ vsf_err_t vk_dwcotg_dcd_ep_add(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, usb
     volatile uint32_t *ep_ctrl = __vk_dwcotg_dcd_get_ep_ctrl(dwcotg_dcd, ep);
     uint_fast8_t is_in = ep & 0x80;
 
-    debug_add_evt(__FUNC_EP_ADD);
-
     ep &= 0x0F;
 #if VSF_DWCOTG_DCD_CFG_FAKE_EP == ENABLED
     if (ep >= dwcotg_dcd->ep_num) {
@@ -351,7 +239,7 @@ vsf_err_t vk_dwcotg_dcd_ep_add(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, usb
 #else
     VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
 #endif
-    
+
     *ep_ctrl &= ~USB_OTG_DIEPCTL_MPSIZ;
     if (0 == ep) {
         *ep_ctrl |= USB_OTG_DIEPCTL_USBAEP;
@@ -461,87 +349,237 @@ vsf_err_t vk_dwcotg_dcd_ep_clear_stall(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t
 
 vsf_err_t vk_dwcotg_dcd_ep_transaction_read_buffer(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer, uint_fast16_t size)
 {
-    return VSF_ERR_NONE;
+    VSF_USB_ASSERT(false);
+    return VSF_ERR_NOT_SUPPORT;
 }
 
-vsf_err_t vk_dwcotg_dcd_ep_transaction_enable_out(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer)
+vsf_err_t vk_dwcotg_dcd_ep_transaction_enable_out(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep)
 {
-    VSF_USB_ASSERT(!(ep & 0x80));
-
-    uint_fast8_t ep_idx = ep;
-    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
-    
-    uint_fast16_t ep_size = vk_dwcotg_dcd_ep_get_size(dwcotg_dcd, ep);
-    struct dwcotg_dev_out_ep_regs_t *out_regs = &dwcotg_dcd->reg.dev.ep.out_regs[ep_idx];
-    
-    dwcotg_dcd->out_buf[ep_idx] = buffer;
-    out_regs->doeptsiz &= ~(USB_OTG_DOEPTSIZ_XFRSIZ | USB_OTG_DOEPTSIZ_PKTCNT);
-    out_regs->doeptsiz |= (0x1 << 19) | ep_size;
-    out_regs->doepctl |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK;
-    return VSF_ERR_NONE;
+    VSF_USB_ASSERT(false);
+    return VSF_ERR_NOT_SUPPORT;
 }
 
 vsf_err_t vk_dwcotg_dcd_ep_transaction_set_data_size(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint_fast16_t size)
 {
-    VSF_USB_ASSERT(ep & 0x80);
-    
-    uint_fast8_t ep_idx = ep & 0x0F;
-    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
-    
-    struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[ep_idx];
-
-    if (!size) {
-        in_regs->dieptsiz = 0x1ul << 19;
-    }
-    in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
-    
-    return VSF_ERR_NONE;
+    VSF_USB_ASSERT(false);
+    return VSF_ERR_NOT_SUPPORT;
 }
 
 vsf_err_t vk_dwcotg_dcd_ep_transaction_write_buffer(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer, uint_fast16_t size)
 {
-    VSF_USB_ASSERT(ep & 0x80);
-    
-    uint32_t data;
-    uint_fast8_t ep_idx = ep & 0x0F; 
-    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
+    VSF_USB_ASSERT(false);
+    return VSF_ERR_NOT_SUPPORT;
+}
 
-    struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[ep_idx];
+static vk_dwcotg_dcd_trans_t * __vk_dwcotg_dcd_get_trans(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep)
+{
+    uint_fast8_t is_in = ep & 0x80;
+    ep &= 0x0F;
+    return &dwcotg_dcd->trans[(is_in ? VSF_DWCOTG_DCD_CFG_EP_NUM : 0) + ep];
+}
 
-    in_regs->dieptsiz = (0x1ul << 19) | size;
+static void __vk_dwcotg_dcd_ep_write(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep_idx)
+{
+    vk_dwcotg_dcd_trans_t *trans = __vk_dwcotg_dcd_get_trans(dwcotg_dcd, ep_idx | 0x80);
+    if (!trans->use_dma) {
+        struct dwcotg_dev_global_regs_t *dev_global_regs = dwcotg_dcd->reg.dev.global_regs;
+        struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[ep_idx];
+        uint_fast32_t size = in_regs->dtxfsts << 2;
+        uint_fast32_t remain_size = in_regs->dieptsiz & 0x7FFFF;
+        uint8_t *buffer = trans->buffer;
+        uint32_t data;
+        bool fifo_en = remain_size > size;
 
-    for (uint_fast16_t i = 0; i < size; i += 4, buffer += 4) {
+        size = min(size, remain_size);
+        if (size > 0) {
+            VSF_USB_ASSERT(buffer != NULL);
+        }
+
+        for (uint_fast16_t i = 0; i < size; i += 4, buffer += 4) {
 #ifndef UNALIGNED
-        data = get_unaligned_cpu32(buffer);
+            data = get_unaligned_cpu32(buffer);
 #else
-        data = *(uint32_t UNALIGNED *)buffer;
+            data = *(uint32_t UNALIGNED *)buffer;
 #endif
-        *dwcotg_dcd->reg.dfifo[ep_idx] = data;
+            *dwcotg_dcd->reg.dfifo[ep_idx] = data;
+        }
+        trans->buffer = buffer;
+
+        if (fifo_en) {
+            dev_global_regs->dtknqr4_fifoemptymsk |= 1 << ep_idx;
+        } else {
+            dev_global_regs->dtknqr4_fifoemptymsk &= ~(1 << ep_idx);
+        }
     }
-    dwcotg_dcd->reg.dev.global_regs->dtknqr4_fifoemptymsk |= 1 << ep_idx;
-    return VSF_ERR_NONE;
+}
+
+static void __vk_dwcotg_dcd_ep_read(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep_idx, uint_fast16_t size)
+{
+    vk_dwcotg_dcd_trans_t *trans = __vk_dwcotg_dcd_get_trans(dwcotg_dcd, ep_idx);
+    if (!trans->use_dma) {
+        uint_fast16_t ep_size = vk_dwcotg_dcd_ep_get_size(dwcotg_dcd, ep_idx);
+        uint8_t *buffer = trans->buffer;
+        uint32_t data;
+
+        if (size > 0) {
+            VSF_USB_ASSERT(buffer != NULL);
+        }
+
+        for (uint_fast16_t i = 0; i < size; i += 4, buffer += 4) {
+            data = *dwcotg_dcd->reg.dfifo[0];
+#ifndef UNALIGNED
+            put_unaligned_cpu32(data, buffer);
+#else
+            *(uint32_t UNALIGNED *)buffer = data;
+#endif
+        }
+        trans->remain -= size;
+        trans->buffer = buffer;
+        if ((size < ep_size) || !trans->remain) {
+            trans->zlp = true;
+        }
+    }
 }
 
 uint_fast32_t vk_dwcotg_dcd_ep_get_data_size(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep)
 {
-    VSF_USB_ASSERT(!(ep & 0x80));
-    
-    uint_fast8_t ep_idx = ep;
+    vk_dwcotg_dcd_trans_t *trans = __vk_dwcotg_dcd_get_trans(dwcotg_dcd, ep);
+    return trans->size - trans->remain;
+}
+
+static vsf_err_t __vk_dwcotg_dcd_ep_out_transfer(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep_idx)
+{
     VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
-    
-    return dwcotg_dcd->out_size[ep_idx];
+
+    uint_fast16_t ep_size = vk_dwcotg_dcd_ep_get_size(dwcotg_dcd, ep_idx);
+    volatile uint32_t *ep_ctrl = __vk_dwcotg_dcd_get_ep_ctrl(dwcotg_dcd, ep_idx);
+    struct dwcotg_dev_out_ep_regs_t *out_regs = &dwcotg_dcd->reg.dev.ep.out_regs[ep_idx];
+    vk_dwcotg_dcd_trans_t *trans = &dwcotg_dcd->trans[ep_idx];
+    uint_fast32_t size = trans->remain, max_size;
+    if (0 == ep_idx) {
+        // pkt_cnt can only be 1(has only 1 bit) for EP0
+        max_size = ep_size;
+//        max_size = (1 << 7) - 1;
+    } else {
+        max_size = (1 << 19) - 1;
+    }
+    size = min(size, max_size);
+    if (size < trans->remain) {
+        size &= ~(ep_size - 1);
+    }
+    uint_fast8_t pkt_cnt = (size + ep_size - 1) / ep_size;
+
+    if (!pkt_cnt) {
+        pkt_cnt++;
+    }
+    out_regs->doeptsiz &= ~(USB_OTG_DOEPTSIZ_XFRSIZ | USB_OTG_DOEPTSIZ_PKTCNT);
+    out_regs->doeptsiz |= (pkt_cnt << 19) | size;
+    if (trans->use_dma) {
+        out_regs->doepdma = (uint32_t)trans->buffer;
+    }
+
+    // set odd/even frame for iso endpoint
+    if (1 == ((*ep_ctrl >> 18) & 0x03)) {
+        if (vk_dwcotg_dcd_get_frame_number(dwcotg_dcd) & 1) {
+            out_regs->doepctl |= USB_OTG_DOEPCTL_SD0PID_SEVNFRM;
+        } else {
+            out_regs->doepctl |= USB_OTG_DOEPCTL_SODDFRM;
+        }
+    }
+
+    out_regs->doepctl |= USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK;
+    return VSF_ERR_NONE;
 }
 
 vsf_err_t vk_dwcotg_dcd_ep_transfer_recv(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer, uint_fast32_t size)
 {
-    VSF_USB_ASSERT(false);
-    return VSF_ERR_NOT_SUPPORT;
+    VSF_USB_ASSERT(!(ep & 0x80));
+    VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
+
+    VSF_USB_ASSERT(((ep == 0) && dwcotg_dcd->ctrl_transfer_state != DWCOTG_SETUP_STAGE) || (ep > 0));
+
+    vk_dwcotg_dcd_trans_t *trans = &dwcotg_dcd->trans[ep];
+    trans->buffer = buffer;
+    trans->remain = size;
+    trans->size = size;
+    trans->zlp = false;
+    trans->use_dma = dwcotg_dcd->dma_en && !((uint32_t)trans->buffer & 0x03);
+
+    return __vk_dwcotg_dcd_ep_out_transfer(dwcotg_dcd, ep);
+}
+
+static vsf_err_t __vk_dwcotg_dcd_ep_in_transfer(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep_idx)
+{
+    VSF_USB_ASSERT(ep_idx < dwcotg_dcd->ep_num);
+
+    uint_fast16_t ep_size = vk_dwcotg_dcd_ep_get_size(dwcotg_dcd, ep_idx | 0x80);
+    volatile uint32_t *ep_ctrl = __vk_dwcotg_dcd_get_ep_ctrl(dwcotg_dcd, ep_idx | 0x80);
+    struct dwcotg_dev_in_ep_regs_t *in_regs = &dwcotg_dcd->reg.dev.ep.in_regs[ep_idx];
+    vk_dwcotg_dcd_trans_t *trans = &dwcotg_dcd->trans[VSF_DWCOTG_DCD_CFG_EP_NUM + ep_idx];
+
+    uint_fast32_t size = trans->remain, max_size;
+    if (0 == ep_idx) {
+        // pkt_cnt can only be 1(has only 1 bit) for EP0
+        max_size = ep_size;
+//        max_size = (1 << 7) - 1;
+    } else {
+        max_size = (1 << 19) - 1;
+    }
+    size = min(size, max_size);
+    if (size < trans->remain) {
+        size &= ~(ep_size - 1);
+    }
+    uint_fast8_t pkt_cnt = (size + ep_size - 1) / ep_size;
+
+    trans->remain -= size;
+    if (!trans->remain && (size % ep_size)) {
+        trans->zlp = false;
+    }
+
+    if (!pkt_cnt) {
+        // if run here and pkt_cnt is 0, means send zlp without trans->zlp set
+        pkt_cnt++;
+    }
+    in_regs->dieptsiz = (pkt_cnt << 19) | size;
+
+    // set odd/even frame and mulcnt for iso endpoint
+    if (1 == ((*ep_ctrl >> 18) & 0x03)) {
+        in_regs->dieptsiz &= ~USB_OTG_DIEPTSIZ_MULCNT;
+        in_regs->dieptsiz |= 1 << 29;
+
+        if (vk_dwcotg_dcd_get_frame_number(dwcotg_dcd) & 1) {
+            in_regs->diepctl |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
+        } else {
+            in_regs->diepctl |= USB_OTG_DIEPCTL_SODDFRM;
+        }
+    }
+
+    if (trans->use_dma) {
+        in_regs->diepdma = (uint32_t)trans->buffer;
+        in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
+    } else {
+        in_regs->diepctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
+        __vk_dwcotg_dcd_ep_write(dwcotg_dcd, ep_idx);
+    }
+    return VSF_ERR_NONE;
 }
 
 vsf_err_t vk_dwcotg_dcd_ep_transfer_send(vk_dwcotg_dcd_t *dwcotg_dcd, uint_fast8_t ep, uint8_t *buffer, uint_fast32_t size, bool zlp)
 {
-    VSF_USB_ASSERT(false);
-    return VSF_ERR_NOT_SUPPORT;
+    VSF_USB_ASSERT(ep & 0x80);
+
+    ep &= 0x0F;
+    VSF_USB_ASSERT(ep < dwcotg_dcd->ep_num);
+
+    vk_dwcotg_dcd_trans_t *trans = &dwcotg_dcd->trans[VSF_DWCOTG_DCD_CFG_EP_NUM + ep];
+    trans->buffer = buffer;
+    trans->remain = size;
+    trans->size = size;
+    trans->zlp = zlp;
+    // if fifo transfer is not supported in dma mode(for unaligned buffer), add assert here
+    trans->use_dma = dwcotg_dcd->dma_en && !((uint32_t)trans->buffer & 0x03);
+
+    return __vk_dwcotg_dcd_ep_in_transfer(dwcotg_dcd, ep);
 }
 
 static void __vk_dwcotg_dcd_notify(vk_dwcotg_dcd_t *dwcotg_dcd, usb_evt_t evt, uint_fast8_t value)
@@ -551,6 +589,11 @@ static void __vk_dwcotg_dcd_notify(vk_dwcotg_dcd_t *dwcotg_dcd, usb_evt_t evt, u
     }
 }
 
+#if __IS_COMPILER_GCC__
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wcast-align"
+#endif
+
 void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
 {
     struct dwcotg_core_global_regs_t *global_regs = dwcotg_dcd->reg.global_regs;
@@ -558,26 +601,21 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
     struct dwcotg_dev_in_ep_regs_t *in_regs = dwcotg_dcd->reg.dev.ep.in_regs;
     struct dwcotg_dev_out_ep_regs_t *out_regs = dwcotg_dcd->reg.dev.ep.out_regs;
     uint_fast32_t intsts = global_regs->gintmsk | USB_OTG_GINTSTS_CMOD;
+    vk_dwcotg_dcd_trans_t *trans;
 
     intsts &= global_regs->gintsts;
-
-    debug_add_evt(__USB_ON_IRQ);
-    debug_add_evt(intsts);
 
     VSF_USB_ASSERT(!(intsts & USB_OTG_GINTSTS_CMOD));
 
     if (intsts & USB_OTG_GINTSTS_MMIS) {
-        debug_add_evt(__USB_ON_MMIS);
         VSF_USB_ASSERT(false);
         global_regs->gintsts = USB_OTG_GINTSTS_MMIS;
     }
     if (intsts & USB_OTG_GINTSTS_USBRST) {
-        debug_add_evt(__USB_ON_RST);
         __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_RESET, 0);
         global_regs->gintsts = USB_OTG_GINTSTS_USBRST;
     }
     if (intsts & USB_OTG_GINTSTS_ENUMDNE) {
-        debug_add_evt(__USB_ON_ENUMDNE);
         uint8_t speed = (dev_global_regs->dsts & USB_OTG_DSTS_ENUMSPD) >> 1;
         global_regs->gusbcfg &= ~USB_OTG_GUSBCFG_TRDT;
         global_regs->gusbcfg |= ((0/* USB_SPEED_HIGH*/ == speed) ? 0x09U : 0x05U) << 10;
@@ -585,23 +623,19 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
         global_regs->gintsts = USB_OTG_GINTSTS_ENUMDNE;
     }
     if (intsts & USB_OTG_GINTSTS_USBSUSP) {
-        debug_add_evt(__USB_ON_USBSUSP);
         __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_SUSPEND, 0);
         global_regs->gintsts = USB_OTG_GINTSTS_USBSUSP;
     }
     if (intsts & USB_OTG_GINTSTS_WKUINT) {
-        debug_add_evt(__USB_ON_WKUINTP);
         __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_RESUME, 0);
         global_regs->gintsts = USB_OTG_GINTSTS_WKUINT;
     }
     if (intsts & USB_OTG_GINTSTS_SOF) {
-        debug_add_evt(__USB_ON_SOF);
         __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_SOF, 0);
         global_regs->gintsts = USB_OTG_GINTSTS_SOF;
     }
 
     if (intsts & USB_OTG_GINTSTS_IEPINT) {
-        debug_add_evt(__USB_ON_IEPINT);
         uint_fast8_t ep_idx = 0;
         uint_fast32_t ep_int = dev_global_regs->daint;
         ep_int = (ep_int & dev_global_regs->daintmsk) & 0xffff;
@@ -609,7 +643,6 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
         while (ep_int) {
             if (ep_int & 0x1) {
                 uint_fast32_t int_status = in_regs[ep_idx].diepint;
-                debug_add_data(0xFF000000 + (ep_idx << 16) + int_status);
 
                 uint_fast32_t int_msak = dev_global_regs->diepmsk | USB_OTG_DIEPINT_INEPNE | USB_OTG_DIEPINT_NAK;
                 int_status &= (int_msak | USB_OTG_DIEPINT_TXFE);
@@ -617,11 +650,22 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                 if (int_status & USB_OTG_DIEPINT_XFRC) {
                     if ((ep_idx == 0) && (dwcotg_dcd->ctrl_transfer_state == DWCOTG_STATUS_STAGE)) {
                         dwcotg_dcd->ctrl_transfer_state = DWCOTG_SETUP_STAGE;
-                        debug_add_evt(USB_ON_STATUS);
                         __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_STATUS, 0);
                     } else {
-                        debug_add_evt(__USB_ON_IN);
-                        __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_IN, ep_idx);
+                        trans = &dwcotg_dcd->trans[VSF_DWCOTG_DCD_CFG_EP_NUM + ep_idx];
+                        if (trans->remain) {
+                            __vk_dwcotg_dcd_ep_in_transfer(dwcotg_dcd, ep_idx);
+                        } else if (trans->zlp) {
+                            // OTG Programmer's Guild, 8.4:
+                            // To transmit a few maximum-packet-size packets and a zero-length
+                            //  data packet at the end of thetransfer, the application must split
+                            //  the transfer in two parts. The first sends maximum-packet-sizedata
+                            //  packets and the second sends the zero-length data packet alone.
+                            trans->zlp = false;
+                            __vk_dwcotg_dcd_ep_in_transfer(dwcotg_dcd, ep_idx);
+                        } else {
+                            __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_IN, ep_idx);
+                        }
                     }
                     in_regs[ep_idx].diepint = USB_OTG_DIEPINT_XFRC;
                 }
@@ -635,7 +679,7 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                     in_regs[ep_idx].diepint = USB_OTG_DIEPINT_INEPNE;
                 }
                 if (int_status & USB_OTG_DIEPINT_TXFE) {
-                    debug_add_evt(__USB_ON_DIEPINT_TXFE);
+                    __vk_dwcotg_dcd_ep_write(dwcotg_dcd, ep_idx);
                     in_regs[ep_idx].diepint = USB_OTG_DIEPINT_TXFE;
                 }
             }
@@ -645,7 +689,6 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
     }
 
     if (intsts & USB_OTG_GINTSTS_OEPINT) {
-        debug_add_evt(__USB_ON_OEPINT);
         uint_fast8_t ep_idx = 0;
         uint_fast32_t ep_int = dev_global_regs->daint;
         ep_int = (ep_int & dev_global_regs->daintmsk) >> 16;
@@ -653,19 +696,23 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
         while (ep_int) {
             if (ep_int & 0x1) {
                 uint_fast32_t int_status = out_regs[ep_idx].doepint;
-                debug_add_data(0xFF000000 + (ep_idx << 16) + int_status);
 
                 int_status &= dev_global_regs->doepmsk | USB_OTG_DOEPINT_STSPHSERCVD;
 
                 // transfer complete interrupt
                 if (int_status & USB_OTG_DOEPINT_XFRC) {
                     if ((ep_idx == 0) && (dwcotg_dcd->ctrl_transfer_state == DWCOTG_STATUS_STAGE)) {
-                        dwcotg_dcd->ctrl_transfer_state = DWCOTG_SETUP_STAGE;
-                        debug_add_evt(__USB_ON_STATUS);
-                        __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_STATUS, 0);
+                        if (!(int_status & USB_OTG_DOEPINT_STSPHSERCVD)) {
+                            dwcotg_dcd->ctrl_transfer_state = DWCOTG_SETUP_STAGE;
+                            __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_STATUS, 0);
+                        }
                     } else if (((ep_idx == 0) && dwcotg_dcd->ctrl_transfer_state == DWCOTG_DATA_STAGE) || (ep_idx > 0)) {
-                        debug_add_evt(__USB_ON_OUT);
-                        __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_OUT, ep_idx);
+                        trans = &dwcotg_dcd->trans[ep_idx];
+                        if (!trans->zlp) {
+                            __vk_dwcotg_dcd_ep_out_transfer(dwcotg_dcd, ep_idx);
+                        } else {
+                            __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_OUT, ep_idx);
+                        }
                     }
                     out_regs[ep_idx].doepint = USB_OTG_DOEPINT_XFRC;
                 }
@@ -682,14 +729,12 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                         dev_global_regs->dcfg |= (dwcotg_dcd->setup[2] & 0x7F) << 4;
                     }
 
-                    debug_add_evt(__USB_ON_SETUP);
                     dwcotg_dcd->ctrl_transfer_state = DWCOTG_DATA_STAGE;
                     __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_SETUP, 0);
                     out_regs[ep_idx].doepint = USB_OTG_DOEPINT_STUP;
                 }
                 // back to back setup packets received
                 if (int_status & USB_OTG_DOEPINT_B2BSTUP) {
-                    debug_add_evt(__USB_ON_DOEPINT_B2BSTUPP);
                     out_regs[ep_idx].doepint = USB_OTG_DOEPINT_B2BSTUP;
                 }
                 if (int_status & USB_OTG_DOEPINT_STSPHSERCVD) {
@@ -700,23 +745,20 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
             ep_idx++;
         }
     }
-
     if (intsts & USB_OTG_GINTSTS_RXFLVL) {
-        uint_fast8_t ep_idx, pid;
+        uint_fast8_t ep_idx, pid, pktsts;
         uint_fast16_t size;
         uint_fast32_t rx_status;
 
         global_regs->gintmsk &= ~USB_OTG_GINTMSK_RXFLVLM;
         rx_status = global_regs->grxstsp;
 
-        debug_add_evt(__USB_ON_RXFLVL);
-        debug_add_evt(0x80000000 + ((rx_status & USB_OTG_GRXSTSP_PKTSTS) >> 17));
-
         ep_idx = rx_status & USB_OTG_GRXSTSP_EPNUM;
         size = (rx_status & USB_OTG_GRXSTSP_BCNT) >> 4;
         pid = (rx_status & USB_OTG_GRXSTSP_DPID) >> 15;
+        pktsts = (rx_status & USB_OTG_GRXSTSP_PKTSTS) >> 17;
 
-        switch ((rx_status & USB_OTG_GRXSTSP_PKTSTS) >> 17) {
+        switch (pktsts) {
         case 1:
         case 3:
         case 4:
@@ -726,45 +768,24 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                 // In some versions of dwcotg, We can't replace dfifo[0] with grxstsp[0]
                 ((uint32_t *)dwcotg_dcd->setup)[0] = *dwcotg_dcd->use_as__vk_dwcotg_t.reg.dfifo[0];
                 ((uint32_t *)dwcotg_dcd->setup)[1] = *dwcotg_dcd->use_as__vk_dwcotg_t.reg.dfifo[0];
-
-                debug_add_evt(__USB_ON_RXSTAT_SETUP_UPDT);
-                debug_add_data(((uint32_t *)dwcotg_dcd->setup)[0]);
-                debug_add_data(((uint32_t *)dwcotg_dcd->setup)[1]);
             }
             break;
-        case 2: { //RXSTAT_DATA_UPDT: 
-                uint32_t data;
-                uint8_t *buffer = dwcotg_dcd->out_buf[ep_idx];
-                debug_add_evt(__USB_ON_RXSTAT_DATA_UPDT);
-                debug_add_evt(0x80000000 + (ep_idx << 16) + size);
-
-                if (buffer) {
-                    for (uint_fast16_t i = 0; i < size; i += 4, buffer += 4) {
-                        data = *dwcotg_dcd->reg.dfifo[0];
-                        #ifndef UNALIGNED
-                        put_unaligned_cpu32(data, buffer);
-                        #else
-                        *(uint32_t UNALIGNED *)buffer = data;
-                        #endif
-                    }
-                    dwcotg_dcd->out_size[ep_idx] = size;
-                } else {
-                    for (uint_fast16_t i = 0; i < size; i += 4, buffer += 4) {
-                        data = *dwcotg_dcd->reg.dfifo[0];
-                    }
-                    dwcotg_dcd->out_size[ep_idx] = 0;
-                }
-            }
+        case 2: //RXSTAT_DATA_UPDT:
+            __vk_dwcotg_dcd_ep_read(dwcotg_dcd, ep_idx, size);
             break;
         //case RXSTAT_GOUT_NAK:
         //case RXSTAT_SETUP_COMP:
         default:
-            //VSF_HAL_ASSERT(false);
+            VSF_HAL_ASSERT(false);
             break;
         }
 
         global_regs->gintmsk |= USB_OTG_GINTMSK_RXFLVLM;
     }
 }
+
+#if __IS_COMPILER_GCC__
+#   pragma GCC diagnostic pop
+#endif
 
 #endif

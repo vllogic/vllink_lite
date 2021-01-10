@@ -21,6 +21,7 @@
 
 #if VSF_USE_SDL2 == ENABLED
 
+#define __VSF_DISP_CLASS_INHERIT__
 #include "component/ui/vsf_ui.h"
 #include "./include/SDL2/SDL.h"
 
@@ -41,7 +42,7 @@ struct SDL_Window {
     const char *title;
     SDL_Rect area;
     uint32_t flags;
-    vk_disp_color_t format;
+    vk_disp_color_type_t format;
     uint32_t pixels[0] ALIGN(4);
 };
 
@@ -52,8 +53,10 @@ struct SDL_Renderer {
 
 struct SDL_Texture {
     uint16_t w, h;
-    vk_disp_color_t format;
-    uint32_t pixels[0] ALIGN(4);
+    vk_disp_color_type_t format;
+    void *pixels;
+
+    uint32_t __pixels[0] ALIGN(4);
 };
 
 typedef struct vsf_sdl2_t {
@@ -125,7 +128,7 @@ void vsf_sdl2_init(vk_disp_t *disp)
     __vsf_sdl2.sdl1_screen = NULL;
 }
 
-int __vsf_sdl2_init_subsystem(uint32_t flags)
+int SDL_InitSubSystem(uint32_t flags)
 {
     if (flags & SDL_INIT_GAMECONTROLLER) {
         flags |= SDL_INIT_JOYSTICK;
@@ -150,15 +153,15 @@ int __vsf_sdl2_init_subsystem(uint32_t flags)
     return 0;
 }
 
-int __vsf_sdl2_init(uint32_t flags)
+int SDL_Init(uint32_t flags)
 {
 #if VSF_KERNEL_CFG_EDA_SUPPORT_TIMER == ENABLED
     __vsf_sdl2.start_ms = vsf_systimer_get_ms();
 #endif
-    return __vsf_sdl2_init_subsystem(flags);
+    return SDL_InitSubSystem(flags);
 }
 
-void __vsf_sdl2_quit(void)
+void SDL_Quit(void)
 {
     uint32_t flags = __vsf_sdl2.init_flags;
     if (flags & SDL_INIT_EVENTS) {
@@ -166,18 +169,31 @@ void __vsf_sdl2_quit(void)
     }
 
     if (flags & SDL_INIT_VIDEO) {
-        // TODO: 
+        // TODO:
     }
 }
 
+int SDL_GetDesktopDisplayMode(int display_index, SDL_DisplayMode *mode)
+{
+    if (NULL == __vsf_sdl2.disp) {
+        return -1;
+    }
 
-const char *__vsf_sdl2_get_error(void)
+    if (mode != NULL) {
+        mode->format = vsf_disp_get_pixel_format(__vsf_sdl2.disp);
+        mode->h = __vsf_sdl2.disp->param.height;
+        mode->w = __vsf_sdl2.disp->param.width;
+    }
+    return 0;
+}
+
+const char *SDL_GetError(void)
 {
     return NULL;
 }
 
 
-SDL_Window * __vsf_sdl2_create_window(const char *title, int x, int y, int w, int h, uint32_t flags)
+SDL_Window * SDL_CreateWindow(const char *title, int x, int y, int w, int h, uint32_t flags)
 {
     uint_fast8_t pixel_size = vsf_disp_get_pixel_bytesize(__vsf_sdl2.disp);
     SDL_Window *window = vsf_heap_malloc(sizeof(struct SDL_Window) + pixel_size * w * h);
@@ -194,13 +210,40 @@ SDL_Window * __vsf_sdl2_create_window(const char *title, int x, int y, int w, in
     return window;
 }
 
-void __vsf_sdl2_destroy_window(SDL_Window * window)
+void SDL_DestroyWindow(SDL_Window *window)
 {
     VSF_SDL2_ASSERT(window != NULL);
     vsf_heap_free(window);
 }
 
-SDL_Renderer * __vsf_sdl2_create_renderer(SDL_Window * window, int index, uint32_t flags)
+SDL_Surface * SDL_CreateRGBSurfaceWithFormat(uint32_t flags, int w, int h, int depth, uint32_t format)
+{
+    VSF_SDL2_ASSERT(__vsf_sdl2.disp != NULL);
+    VSF_SDL2_ASSERT(format == __vsf_sdl2.disp->param.color);
+    VSF_SDL2_ASSERT(depth == vsf_disp_get_pixel_bitsize(__vsf_sdl2.disp));
+
+    uint_fast8_t pixel_size = vsf_disp_get_pixel_bytesize(__vsf_sdl2.disp);
+    SDL_Surface *surface = vsf_heap_malloc(sizeof(SDL_Surface) + pixel_size * w * h);
+    if (surface != NULL) {
+        surface->__format.format = format;
+        surface->format     = &surface->__format;
+
+        surface->w          = w;
+        surface->h          = h;
+
+        surface->pitch      = w * pixel_size;
+        surface->pixels     = &surface->__pixels;
+    }
+    return surface;
+}
+
+void SDL_FreeSurface(SDL_Surface *surface)
+{
+    VSF_SDL2_ASSERT(surface != NULL);
+    vsf_heap_free(surface);
+}
+
+SDL_Renderer * SDL_CreateRenderer(SDL_Window *window, int index, uint32_t flags)
 {
     SDL_Renderer *renderer;
     VSF_SDL2_ASSERT(window != NULL);
@@ -212,13 +255,13 @@ SDL_Renderer * __vsf_sdl2_create_renderer(SDL_Window * window, int index, uint32
     return renderer;
 }
 
-void __vsf_sdl2_destroy_renderer(SDL_Renderer * renderer)
+void SDL_DestroyRenderer(SDL_Renderer *renderer)
 {
     VSF_SDL2_ASSERT(renderer != NULL);
     vsf_heap_free(renderer);
 }
 
-int __vsf_sdl2_render_clear(SDL_Renderer * renderer)
+int SDL_RenderClear(SDL_Renderer *renderer)
 {
     VSF_SDL2_ASSERT(renderer != NULL);
     uint_fast8_t pixel_size = vsf_disp_get_pixel_bytesize(__vsf_sdl2.disp);
@@ -229,7 +272,7 @@ int __vsf_sdl2_render_clear(SDL_Renderer * renderer)
     return 0;
 }
 
-int __vsf_sdl2_render_copy(SDL_Renderer * renderer, SDL_Texture * texture, const SDL_Rect * srcrect, const SDL_Rect * dstrect)
+int SDL_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect, const SDL_Rect *dstrect)
 {
     VSF_SDL2_ASSERT((renderer != NULL) && (texture != NULL));
     // not support format conversion now
@@ -268,14 +311,14 @@ int __vsf_sdl2_render_copy(SDL_Renderer * renderer, SDL_Texture * texture, const
     return 0;
 }
 
-static void __vsf_sdl2_disp_refresh(vk_disp_area_t *area, void * pixels)
+static void __vsf_sdl2_disp_refresh(vk_disp_area_t *area, void *pixels)
 {
     __vsf_sdl2.disp->ui_data = vsf_eda_get_cur();
     vk_disp_refresh(__vsf_sdl2.disp, area, pixels);
     vsf_thread_wfe(VSF_EVT_RETURN);
 }
 
-void __vsf_sdl2_render_present(SDL_Renderer * renderer)
+void SDL_RenderPresent(SDL_Renderer *renderer)
 {
     vk_disp_area_t area = {
         .pos.x          = 0,
@@ -287,7 +330,7 @@ void __vsf_sdl2_render_present(SDL_Renderer * renderer)
 }
 
 
-SDL_Texture * __vsf_sdl2_create_texture(SDL_Renderer * renderer, uint32_t format, int access, int w, int h)
+SDL_Texture * SDL_CreateTexture(SDL_Renderer *renderer, uint32_t format, int access, int w, int h)
 {
     uint_fast8_t pixel_size = vsf_disp_get_pixel_format_bytesize(format);
     SDL_Texture *texture = vsf_heap_malloc(sizeof(struct SDL_Renderer) + pixel_size * w * h);
@@ -295,18 +338,32 @@ SDL_Texture * __vsf_sdl2_create_texture(SDL_Renderer * renderer, uint32_t format
         texture->format = format;
         texture->w      = w;
         texture->h      = h;
+        texture->pixels = &texture->__pixels;
         // TODO: initialize pixels according to format
     }
     return texture;
 }
 
-void __vsf_sdl2_destroy_texture(SDL_Texture * texture)
+SDL_Texture * SDL_CreateTextureFromSurface(SDL_Renderer *renderer, SDL_Surface *surface)
+{
+    SDL_Texture *texture = vsf_heap_malloc(sizeof(struct SDL_Renderer));
+    if (texture != NULL) {
+        texture->format = surface->format->format;
+        texture->w      = surface->w;
+        texture->h      = surface->h;
+        texture->pixels = surface->pixels;
+        // TODO: initialize pixels according to format
+    }
+    return texture;
+}
+
+void SDL_DestroyTexture(SDL_Texture *texture)
 {
     VSF_SDL2_ASSERT(texture != NULL);
     vsf_heap_free(texture);
 }
 
-int __vsf_sdl2_update_texture(SDL_Texture * texture, const SDL_Rect * rect, const void *pixels, int pitch)
+int SDL_UpdateTexture(SDL_Texture *texture, const SDL_Rect *rect, const void *pixels, int pitch)
 {
     SDL_Rect area;
     VSF_SDL2_ASSERT(texture != NULL);
@@ -328,38 +385,38 @@ int __vsf_sdl2_update_texture(SDL_Texture * texture, const SDL_Rect * rect, cons
 }
 
 
-int __vsf_sdl2_lock_surface(SDL_Surface * surface)
+int SDL_LockSurface(SDL_Surface *surface)
 {
     return 0;
 }
-void __vsf_sdl2_unlock_surface(SDL_Surface * surface)
+void SDL_UnlockSurface(SDL_Surface *surface)
 {
 }
 
-SDL_sem * __vsf_sdl2_create_sem(uint32_t initial_value)
+SDL_sem * SDL_CreateSemaphore(uint32_t initial_value)
 {
     return NULL;
 }
-void __vsf_sdl2_destroy_sem(SDL_sem * sem)
+void SDL_DestroySemaphore(SDL_sem *sem)
 {
 }
-int __vsf_sdl2_sem_wait(SDL_sem * sem, int32_t ms)
+int __vsf_sdl2_sem_wait(SDL_sem *sem, int32_t ms)
 {
     return -1;
 }
-int __vsf_sdl2_sem_post(SDL_sem * sem)
+int SDL_SemPost(SDL_sem *sem)
 {
     return -1;
 }
 
 // timer
 #if VSF_KERNEL_CFG_EDA_SUPPORT_TIMER == ENABLED
-void __vsf_sdl2_delay(uint32_t ms)
+void SDL_Delay(uint32_t ms)
 {
     vsf_teda_set_timer_ms(ms);
     vsf_thread_wfe(VSF_EVT_TIMER);
 }
-uint32_t __vsf_sdl2_get_ticks(void)
+uint32_t SDL_GetTicks(void)
 {
     uint32_t cur_ms = vsf_systimer_get_ms();
     return cur_ms - __vsf_sdl2.start_ms;
@@ -367,76 +424,76 @@ uint32_t __vsf_sdl2_get_ticks(void)
 #endif
 
 // audio
-int __vsf_sdl2_open_audio(SDL_AudioSpec * desired, SDL_AudioSpec * obtained)
+int SDL_OpenAudio(SDL_AudioSpec *desired, SDL_AudioSpec *obtained)
 {
     return -1;
 }
-void __vsf_sdl2_pause_audio(int pause_on)
+void SDL_PauseAudio(int pause_on)
 {
 }
-SDL_AudioStatus __vsf_sdl2_get_audio_status(void)
+SDL_AudioStatus SDL_GetAudioStatus(void)
 {
     return SDL_AUDIO_STOPPED;
 }
-void __vsf_sdl2_close_audio(void)
+void SDL_CloseAudio(void)
 {
 }
 
 // cursor
-SDL_Cursor * __vsf_sdl2_create_cursor(const uint8_t * data, const uint8_t * mask,
+SDL_Cursor * SDL_CreateCursor(const uint8_t *data, const uint8_t *mask,
                                             int w, int h, int hot_x, int hot_y)
 {
     return NULL;
 }
-SDL_Cursor * __vsf_sdl2_create_color_curosr(SDL_Surface *surface, int hot_x, int hot_y)
+SDL_Cursor * SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     return NULL;
 }
-SDL_Cursor * __vsf_sdl2_create_system_cursor(SDL_SystemCursor id)
+SDL_Cursor * SDL_CreateSystemCursor(SDL_SystemCursor id)
 {
     return NULL;
 }
-void __vsf_sdl2_set_curser(SDL_Cursor * cursor)
+void SDL_SetCursor(SDL_Cursor *cursor)
 {
 }
-SDL_Cursor * __vsf_sdl2_get_cursor(void)
-{
-    return NULL;
-}
-SDL_Cursor * __vsf_sdl2_get_default_cursor(void)
+SDL_Cursor * SDL_GetCursor(void)
 {
     return NULL;
 }
-void __vsf_sdl2_free_curser(SDL_Cursor * cursor)
+SDL_Cursor * SDL_GetDefaultCursor(void)
+{
+    return NULL;
+}
+void SDL_FreeCursor(SDL_Cursor *cursor)
 {
 }
-int __vsf_sdl2_show_curser(int toggle)
+int SDL_ShowCursor(int toggle)
 {
     return -1;
 }
 
 #if VSF_SDL_CFG_V1_COMPATIBLE == ENABLED
 // overlay
-SDL_Overlay * __vsf_sdl_create_yuv_overlay(int width, int height, uint32_t format, SDL_Surface *display)
+SDL_Overlay * SDL_CreateYUVOverlay(int width, int height, uint32_t format, SDL_Surface *display)
 {
     return NULL;
 }
-void __vsf_sdl_free_yuv_overlay(SDL_Overlay * overlay)
+void SDL_FreeYUVOverlay(SDL_Overlay *overlay)
 {
 }
-int __vsf_sdl_lock_yuv_overlay(SDL_Overlay *overlay)
+int SDL_LockYUVOverlay(SDL_Overlay *overlay)
 {
     return 0;
 }
-void __vsf_sdl_unlock_yuv_overlay(SDL_Overlay *overlay)
+void SDL_UnlockYUVOverlay(SDL_Overlay *overlay)
 {
 }
-int __vsf_sdl_display_yuv_overlay(SDL_Overlay *overlay, SDL_Rect *dstrect)
+int SDL_DisplayYUVOverlay(SDL_Overlay *overlay, SDL_Rect *dstrect)
 {
     return -1;
 }
 
-SDL_Surface * __vsf_sdl_set_video_mode(int width, int height, int bpp, uint32_t flags)
+SDL_Surface * SDL_SetVideoMode(int width, int height, int bpp, uint32_t flags)
 {
     SDL_Surface *surface = NULL;
 
@@ -477,7 +534,7 @@ SDL_Surface * __vsf_sdl_set_video_mode(int width, int height, int bpp, uint32_t 
     __vsf_sdl2.sdl1_screen = surface;
     return surface;
 }
-int __vsf_sdl_flip(SDL_Surface *screen)
+int SDL_Flip(SDL_Surface *screen)
 {
     vk_disp_area_t area = {
         .pos.x  = 0,
@@ -489,7 +546,7 @@ int __vsf_sdl_flip(SDL_Surface *screen)
     return 0;
 }
 
-void __vsf_sdl_wm_set_caption(const char *title, const char *icon)
+void SDL_WM_SetCaption(const char *title, const char *icon)
 {
 }
 #endif
@@ -497,40 +554,40 @@ void __vsf_sdl_wm_set_caption(const char *title, const char *icon)
 
 // event
 // joysticks
-int __vsf_sdl2_num_joysticks(void)
+int SDL_NumJoysticks(void)
 {
     return 0;
 }
-SDL_Joystick * __vsf_sdl2_joystick_open(int device_index)
+SDL_Joystick * SDL_JoystickOpen(int device_index)
 {
     return NULL;
 }
-int __vsf_sdl2_joystick_event_state(int state)
+int SDL_JoystickEventState(int state)
 {
     return -1;
 }
-int __vsf_sdl2_joystick_num_buttons(SDL_Joystick * joystick)
+int SDL_JoystickNumButtons(SDL_Joystick *joystick)
 {
     return 0;
 }
-int __vsf_sdl2_joystick_num_axes(SDL_Joystick * joystick)
+int SDL_JoystickNumAxes(SDL_Joystick *joystick)
 {
     return 0;
 }
-int __vsf_sdl2_joystick_num_balls(SDL_Joystick * joystick)
+int SDL_JoystickNumBalls(SDL_Joystick *joystick)
 {
     return 0;
 }
-int __vsf_sdl2_joystick_num_hats(SDL_Joystick * joystick)
+int SDL_JoystickNumHats(SDL_Joystick *joystick)
 {
     return 0;
 }
 
-int __vsf_sdl2_poll_event(SDL_Event * event)
+int SDL_PollEvent(SDL_Event *event)
 {
     VSF_SDL2_ASSERT(event != NULL);
 
-    
+
     return 0;
 }
 

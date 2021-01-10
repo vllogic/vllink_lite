@@ -21,7 +21,7 @@
 /*============================ INCLUDES ======================================*/
 #include "kernel/vsf_kernel_cfg.h"
 
-#if     VSF_USE_KERNEL_SIMPLE_SHELL == ENABLED                                  \
+#if     VSF_KERNEL_USE_SIMPLE_SHELL == ENABLED                                  \
     &&  VSF_KERNEL_CFG_SUPPORT_BITMAP_EVENT == ENABLED                          \
     &&  VSF_USE_KERNEL == ENABLED                                               \
     &&  VSF_KERNEL_CFG_SUPPORT_SYNC == ENABLED
@@ -174,13 +174,13 @@ extern "C" {
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 
-SECTION("text.vsf.kernel.__vsf_grouped_evts_init")
+SECTION(".text.vsf.kernel.__vsf_grouped_evts_init")
 extern void __vsf_grouped_evts_init(  vsf_bmpevt_t *this_ptr, 
                                 vsf_bmpevt_adapter_t **adapters_pptr, 
                                 uint_fast8_t adapter_count,
                                 uint_fast32_t auto_reset);
                 
-SECTION("text.vsf.kernel.__vsf_bmpevt_wait_for")    
+SECTION(".text.vsf.kernel.__vsf_bmpevt_wait_for")    
 extern vsf_sync_reason_t __vsf_bmpevt_wait_for(
                                             vsf_bmpevt_t *bmpevt_ptr,
                                             const vsf_bmpevt_pender_t *pender_ptr,

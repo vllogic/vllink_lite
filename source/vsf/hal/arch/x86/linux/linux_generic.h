@@ -17,18 +17,16 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#ifndef __WIN_GENERIC_H__
-#define __WIN_GENERIC_H__
+#ifndef __LINUX_GENERIC_H__
+#define __LINUX_GENERIC_H__
 
 /*============================ INCLUDES ======================================*/
 
 #include "hal/vsf_hal_cfg.h"
 #include "utilities/vsf_utilities.h"
 
-#if     defined(VSF_ARCH_WIN_IMPLEMENT)
+#if     defined(__VSF_ARCH_LINUX_IMPLEMENT)
 #   define __PLOOC_CLASS_IMPLEMENT__
-#elif   defined(VSF_ARCH_WIN_IMPLEMENT)
-#   define __PLOOC_CLASS_INHERIT__
 #endif
 
 #include "utilities/ooc_class.h"
@@ -74,14 +72,16 @@ extern "C" {
             VSF_ARCH_PRIO_##__N = (__N),                                        \
             vsf_arch_prio_##__N = (__N),
 
+#define vsf_arch_wakeup()
+
 /*============================ TYPES =========================================*/
 
 // unit is us
 typedef uint64_t vsf_systimer_cnt_t;
 
 typedef enum vsf_arch_prio_t {
-    VSF_ARCH_PRIO_IVALID = -1,
-    vsf_arch_prio_ivalid = -1,
+    VSF_ARCH_PRIO_INVALID = -1,
+    vsf_arch_prio_invalid = -1,
     REPEAT_MACRO(VSF_ARCH_PRI_NUM, __VSF_ARCH_PRI, VSF_ARCH_PRI_BIT)
     vsf_arch_prio_highest = VSF_ARCH_PRI_NUM - 1,
 } vsf_arch_prio_t;
@@ -93,11 +93,14 @@ typedef void (*vsf_arch_irq_entry_t)(void*);
 
 def_simple_class(vsf_arch_irq_request_t) {
     private_member(
-        pthread_cond_t cond;
-        pthread_mutex_t mutex;
-        bool triggered;
+        int id;
+        void *arch_thread;
+        bool is_triggered;
+        bool is_inited;
     )
 };
+
+typedef volatile bool vsf_gint_state_t;
 
 /*============================ INCLUDES ======================================*/
 

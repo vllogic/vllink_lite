@@ -15,13 +15,16 @@
  *                                                                           *
  ****************************************************************************/
 
-
-
 /*============================ INCLUDES ======================================*/
+
 #include "hal/vsf_hal_cfg.h"
-#include "utilities/vsf_utilities.h"
-/*! \note User can define VSF_DRIVER_HEADER to specify the targer device driver 
- *!       header file. If it is not specified, this driver abstraction header 
+
+#ifndef __VSF_HEADER_ONLY_SHOW_ARCH_INFO__
+#   include "utilities/vsf_utilities.h"
+#endif
+
+/*! \note User can define VSF_DRIVER_HEADER to specify the targer device driver
+ *!       header file. If it is not specified, this driver abstraction header
  *!       file will use predefined device-specific macros to decide which device
  *!       driver header file should be included.
  */
@@ -42,28 +45,30 @@
 #   elif    defined(__SiliconLabs__)
 #       define  VSF_DRIVER_HEADER       "./SiliconLabs/driver.h"
 #   elif    defined(__GigaDevice__)
-#		define  VSF_DRIVER_HEADER       "./GigaDevice/driver.h"
+#       define  VSF_DRIVER_HEADER       "./GigaDevice/driver.h"
 #   elif    defined(__TI__)
-#		define  VSF_DRIVER_HEADER       "./TI/driver.h"
+#       define  VSF_DRIVER_HEADER       "./TI/driver.h"
 #   elif    defined(__ST__)
 #       define  VSF_DRIVER_HEADER       "./ST/driver.h"
 #   elif    defined(__WCH__)
 #       define  VSF_DRIVER_HEADER       "./WCH/driver.h"
 #   elif    defined(__Allwinner__)
 #       define  VSF_DRIVER_HEADER       "./Allwinner/driver.h"
+#   elif    defined(__Espressif__)
+#       define  VSF_DRIVER_HEADER       "./Espressif/driver.h"
 /* example
 #   elif    defined(__COMPANY_NAME_A__)
 #       define  VSF_DRIVER_HEADER       "./company_name_a/driver.h"
 #   elif    defined(__COMPANY_NAME_B__)
 #       define  VSF_DRIVER_HEADER       "./company_name_b/driver.h"
 */
-#   elif    defined(__ARM__)
+#   elif    defined(__ARM__) || defined(__arm__)
 #       define  VSF_DRIVER_HEADER       "./arm/driver.h"
 
-/*! \note please try not ignore the __UNKNOWN_VENDOR__ if you want to select 
- *!       the chip inside unknown folder 
+/*! \note please try not ignore the __UNKNOWN_VENDOR__ if you want to select
+ *!       the chip inside unknown folder
  */
-#   elif    defined(__UNKOWN_VENDOR__)                                          
+#   elif    defined(__UNKOWN_VENDOR__)
 #       define  VSF_DRIVER_HEADER       "./unknown/driver.h"
 #   else
 #       define  VSF_DRIVER_HEADER       "./unknown/driver.h"
@@ -76,7 +81,7 @@
 #   include    VSF_DRIVER_HEADER
 #endif
 
-#ifndef __HAL_DRIVER_H__
+#if !defined(__HAL_DRIVER_H__) && !defined(__VSF_HEADER_ONLY_SHOW_ARCH_INFO__)
 #define __HAL_DRIVER_H__
 
 #ifdef __cplusplus
@@ -90,14 +95,14 @@ extern "C" {
 /*============================ LOCAL VARIABLES ===============================*/
 /*============================ PROTOTYPES ====================================*/
 
-/*! \note initialize drivers 
+/*! \note initialize drivers
  *  \param none
  *  \retval true initialization succeeded.
  *  \retval false initialization failed
  */
 extern bool vsf_driver_init(void);
 
-/*! \note common entry for upper layer to poll driver servcie 
+/*! \note common entry for upper layer to poll driver servcie
  *  \param none
  *  \retval true it is safe to enter sleep mode
  *  \retval false polling work is on going, please keep calling the function

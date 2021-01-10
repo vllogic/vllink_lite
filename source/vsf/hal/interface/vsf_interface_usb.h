@@ -139,8 +139,7 @@ static uint_fast32_t    usb_dc##__N##_ep_get_data_size(uint_fast8_t ep);        
 static vsf_err_t    usb_dc##__N##_ep_transaction_read_buffer(uint_fast8_t ep,   \
                                                             uint8_t *buffer,    \
                                                             uint_fast16_t size);\
-static vsf_err_t    usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep,    \
-                                                            uint8_t *buffer);   \
+static vsf_err_t    usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep);   \
                                                                                 \
 static vsf_err_t    usb_dc##__N##_ep_transaction_set_data_size(                 \
                                                             uint_fast8_t ep,    \
@@ -245,9 +244,8 @@ static vsf_err_t usb_dc##__N##_ep_transaction_read_buffer(                      
                                                     uint8_t *buffer,            \
                                                     uint_fast16_t size)         \
 { return __HEADER##_ep_transaction_read_buffer(&(__OBJ), ep, buffer, size); }   \
-static vsf_err_t usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep,       \
-                                                            uint8_t *buffer)    \
-{ return __HEADER##_ep_transaction_enable_out(&(__OBJ), ep, buffer); }          \
+static vsf_err_t usb_dc##__N##_ep_transaction_enable_out(uint_fast8_t ep)       \
+{ return __HEADER##_ep_transaction_enable_out(&(__OBJ), ep); }                  \
 static vsf_err_t usb_dc##__N##_ep_transaction_set_data_size(uint_fast8_t ep,    \
                                                             uint_fast16_t size) \
 { return __HEADER##_ep_transaction_set_data_size(&(__OBJ), ep, size); }         \
@@ -307,9 +305,9 @@ typedef enum  {
     USB_DC_ERR_SOF_TO,
 } usb_dc_err_t;
 
-typedef void (*usb_ip_irq_handler_t)(void *param);
-typedef void (*usb_dc_evt_handler_t)(   void *param, 
-                                        usb_evt_t evt, 
+typedef void (*usb_ip_irq_handler_t)(   void *param);
+typedef void (*usb_dc_evt_handler_t)(   void *param,
+                                        usb_evt_t evt,
                                         uint_fast8_t value);
 
 typedef uint8_t usb_dc_speed_t;
@@ -347,11 +345,11 @@ def_interface(i_usb_dc_t)
     void            (*StatusStage)      (bool is_in);
 
     struct {
-        uint_fast8_t    (*GetFeature)       (uint_fast8_t ep, 
+        uint_fast8_t    (*GetFeature)       (uint_fast8_t ep,
                                              uint_fast8_t feature);
 
-        vsf_err_t       (*Add)              (uint_fast8_t ep, 
-                                             usb_ep_type_t type, 
+        vsf_err_t       (*Add)              (uint_fast8_t ep,
+                                             usb_ep_type_t type,
                                              uint_fast16_t size);
         uint_fast16_t   (*GetSize)          (uint_fast8_t ep);
 
@@ -360,29 +358,28 @@ def_interface(i_usb_dc_t)
         vsf_err_t       (*ClearStall)       (uint_fast8_t ep);
 
         //! get the data size in hw-buffer in transaction mode
-        //! get the all transfered data size in transfer mode  
+        //! get the all transfered data size in transfer mode
         uint_fast32_t   (*GetDataSize)      (uint_fast8_t ep);
 
         struct {
-            vsf_err_t   (*ReadBuffer)       (uint_fast8_t ep, 
-                                             uint8_t *buffer, 
+            vsf_err_t   (*ReadBuffer)       (uint_fast8_t ep,
+                                             uint8_t *buffer,
                                              uint_fast16_t size);
-            vsf_err_t   (*EnableOut)        (uint_fast8_t ep,
-                                             uint8_t *buffer);
-            vsf_err_t   (*SetDataSize)      (uint_fast8_t ep, 
+            vsf_err_t   (*EnableOut)        (uint_fast8_t ep);
+            vsf_err_t   (*SetDataSize)      (uint_fast8_t ep,
                                              uint_fast16_t size);
-            vsf_err_t   (*WriteBuffer)      (uint_fast8_t ep, 
-                                             uint8_t *buffer, 
+            vsf_err_t   (*WriteBuffer)      (uint_fast8_t ep,
+                                             uint8_t *buffer,
                                              uint_fast16_t size);
         } Transaction;
 
         struct {
-            vsf_err_t   (*Recv)             (uint_fast8_t ep, 
-                                             uint8_t *buffer, 
+            vsf_err_t   (*Recv)             (uint_fast8_t ep,
+                                             uint8_t *buffer,
                                              uint_fast32_t size);
-            vsf_err_t   (*Send)             (uint_fast8_t ep, 
-                                             uint8_t *buffer, 
-                                             uint_fast32_t size, 
+            vsf_err_t   (*Send)             (uint_fast8_t ep,
+                                             uint8_t *buffer,
+                                             uint_fast32_t size,
                                              bool zlp);
         } Transfer;
     } Ep;

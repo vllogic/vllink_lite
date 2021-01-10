@@ -19,7 +19,7 @@
 
 #include "component/usb/vsf_usb_cfg.h"
 
-#if VSF_USE_USB_HOST == ENABLED && VSF_USE_USB_HOST_BTHCI == ENABLED
+#if VSF_USE_USB_HOST == ENABLED && VSF_USBH_USE_BTHCI == ENABLED
 
 #define __VSF_EDA_CLASS_INHERIT__
 #define __VSF_USBH_CLASS_IMPLEMENT_CLASS__
@@ -265,7 +265,7 @@ static void __vk_usbh_bthci_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
                         ||  (NULL == vk_usbh_urb_alloc_buffer(&bthci->sco_icb[i].urb, VSF_USBH_BTHCI_CFG_URB_BUFSIZE))
                         ||  (VSF_ERR_NONE != vk_usbh_submit_urb(usbh, &bthci->sco_icb[i].urb)))) {
                     // ignore errors and go on
-                    vsf_trace(VSF_TRACE_ERROR, "fail to prepare scoin_icb %d", i);
+                    vsf_trace_error("fail to prepare scoin_icb %d", i);
                     break;
                 }
             }
@@ -278,7 +278,7 @@ static void __vk_usbh_bthci_evthandler(vsf_eda_t *eda, vsf_evt_t evt)
                         ||  (NULL == vk_usbh_urb_alloc_buffer(&bthci->acl_icb[i].urb, VSF_USBH_BTHCI_CFG_URB_BUFSIZE))
                         ||  (VSF_ERR_NONE != vk_usbh_submit_urb(usbh, &bthci->acl_icb[i].urb)))) {
                     // ignore errors and go on
-                    vsf_trace(VSF_TRACE_ERROR, "fail to prepare aclin_icb %d", i);
+                    vsf_trace_error("fail to prepare aclin_icb %d", i);
                     break;
                 }
             }
@@ -490,7 +490,17 @@ vsf_err_t vk_usbh_bthci_send(void *dev, uint8_t type, uint8_t *packet, uint16_t 
 
             ocb->is_ep0_claimed = true;
             ocb->is_busy = true;
-            vk_usbh_urb_set_buffer(urb, packet, size);
+
+            // allocate a new buffer in case original buffer is not aligned
+            // TODO: only necessary if hcd does not support unaligned access
+            uint8_t *buffer = vk_usbh_urb_alloc_buffer(&bthci->dev->ep0.urb, size);
+            if (NULL == buffer) {
+                VSF_USB_ASSERT(false);
+                return VSF_ERR_NOT_ENOUGH_RESOURCES;
+            }
+            memcpy(buffer, packet, size);
+
+//            vk_usbh_urb_set_buffer(urb, packet, size);
             return vk_usbh_control_msg_ex(usbh, bthci->dev, &req, 0, &bthci->eda);
         }
         break;
@@ -535,4 +545,4 @@ vsf_err_t vk_usbh_bthci_send(void *dev, uint8_t type, uint8_t *packet, uint16_t 
 #endif
 
 
-#endif      // VSF_USE_USB_HOST && VSF_USE_USB_HOST_BTHCI
+#endif      // VSF_USE_USB_HOST && VSF_USBH_USE_BTHCI

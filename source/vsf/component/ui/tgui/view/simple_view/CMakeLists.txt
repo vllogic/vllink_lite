@@ -1,6 +1,6 @@
 # CMakeLists head
 
-target_sources(vsf INTERFACE
+target_sources(${VSF_LIB_NAME} INTERFACE
     vsf_tgui_sv_button.c
     vsf_tgui_sv_color.c
     vsf_tgui_sv_container.c
