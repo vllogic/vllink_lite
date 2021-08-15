@@ -648,6 +648,8 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                 int_status &= (int_msak | USB_OTG_DIEPINT_TXFE);
 
                 if (int_status & USB_OTG_DIEPINT_XFRC) {
+                    // clear interrupt flag first, because operation afterwards will maybe trigger next interrupt
+                    in_regs[ep_idx].diepint = USB_OTG_DIEPINT_XFRC;
                     if ((ep_idx == 0) && (dwcotg_dcd->ctrl_transfer_state == DWCOTG_STATUS_STAGE)) {
                         dwcotg_dcd->ctrl_transfer_state = DWCOTG_SETUP_STAGE;
                         __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_STATUS, 0);
@@ -658,7 +660,7 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                         } else if (trans->zlp) {
                             // OTG Programmer's Guild, 8.4:
                             // To transmit a few maximum-packet-size packets and a zero-length
-                            //  data packet at the end of thetransfer, the application must split
+                            //  data packet at the end of the transfer, the application must split
                             //  the transfer in two parts. The first sends maximum-packet-sizedata
                             //  packets and the second sends the zero-length data packet alone.
                             trans->zlp = false;
@@ -667,7 +669,6 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                             __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_IN, ep_idx);
                         }
                     }
-                    in_regs[ep_idx].diepint = USB_OTG_DIEPINT_XFRC;
                 }
                 if (int_status & USB_OTG_DIEPINT_EPDISD) {
                     in_regs[ep_idx].diepint = USB_OTG_DIEPINT_EPDISD;
@@ -679,8 +680,9 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                     in_regs[ep_idx].diepint = USB_OTG_DIEPINT_INEPNE;
                 }
                 if (int_status & USB_OTG_DIEPINT_TXFE) {
-                    __vk_dwcotg_dcd_ep_write(dwcotg_dcd, ep_idx);
+                    // clear interrupt flag first, because operation afterwards will maybe trigger next interrupt
                     in_regs[ep_idx].diepint = USB_OTG_DIEPINT_TXFE;
+                    __vk_dwcotg_dcd_ep_write(dwcotg_dcd, ep_idx);
                 }
             }
             ep_int >>= 1;
@@ -696,11 +698,12 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
         while (ep_int) {
             if (ep_int & 0x1) {
                 uint_fast32_t int_status = out_regs[ep_idx].doepint;
-
                 int_status &= dev_global_regs->doepmsk | USB_OTG_DOEPINT_STSPHSERCVD;
 
                 // transfer complete interrupt
                 if (int_status & USB_OTG_DOEPINT_XFRC) {
+                    // clear interrupt flag first, because operation afterwards will maybe trigger next interrupt
+                    out_regs[ep_idx].doepint = USB_OTG_DOEPINT_XFRC;
                     if ((ep_idx == 0) && (dwcotg_dcd->ctrl_transfer_state == DWCOTG_STATUS_STAGE)) {
                         if (!(int_status & USB_OTG_DOEPINT_STSPHSERCVD)) {
                             dwcotg_dcd->ctrl_transfer_state = DWCOTG_SETUP_STAGE;
@@ -714,7 +717,6 @@ void vk_dwcotg_dcd_irq(vk_dwcotg_dcd_t *dwcotg_dcd)
                             __vk_dwcotg_dcd_notify(dwcotg_dcd, USB_ON_OUT, ep_idx);
                         }
                     }
-                    out_regs[ep_idx].doepint = USB_OTG_DOEPINT_XFRC;
                 }
                 // endpoint disable interrupt
                 if (int_status & USB_OTG_DOEPINT_EPDISD) {
