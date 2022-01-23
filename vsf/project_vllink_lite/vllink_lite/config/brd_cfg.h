@@ -11,6 +11,9 @@
 //#   define PROJ_CFG_GD32F3X0_AHP_APB_UNFIXED
 #	include "chip_cfg_gd32f3x0.h"
 #   include "brd_cfg_vllinklite_gd32f350.h"
+#elif defined(BRD_CFG_VLLINKLITE_MT006)
+#	include "chip_cfg_mt006.h"
+#   include "brd_cfg_vllinklite_mt006.h"
 #endif
 
 #define VSF_SYSTIMER_FREQ                   (CHIP_AHB_FREQ_HZ)
