@@ -265,57 +265,57 @@ SYNC_READ_RESTART:
     buffer = ((request << 1) & 0x1e) | 0x81 | temp;
 
     // Request:[W]*8
-    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     
     if (buffer & (0x1 << 0))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 1))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 2))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 3))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 4))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 5))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 6))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     NOP();
     NOP();
     NOP();
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 7))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     NOP();
     NOP();
     NOP();
     SWD_RW_TCK_QUICK_TOGGLE2();
 
     // TRN:[C]*trn
-    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     bits = swd_control.trn;
     while (bits--) {
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -333,7 +333,7 @@ SYNC_READ_RESTART:
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
-    temp = IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -342,7 +342,7 @@ SYNC_READ_RESTART:
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     //if (swd_control.swd_delay)
     //    swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 1;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 1;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -351,7 +351,7 @@ SYNC_READ_RESTART:
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     //if (swd_control.swd_delay)
     //    swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 2;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 2;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     //if (swd_control.swd_delay)
     //    swd_control.swd_delay(swd_control.delay_tick);
@@ -365,7 +365,7 @@ SYNC_READ_RESTART:
                 IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
                 //if (swd_control.swd_delay)
                 //    swd_control.swd_delay(swd_control.delay_tick);
-                buffer |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) ? 0x80 : 0;
+                buffer |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) ? 0x80 : 0;
                 IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
                 //if (swd_control.swd_delay)
                 //    swd_control.swd_delay(swd_control.delay_tick);
@@ -379,7 +379,7 @@ SYNC_READ_RESTART:
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         //if (swd_control.swd_delay)
         //    swd_control.swd_delay(swd_control.delay_tick);
-        temp = IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        temp = IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         //if (swd_control.swd_delay)
         //    swd_control.swd_delay(swd_control.delay_tick);
@@ -497,13 +497,13 @@ SYNC_READ_RESTART:
     buffer = ((request << 1) & 0x1e) | 0x81 | temp;
 
     // Request:[W]*8
-    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     temp = 8;
     while (temp) {
         if (buffer & 0x1)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);
@@ -515,7 +515,7 @@ SYNC_READ_RESTART:
     }
 
     // TRN:[C]*trn
-    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     bits = swd_control.trn;
     while (bits--) {
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -533,7 +533,7 @@ SYNC_READ_RESTART:
     NOP();
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
-    temp = IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -549,7 +549,7 @@ SYNC_READ_RESTART:
     NOP();
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 1;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 1;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -565,7 +565,7 @@ SYNC_READ_RESTART:
     NOP();
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 2;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 2;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
@@ -579,7 +579,7 @@ SYNC_READ_RESTART:
                 IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
                 if (swd_control.swd_delay)
                     swd_control.swd_delay(swd_control.delay_tick);
-                buffer |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) ? 0x80 : 0;
+                buffer |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) ? 0x80 : 0;
                 IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
                 if (swd_control.swd_delay)
                     swd_control.swd_delay(swd_control.delay_tick);
@@ -591,7 +591,7 @@ SYNC_READ_RESTART:
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);
-        temp = IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        temp = IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);
@@ -689,59 +689,59 @@ SYNC_READ_RESTART:
     buffer = ((request << 1) & 0x1e) | 0x81 | temp;
 
     // Request:[W]*8
-    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     // Request:[W]*8
-    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     
     if (buffer & (0x1 << 0))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 1))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 2))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 3))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 4))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 5))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 6))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     NOP();
     NOP();
     NOP();
     SWD_RW_TCK_QUICK_TOGGLE2();
     if (buffer & (0x1 << 7))
-        IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     else
-        IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     NOP();
     NOP();
     NOP();
     SWD_RW_TCK_QUICK_TOGGLE2();
 
     // TRN:[C]*trn
-    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     bits = swd_control.trn;
     while (bits--) {
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -759,7 +759,7 @@ SYNC_READ_RESTART:
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
-    temp = IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -768,7 +768,7 @@ SYNC_READ_RESTART:
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     //if (swd_control.swd_delay)
     //    swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 1;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 1;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -777,7 +777,7 @@ SYNC_READ_RESTART:
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     //if (swd_control.swd_delay)
     //    swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 2;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 2;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     //if (swd_control.swd_delay)
     //    swd_control.swd_delay(swd_control.delay_tick);
@@ -798,15 +798,15 @@ SYNC_READ_RESTART:
         NOP();
 
         // Data:[W]*32
-        IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         for (temp = 0; temp < 4; temp++) {
             buffer = w_data[temp];
             bits = 8;
             while (bits) {
                 if (buffer & 0x1)
-                    IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                    IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
                 else
-                    IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                    IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
                 IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
                 buffer >>= 1;
                 bits--;
@@ -822,9 +822,9 @@ SYNC_READ_RESTART:
         // Parity:[W]*1
         temp = get_parity_32bit(get_unaligned_le32(w_data));
         if (temp)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         NOP();
         NOP();
@@ -936,13 +936,13 @@ SYNC_READ_RESTART:
     buffer = ((request << 1) & 0x1e) | 0x81 | temp;
 
     // Request:[W]*8
-    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     temp = 8;
     while (temp) {
         if (buffer & 0x1)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);
@@ -954,7 +954,7 @@ SYNC_READ_RESTART:
     }
 
     // TRN:[C]*trn
-    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    IO_CFG_INPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     bits = swd_control.trn;
     while (bits--) {
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -972,7 +972,7 @@ SYNC_READ_RESTART:
     NOP();
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
-    temp = IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -988,7 +988,7 @@ SYNC_READ_RESTART:
     NOP();
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 1;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 1;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     NOP();
     NOP();
@@ -1004,7 +1004,7 @@ SYNC_READ_RESTART:
     NOP();
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
-    temp |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) << 2;
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) << 2;
     IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     if (swd_control.swd_delay)
         swd_control.swd_delay(swd_control.delay_tick);
@@ -1022,15 +1022,15 @@ SYNC_READ_RESTART:
         }
 
         // Data:[W]*32
-        IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+        IO_CFG_OUTPUT(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         for (temp = 0; temp < 4; temp++) {
             buffer = w_data[temp];
             bits = 8;
             while (bits) {
                 if (buffer & 0x1)
-                    IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                    IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
                 else
-                    IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                    IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
                 IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
                 buffer >>= 1;
                 bits--;
@@ -1045,9 +1045,9 @@ SYNC_READ_RESTART:
         // Parity:[W]*1
         temp = get_parity_32bit(get_unaligned_le32(w_data));
         if (temp)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);
@@ -1141,7 +1141,7 @@ static void swd_read_io_quick(uint8_t *data, uint32_t bits)
         while (temp--) {
             buf >>= 1;
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            buf |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) ? 0x80 : 0;
+            buf |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) ? 0x80 : 0;
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         }
         *data++ = buf;
@@ -1152,7 +1152,7 @@ static void swd_read_io_quick(uint8_t *data, uint32_t bits)
         do {
             buf >>= 1;
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            buf |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) ? 0x80 : 0;
+            buf |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) ? 0x80 : 0;
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         } while (--bits);
         *data = buf >> temp;
@@ -1171,7 +1171,7 @@ static void swd_read_io_slow(uint8_t *data, uint32_t bits)
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
-            buf |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) ? 0x80 : 0;
+            buf |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) ? 0x80 : 0;
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
@@ -1186,7 +1186,7 @@ static void swd_read_io_slow(uint8_t *data, uint32_t bits)
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
-            buf |= IO_GET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN) ? 0x80 : 0;
+            buf |= IO_GET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN) ? 0x80 : 0;
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
@@ -1205,9 +1205,9 @@ static void swd_write_io_quick(uint8_t *data, uint32_t bits)
         bits -= temp;
         while (temp) {
             if (buf & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             buf >>= 1;
             temp--;
@@ -1221,9 +1221,9 @@ static void swd_write_io_quick(uint8_t *data, uint32_t bits)
     buf = *data++;
     while (bits) {
         if (buf & 0x1)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         buf >>= 1;
         bits--;
@@ -1244,9 +1244,9 @@ static void swd_write_io_slow(uint8_t *data, uint32_t bits)
         bits -= temp;
         while (temp) {
             if (buf & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
@@ -1261,9 +1261,9 @@ static void swd_write_io_slow(uint8_t *data, uint32_t bits)
     buf = *data++;
     while (bits) {
         if (buf & 0x1)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
         if (swd_control.swd_delay)
             swd_control.swd_delay(swd_control.delay_tick);

@@ -283,9 +283,9 @@ static void jtag_rw_quick(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             //if (jtag_control.jtag_delay)
             //    jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -313,9 +313,9 @@ static void jtag_rw_quick(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             //if (jtag_control.jtag_delay)
             //    jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -347,9 +347,9 @@ static void jtag_rw_slow(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *t
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             if (jtag_control.jtag_delay)
                 jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -377,9 +377,9 @@ static void jtag_rw_slow(uint32_t bitlen, uint8_t *tms, uint8_t *tdi, uint8_t *t
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             if (jtag_control.jtag_delay)
                 jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -411,9 +411,9 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
         else
             IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
         if (tms_last & 0x1)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
         //if (jtag_control.jtag_delay)
         //    jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -452,9 +452,9 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             //if (jtag_control.jtag_delay)
             //    jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -482,9 +482,9 @@ static void jtag_rw_dr_quick(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             //if (jtag_control.jtag_delay)
             //    jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -515,9 +515,9 @@ static void jtag_rw_dr_slow(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t 
         else
             IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
         if (tms_last & 0x1)
-            IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         else
-            IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+            IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
         IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
         if (jtag_control.jtag_delay)
             jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -556,9 +556,9 @@ static void jtag_rw_dr_slow(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t 
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             if (jtag_control.jtag_delay)
                 jtag_control.jtag_delay(jtag_control.delay_tick);
@@ -586,9 +586,9 @@ static void jtag_rw_dr_slow(uint32_t bytelen_dma, uint32_t bitlen_tail, uint8_t 
             else
                 IO_CLEAR(PERIPHERAL_GPIO_TDI_IDX, PERIPHERAL_GPIO_TDI_PIN);
             if (tms_last & 0x1)
-                IO_SET(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             else
-                IO_CLEAR(PERIPHERAL_GPIO_TMS_IDX, PERIPHERAL_GPIO_TMS_PIN);
+                IO_CLEAR(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
             IO_CLEAR(PERIPHERAL_GPIO_TCK_JTAG_IDX, PERIPHERAL_GPIO_TCK_JTAG_PIN);
             if (jtag_control.jtag_delay)
                 jtag_control.jtag_delay(jtag_control.delay_tick);
