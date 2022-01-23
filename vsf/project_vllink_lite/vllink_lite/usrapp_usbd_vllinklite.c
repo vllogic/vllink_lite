@@ -23,15 +23,14 @@ typedef struct usbd_vllinklite_const_t {
     } usbd;
 } usbd_vllinklite_const_t;
 
-
 #ifdef APP_CFG_CDCEXT_SUPPORT
-describe_block_stream(cdcext_ext2usb_stream, 4, APP_CFG_CDCEXT_PKT_SIZE)
-describe_block_stream(cdcext_usb2ext_stream, 3, APP_CFG_CDCEXT_PKT_SIZE)
+describe_block_stream(cdcext_ext2usb_stream, APP_CFG_CDCEXT_EXT2USB_PKT_NUM, APP_CFG_CDCEXT_PKT_SIZE)
+describe_block_stream(cdcext_usb2ext_stream, APP_CFG_CDCEXT_USB2EXT_PKT_NUM, APP_CFG_CDCEXT_PKT_SIZE)
 #endif
 
 #ifdef APP_CFG_CDCSHELL_SUPPORT
-describe_block_stream(cdcshell_shell2usb_stream, 4, APP_CFG_CDCEXT_PKT_SIZE)
-describe_block_stream(cdcshell_usb2shell_stream, 3, APP_CFG_CDCEXT_PKT_SIZE)
+describe_block_stream(cdcshell_shell2usb_stream, APP_CFG_CDCSHELL_EXT2USB_PKT_NUM, APP_CFG_CDCEXT_PKT_SIZE)
+describe_block_stream(cdcshell_usb2shell_stream, APP_CFG_CDCSHELL_USB2EXT_PKT_NUM, APP_CFG_CDCEXT_PKT_SIZE)
 #endif
 
 
