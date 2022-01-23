@@ -56,7 +56,19 @@ typedef struct usbd_vllinklite_t {
     } usbd;
 } usbd_vllinklite_t;
 
+#ifdef APP_CFG_SERIAL_ATTACH_UUID
 static usbd_vllinklite_nonconst_t __usrapp_usbd_vllinklite_nonconst;
+#else
+static const usbd_vllinklite_nonconst_t __usrapp_usbd_vllinklite_nonconst = {
+    .usbd                       = {
+        .str_serial             = {
+            APP_CFG_SERIAL_HEADER_STR_ARRAY_LEN + 2,
+            USB_DT_STRING,
+            APP_CFG_SERIAL_HEADER_STR_ARRAY,
+        },
+    },
+};
+#endif
 
 static const usbd_vllinklite_const_t __usrapp_usbd_vllinklite_const = {
     .usbd                       = {

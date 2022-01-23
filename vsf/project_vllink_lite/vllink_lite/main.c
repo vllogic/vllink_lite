@@ -81,6 +81,7 @@ usrapp_t usrapp                 = {
 #include "usrapp_usbd_common.c"
 #include "usrapp_usbd_vllinklite.c"
 
+#ifdef APP_CFG_SERIAL_ATTACH_UUID
 static void usrapp_init_serial(uint8_t *serial, uint16_t size)
 {
     ASSERT(size > (2 + APP_CFG_SERIAL_HEADER_STR_LENGTH));
@@ -109,6 +110,7 @@ static void usrapp_init_serial(uint8_t *serial, uint16_t size)
         serial += 2;
     }
 }
+#endif
 
 static uint16_t usrapp_get_serial(uint8_t *serial)
 {
@@ -150,6 +152,7 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
             vsfhal_usart_fini(PERIPHERAL_UART_EXT_IDX);
         }
         break;
+    #if SWO_UART
     case PERIPHERAL_UART_SWO_IDX:
         if ((mode && *mode != usrapp.usart_swo_mode) || (usrapp.usart_swo_baud == 0)) {
             if (mode)
@@ -177,15 +180,13 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
             vsfhal_usart_fini(PERIPHERAL_UART_SWO_IDX);
         }
         break;
+    #endif
     }
 }
 
 static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate)
 {
-    struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
-    uint32_t apb = info->apb1_freq_hz;
-    uint32_t div = (apb + baudrate - 1) / baudrate;
-    return apb / div;
+    return vsfhal_usart_config(idx, baudrate, USART_GET_BAUD_ONLY);
 }
 
 static vsf_callback_timer_t cb_timer;
@@ -226,6 +227,7 @@ static void connect_usbd(vsf_callback_timer_t *timer)
 #endif
 }
 
+#ifdef APP_CFG_CDCEXT_SUPPORT
 // USB_CDCACM_REQ_SET_LINE_CODING
 static vsf_err_t usrapp_cdcext_set_line_coding(usb_cdcacm_line_coding_t *line_coding)
 {
@@ -302,6 +304,7 @@ static vsf_err_t usrapp_cdcext_set_control_line(uint8_t control_line)
     #endif
     return VSF_ERR_NONE;
 }
+#endif
 
 #ifdef APP_CFG_CDCSHELL_SUPPORT
 static vsf_err_t usrapp_cdcshell_set_line_coding(usb_cdcacm_line_coding_t *line_coding)
@@ -406,7 +409,9 @@ int main(void)
     vsf_ptshell_init(&vsf_ptshell);
     #endif
     
+    #ifdef APP_CFG_SERIAL_ATTACH_UUID
     usrapp_init_serial(__usrapp_usbd_vllinklite_nonconst.usbd.str_serial, sizeof(__usrapp_usbd_vllinklite_nonconst.usbd.str_serial));
+    #endif
 
     PERIPHERAL_LED_RED_INIT();
     PERIPHERAL_LED_GREEN_INIT();

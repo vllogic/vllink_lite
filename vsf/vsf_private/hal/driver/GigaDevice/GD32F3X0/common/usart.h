@@ -51,6 +51,8 @@ enum usart_mode_t{
     USART_DATA_INV              = (0x1ul << (0 + 18)),
     USART_TX_INV                = (0x1ul << (0 + 17)),
     USART_RX_INV                = (0x1ul << (0 + 16)),
+
+    USART_GET_BAUD_ONLY         = (0x1ul << 30),
     USART_RESET_BAUD_ONLY       = (0x1ul << 31),
 };
 

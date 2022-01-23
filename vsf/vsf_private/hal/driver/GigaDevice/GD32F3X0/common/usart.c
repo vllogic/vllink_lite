@@ -171,7 +171,7 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
     uint8_t dma_idx = DMA_INVALID_IDX;
     struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
 
-    if (mode == USART_RESET_BAUD_ONLY) {
+    if ((mode == USART_GET_BAUD_ONLY) || (mode == USART_RESET_BAUD_ONLY)) {
         switch (idx) {
         #if USART0_ENABLE
         case USART0_IDX:
@@ -185,10 +185,15 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
         #endif
         }
 
-        USART_CTL0(usartx) &= ~USART_CTL0_UEN;
-        USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
-        USART_RT(usartx) = min(0xffffff, baudrate * 2 / 10000);      // 200us
-        USART_CTL0(usartx) |= USART_CTL0_UEN;
+        if (mode == USART_RESET_BAUD_ONLY) {
+            USART_CTL0(usartx) &= ~USART_CTL0_UEN;
+            USART_BAUD(usartx) = (temp + baudrate - 1) / baudrate;
+            USART_RT(usartx) = min(0xffffff, baudrate * 2 / 10000);      // 200us
+            USART_CTL0(usartx) |= USART_CTL0_UEN;
+        } else {
+            uint32_t div = (temp + baudrate - 1) / baudrate;
+            return temp / div;
+        }
     } else {
         USART_CTL0(usartx) = 0;
         USART_STAT(usartx) = 0;

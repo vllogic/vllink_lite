@@ -58,40 +58,5 @@
 #include "proj_cfg.h"
 #include "brd_cfg.h"
 
-
-/*
-	DAP Config
-*/
-//#define DAP_PRODUCT                                     
-//#define DAP_SER_NUM                                     
-#define DAP_FW_VER                                      "0254" // Firmware Version
-//#define DAP_DEVICE_VENDOR                               
-//#define DAP_DEVICE_NAME                                 
-
-#define DAP_SWD                                         1
-#define DAP_JTAG                                        1
-#define DAP_JTAG_DEV_CNT                                8
-#define DAP_DEFAULT_PORT                                1
-#define DAP_DEFAULT_SWJ_CLOCK                           4000000
-#define DAP_CTRL_PACKET_SIZE                            64
-#define DAP_BULK_PACKET_SIZE                            512
-#define DAP_HID_PACKET_SIZE                             64
-#if DAP_BULK_PACKET_SIZE > DAP_HID_PACKET_SIZE
-#   define DAP_PACKET_SIZE                              DAP_BULK_PACKET_SIZE
-#else
-#   define DAP_PACKET_SIZE                              DAP_HID_PACKET_SIZE
-#endif
-#define DAP_PACKET_COUNT                                4
-#define TIMESTAMP_CLOCK                                 1000000			// 1M
-#define SWO_UART                                        1
-#define SWO_STREAM                                      0
-#define SWO_UART_MAX_BAUDRATE                           3200000
-#define SWO_UART_MIN_BAUDRATE                           2000
-#define SWO_MANCHESTER                                  0
-#define SWO_BUFFER_SIZE                                 512
-#define VENDOR_UART                                     0
-#define VENDOR_UART_BUFFER_SIZE                         256
-
-
 #endif
 
