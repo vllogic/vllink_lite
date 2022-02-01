@@ -149,7 +149,7 @@
 //#define DAP_DEVICE_NAME                                 
 
 #define DAP_SWD                                         1
-#define DAP_JTAG                                        1
+#define DAP_JTAG                                        0
 #define DAP_JTAG_DEV_CNT                                8
 #define DAP_DEFAULT_PORT                                1
 #define DAP_DEFAULT_SWJ_CLOCK                           4000000

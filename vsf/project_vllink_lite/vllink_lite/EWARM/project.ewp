@@ -2192,7 +2192,7 @@
                 </option>
                 <option>
                     <name>OGChipSelectEditMenu</name>
-                    <state>GD32F350x8	GD GD32F350x8</state>
+                    <state>MT32F006	MIC MT32F006</state>
                 </option>
                 <option>
                     <name>GenLowLevelInterface</name>
@@ -2231,7 +2231,7 @@
                 <option>
                     <name>GBECoreSlave</name>
                     <version>27</version>
-                    <state>39</state>
+                    <state>34</state>
                 </option>
                 <option>
                     <name>OGUseCmsis</name>
@@ -2248,11 +2248,11 @@
                 <option>
                     <name>CoreVariant</name>
                     <version>27</version>
-                    <state>39</state>
+                    <state>34</state>
                 </option>
                 <option>
                     <name>GFPUDeviceSlave</name>
-                    <state>GD32F350x8	GD GD32F350x8</state>
+                    <state>MT32F006	MIC MT32F006</state>
                 </option>
                 <option>
                     <name>FPU2</name>
@@ -2271,7 +2271,7 @@
                 <option>
                     <name>GFPUCoreSlave2</name>
                     <version>27</version>
-                    <state>39</state>
+                    <state>34</state>
                 </option>
                 <option>
                     <name>OGCMSISPackSelectDevice</name>
@@ -2312,7 +2312,7 @@
                 </option>
                 <option>
                     <name>DSPExtension</name>
-                    <state>1</state>
+                    <state>0</state>
                 </option>
                 <option>
                     <name>TrustZone</name>
@@ -2400,7 +2400,7 @@
                 <option>
                     <name>CCAllowList</name>
                     <version>1</version>
-                    <state>11111110</state>
+                    <state>00000000</state>
                 </option>
                 <option>
                     <name>CCDebugInfo</name>
@@ -2485,7 +2485,7 @@
                 </option>
                 <option>
                     <name>CCOptLevel</name>
-                    <state>3</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CCOptStrategy</name>
@@ -2494,7 +2494,7 @@
                 </option>
                 <option>
                     <name>CCOptLevelSlave</name>
-                    <state>3</state>
+                    <state>1</state>
                 </option>
                 <option>
                     <name>CompilerMisraRules98</name>
@@ -7438,6 +7438,9 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\MIC\MT006\jtag.c</name>
+                            <excluded>
+                                <configuration>VllinkLite_MT006</configuration>
+                            </excluded>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\MIC\MT006\jtag.h</name>

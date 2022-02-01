@@ -3014,7 +3014,7 @@
                 </option>
                 <option>
                     <name>MemFile</name>
-                    <state>$TOOLKIT_DIR$\CONFIG\debugger\GD\GD32F350x8.ddf</state>
+                    <state>$TOOLKIT_DIR$\CONFIG\debugger\MIC\MT32F006.ddf</state>
                 </option>
                 <option>
                     <name>RunToEnable</name>
@@ -3054,7 +3054,7 @@
                 </option>
                 <option>
                     <name>OCDynDriverList</name>
-                    <state>STLINK_ID</state>
+                    <state>CMSISDAP_ID</state>
                 </option>
                 <option>
                     <name>OCLastSavedByProductVersion</name>
@@ -3082,7 +3082,7 @@
                 </option>
                 <option>
                     <name>FlashLoadersV3</name>
-                    <state>$TOOLKIT_DIR$\config\flashloader\GD\FlashGD32F350x8.board</state>
+                    <state>$TOOLKIT_DIR$\config\flashloader\MIC\FlashMT32F006.board</state>
                 </option>
                 <option>
                     <name>OCImagesSuppressCheck1</name>
@@ -3266,7 +3266,7 @@
                 <option>
                     <name>CMSISDAPResetList</name>
                     <version>1</version>
-                    <state>9</state>
+                    <state>4</state>
                 </option>
                 <option>
                     <name>CMSISDAPHWResetDuration</name>
@@ -3303,7 +3303,7 @@
                 <option>
                     <name>CMSISDAPJtagSpeedList</name>
                     <version>0</version>
-                    <state>0</state>
+                    <state>9</state>
                 </option>
                 <option>
                     <name>CMSISDAPBreakpointRadio</name>

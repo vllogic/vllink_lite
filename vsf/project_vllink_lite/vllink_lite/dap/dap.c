@@ -27,6 +27,7 @@ static uint64_t buf_tms, buf_tdi, buf_tdo;
 
 static vsf_err_t port_init(dap_param_t* param, uint8_t port)
 {
+#if DAP_SWD
     if (port == DAP_PORT_SWD) {
         vsfhal_swd_init(PERIPHERAL_SWD_PRIORITY);
         if (param->speed_khz) { // for keil
@@ -34,34 +35,48 @@ static vsf_err_t port_init(dap_param_t* param, uint8_t port)
                 param->transfer.idle_cycles, param->swd_conf.turnaround,
                 param->swd_conf.data_phase);
         }
-    } else if (port == DAP_PORT_JTAG) {
+    }
+#endif
+#if DAP_JTAG
+    if (port == DAP_PORT_JTAG) {
         vsfhal_jtag_init(PERIPHERAL_JTAG_PRIORITY);
         if (param->speed_khz) { // for keil
             vsfhal_jtag_config(param->speed_khz, param->transfer.retry_count,
                 param->transfer.idle_cycles);
         }
     }
+#endif
     param->port_io_need_reconfig = false;
     return VSF_ERR_NONE;
 }
 
 static vsf_err_t port_fini(uint8_t port)
 {
+#if DAP_SWD
     if (port == DAP_PORT_SWD) {
         vsfhal_swd_fini();
-    } else if (port == DAP_PORT_JTAG) {
+    }
+#endif
+#if DAP_JTAG
+    if (port == DAP_PORT_JTAG) {
         vsfhal_jtag_fini();
     }
+#endif
     return VSF_ERR_NONE;
 }
 
 static vsf_err_t port_io_reconfig(dap_param_t* param, uint8_t port)
 {
+#if DAP_SWD
     if (port == DAP_PORT_SWD) {
         vsfhal_swd_io_reconfig();
-    } else if (port == DAP_PORT_JTAG) {
+    }
+#endif
+#if DAP_JTAG
+    if (port == DAP_PORT_JTAG) {
         vsfhal_jtag_io_reconfig();
     }
+#endif
     param->port_io_need_reconfig = false;
     return VSF_ERR_NONE;
 }
@@ -416,14 +431,18 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                 if (!speed_khz)
                     speed_khz = 1;
                 param->speed_khz = speed_khz;
+                #if DAP_SWD
                 if (param->port == DAP_PORT_SWD)
                     vsfhal_swd_config(param->speed_khz, param->transfer.retry_count,
                             param->transfer.idle_cycles,
                             param->swd_conf.turnaround,
                             param->swd_conf.data_phase);
-                else if (param->port == DAP_PORT_JTAG)
+                #endif
+                #if DAP_JTAG
+                if (param->port == DAP_PORT_JTAG)
                     vsfhal_jtag_config(param->speed_khz, param->transfer.retry_count,
                             param->transfer.idle_cycles);
+                #endif
                 response[resp_ptr++] = DAP_OK;
             } break;
             case ID_DAP_SWJ_Sequence: {
@@ -435,6 +454,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                 if (!bitlen)
                     bitlen = 256;
 
+                #if DAP_SWD
                 if (param->port == DAP_PORT_SWD) {
                     #ifdef SWD_ASYNC
                     vsfhal_swd_clear();
@@ -445,7 +465,11 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     vsfhal_swd_wait();
                     #endif
                     response[resp_ptr++] = DAP_OK;
-                } else if (param->port == DAP_PORT_JTAG) {
+                    break;
+                }
+                #endif
+                #if DAP_JTAG
+                if (param->port == DAP_PORT_JTAG) {
                     uint8_t bytes;
                     
                     #ifdef JTAG_ASYNC
@@ -471,11 +495,13 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     vsfhal_jtag_raw(bitlen, (uint8_t*)&buf_tms, (uint8_t*)&buf_tdi, (uint8_t*)&buf_tdo);
                     response[resp_ptr++] = DAP_OK;
                     #endif
-                } else {
-                    req_ptr += (bitlen + 7) >> 3;
-                    response[resp_ptr++] = DAP_ERROR;
+                    break;
                 }
+                #endif
+                req_ptr += (bitlen + 7) >> 3;
+                response[resp_ptr++] = DAP_ERROR;
             } break;
+            #if DAP_SWD
             case ID_DAP_SWD_Configure: {
                 uint8_t config = request[req_ptr++];
                 param->swd_conf.turnaround = (config & 0x03) + 1;
@@ -520,6 +546,8 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     response[resp_ptr++] = DAP_ERROR;
                 }
             } break;
+            #endif
+            #if DAP_JTAG
             case ID_DAP_JTAG_Sequence: {
                 if (param->port == DAP_PORT_JTAG) {
                     #ifdef JTAG_ASYNC
@@ -662,6 +690,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     response[resp_ptr++] = DAP_ERROR;
                 }
             } break;
+            #endif
             case ID_DAP_TransferConfigure: {
                 param->transfer.idle_cycles = request[req_ptr];
                 param->transfer.retry_count = max(get_unaligned_le16(request + req_ptr + 1), 255);
@@ -673,13 +702,17 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                         param->port = DAP_PORT_JTAG;
                 }
 
+                #if DAP_SWD
                 if (param->port == DAP_PORT_SWD)
                     vsfhal_swd_config(param->speed_khz,
                             param->transfer.retry_count, param->transfer.idle_cycles,
                             param->swd_conf.turnaround, param->swd_conf.data_phase);
-                else if (param->port == DAP_PORT_JTAG)
+                #endif
+                #if DAP_JTAG
+                if (param->port == DAP_PORT_JTAG)
                     vsfhal_jtag_config(param->speed_khz, param->transfer.retry_count,
                             param->transfer.idle_cycles);
+                #endif
                 response[resp_ptr++] = DAP_OK;
             } break;
             case ID_DAP_Transfer: {
@@ -695,6 +728,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                 if (param->port == DAP_PORT_SWD)
                 #ifdef SWD_ASYNC
                 {
+                    #if DAP_SWD
                     bool check_write = false;
 
                     vsfhal_swd_clear();
@@ -838,9 +872,11 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                         }
                     }
                     transfer_ack = vsfhal_swd_wait();
+                    #endif
                 }
                 #else
                 {
+                    #if DAP_SWD
                     bool check_write = false;
 
                     transfer_num = request[req_ptr + 1];
@@ -978,11 +1014,13 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                             transfer_ack = vsfhal_swd_read(DP_RDBUFF | DAP_TRANSFER_RnW, NULL);
                         }
                     }
+                    #endif
                 }
                 #endif
                 else if (param->port == DAP_PORT_JTAG)
                 #ifdef JTAG_ASYNC
                 {
+                    #if DAP_JTAG
                     uint8_t idle, jtag_ir = 0;
                     uint16_t bitlen, dr_before, dr_after;
 
@@ -1216,9 +1254,11 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                             resp_ptr += 4;
                         }
                     }
+                    #endif
                 }
                 #else
                 {
+                    #if DAP_JTAG
                     uint8_t jtag_ir = 0;
                     uint16_t dr_before, dr_after;
 
@@ -1397,6 +1437,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                             resp_ptr += 4;
                         }
                     }
+                    #endif
                 }
                 #endif
                 else
@@ -1432,6 +1473,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                 if (param->port == DAP_PORT_SWD)
                 #ifdef SWD_ASYNC
                 {
+                    #if DAP_SWD
                     vsfhal_swd_clear();
 
                     transfer_num = get_unaligned_le16(request + req_ptr + 1);
@@ -1469,9 +1511,11 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                         transfer_ack = vsfhal_swd_read(DP_RDBUFF | DAP_TRANSFER_RnW, NULL);
                     }
                     transfer_ack = vsfhal_swd_wait();
+                    #endif
                 }
                 #else
                 {
+                    #if DAP_SWD
                     transfer_num = get_unaligned_le16(request + req_ptr + 1);
                     req_ptr += 3;
                     resp_ptr += 3;
@@ -1506,11 +1550,13 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                         // Check last write
                         transfer_ack = vsfhal_swd_read(DP_RDBUFF | DAP_TRANSFER_RnW, NULL);
                     }
+                    #endif
                 }
                 #endif
                 else if (param->port == DAP_PORT_JTAG)
                 #ifdef JTAG_ASYNC
                 {
+                    #if DAP_JTAG
                     uint8_t idle, jtag_ir = 0;
                     uint16_t bitlen, dr_before, dr_after;
 
@@ -1617,9 +1663,11 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                         if (transfer_ack != DAP_TRANSFER_OK)
                             goto DAP_TransferBlock_END;
                     }
+                    #endif
                 }
                 #else
                 {
+                    #if DAP_JTAG
                     uint8_t jtag_ir = 0;
                     uint16_t dr_before, dr_after;
 
@@ -1693,9 +1741,10 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                         if (transfer_ack != DAP_TRANSFER_OK)
                             goto DAP_TransferBlock_END;
                     }
+                    #endif
                 }
                 #endif
-                else 
+                else
                 {
                 DAP_TransferBlock_ERROR:
                     if (request[req_ptr + 3] & DAP_TRANSFER_RnW) {
@@ -1715,6 +1764,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                 uint16_t transfer_ack;
 
                 if (param->port == DAP_PORT_SWD) {
+                    #if DAP_SWD
                     #ifdef SWD_ASYNC
                     vsfhal_swd_clear();
                     #endif
@@ -1724,7 +1774,9 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     vsfhal_swd_wait();
                     #endif
                     response[resp_ptr++] = DAP_OK;
+                    #endif
                 } else if (param->port == DAP_PORT_JTAG) {
+                    #if DAP_JTAG
                     #ifdef JTAG_ASYNC
                     uint16_t bitlen;
                     #endif
@@ -1765,6 +1817,7 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                     if (transfer_ack != DAP_TRANSFER_OK)
                         goto DAP_WriteABORT_ERROR;
                     response[resp_ptr++] = DAP_OK;
+                    #endif
                 } else {
                 DAP_WriteABORT_EXIT:
                     req_ptr += 5;
