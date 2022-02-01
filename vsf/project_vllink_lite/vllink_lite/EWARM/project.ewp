@@ -3760,8 +3760,8 @@
                         </option>
                         <option>
                             <name>CCDefines</name>
-                            <state>PROJ_CFG_VLLINKLITE</state>
-                            <state>BRD_CFG_VLLINKLITE_GD32F350</state>
+                            <state>PROJ_CFG_VLLINKLITE_MT006</state>
+                            <state>BRD_CFG_VLLINKLITE_MT006</state>
                         </option>
                         <option>
                             <name>CCPreprocFile</name>
