@@ -191,7 +191,7 @@ static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate)
 
 static vsf_callback_timer_t cb_timer;
 
-#define DAP_TEST_PORT                   DAP_PORT_SWD   // 0, DAP_PORT_SWD, DAP_PORT_JTAG
+#define DAP_TEST_PORT                   0   // 0, DAP_PORT_SWD, DAP_PORT_JTAG
 #define DAP_TEST_SPEED_KHZ              4000
 #define UART_SWO_TEST_ENABLE            0
 #define UART_EXT_TEST_ENABLE            0
@@ -204,7 +204,7 @@ static void do_dap_test(vsf_callback_timer_t *timer)
 
 static void connect_usbd(vsf_callback_timer_t *timer)
 {
-    //vk_usbd_connect(&__usrapp_usbd_vllinklite.usbd.dev);
+    vk_usbd_connect(&__usrapp_usbd_vllinklite.usbd.dev);
     
 #if DAP_TEST_PORT
     timer->on_timer = do_dap_test;
@@ -405,6 +405,7 @@ void vsf_ptshell_init(vsf_ptshell_t *ptshell)
 
 int main(void)
 {
+#if 1
     #if VSF_USE_PTSHELL == ENABLED
     vsf_ptshell_init(&vsf_ptshell);
     #endif
@@ -450,7 +451,7 @@ int main(void)
 
     dap_init(&usrapp.dap, vsf_prio_0);
 
-    //vk_usbd_init(&__usrapp_usbd_vllinklite.usbd.dev);
+    vk_usbd_init(&__usrapp_usbd_vllinklite.usbd.dev);
     vk_usbd_disconnect(&__usrapp_usbd_vllinklite.usbd.dev);
     
     cb_timer.on_timer = connect_usbd;
@@ -458,6 +459,7 @@ int main(void)
 
     #ifdef APP_CFG_CDCSHELL_SUPPORT
     #endif
+#endif
     return 0;
 }
 
