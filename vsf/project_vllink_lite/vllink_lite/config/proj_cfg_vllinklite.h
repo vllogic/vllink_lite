@@ -53,8 +53,13 @@
 #	define APP_CFG_CMSIS_DAP_V2_SUPPORT
 #	define APP_CFG_WEBUSB_SUPPORT
 #	define APP_CFG_CDCEXT_SUPPORT
+#       define APP_CFG_CDCEXT_EXT2USB_PKT_NUM           4
+#       define APP_CFG_CDCEXT_USB2EXT_PKT_NUM           3
 #       define APP_CFG_CDCEXT_PKT_SIZE                  64
 //#   define APP_CFG_CDCSHELL_SUPPORT
+#       define APP_CFG_CDCSHELL_EXT2USB_PKT_NUM         4
+#       define APP_CFG_CDCSHELL_USB2EXT_PKT_NUM         3
+#       define APP_CFG_CDCSHELL_PKT_SIZE                64
 #   define APP_CFG_CDCEXT_DATA_OUT_EP                   2
 #   define APP_CFG_CDCEXT_DATA_IN_EP                    2
 #   define APP_CFG_CDCEXT_NOTIFY_EP                     3
@@ -76,7 +81,7 @@
 #   define VSF_USE_HEAP                                 DISABLED
 #endif
 
-#define CMSIS_DAP_V2_PACKET_SIZE                        512
+#define CMSIS_DAP_V2_PACKET_SIZE                        256
 #define WEBUSB_DAP_PACKET_SIZE                          64
 
 #ifdef APP_CFG_CMSIS_DAP_V2_SUPPORT
@@ -154,14 +159,14 @@
 #define DAP_DEFAULT_PORT                                1
 #define DAP_DEFAULT_SWJ_CLOCK                           4000000
 #define DAP_CTRL_PACKET_SIZE                            64
-#define DAP_BULK_PACKET_SIZE                            512
+#define DAP_BULK_PACKET_SIZE                            256
 #define DAP_HID_PACKET_SIZE                             64
 #if DAP_BULK_PACKET_SIZE > DAP_HID_PACKET_SIZE
 #   define DAP_PACKET_SIZE                              DAP_BULK_PACKET_SIZE
 #else
 #   define DAP_PACKET_SIZE                              DAP_HID_PACKET_SIZE
 #endif
-#define DAP_PACKET_COUNT                                4
+#define DAP_PACKET_COUNT                                2
 #define TIMESTAMP_CLOCK                                 1000000			// 1M
 #define SWO_UART                                        1
 #define SWO_STREAM                                      0
