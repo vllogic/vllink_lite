@@ -363,12 +363,15 @@ void vsfhal_swd_seqout(uint8_t *data, uint32_t bitlen)
             while (SPI0->SR & SPI_SR_BSY);
             dummy = SPI0->DR;
         } while (bytes);
-        SWDIO_MO_TO_OUTPP();
+        SWDIO_MO_TO_IN();
         SWCLK_TO_OUTPP();
     }
     bitlen = bitlen & 0x7;
-    if (bitlen)
+    if (bitlen) {
+        SWDIO_MO_TO_OUTPP();
         swd_control.swd_write_io(data, bitlen);
+        SWDIO_MO_TO_IN();
+    }
 }
 
 void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen)
@@ -388,8 +391,9 @@ void vsfhal_swd_seqin(uint8_t *data, uint32_t bitlen)
         SWCLK_TO_OUTPP();
     }
     bitlen = bitlen & 0x7;
-    if (bitlen)
+    if (bitlen) {
         swd_control.swd_read_io(data, bitlen);
+    }
 }
 
 uint32_t vsfhal_swd_read(uint32_t request, uint8_t *r_data)
