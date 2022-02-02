@@ -7,7 +7,7 @@
 
 #define GPIO0_ENABLE                1
 #define GPIO1_ENABLE                1
-#define GPIO2_ENABLE                1
+#define GPIO2_ENABLE                0
 
 #define USART_STREAM_ENABLE         1
 #define USART_STREAM_EDA_PRIORITY   vsf_prio_1      // same as VSF_USBD_CFG_EDA_PRIORITY
@@ -50,12 +50,12 @@
 // JTAG (SWD: TMS->SWDIO, TCK->SWCLK, RST->SWRST, TDO->SWO)
 #define PERIPHERAL_GPIO_TDI_IDX             GPIO1_IDX
 #define PERIPHERAL_GPIO_TDI_PIN             1
-#define PERIPHERAL_GPIO_TMS_MO_IDX          GPIO2_IDX
-#define PERIPHERAL_GPIO_TMS_MO_PIN          3
-#define PERIPHERAL_GPIO_TMS_MO_AF           IO_FUNC_4
-#define PERIPHERAL_GPIO_TMS_MI_IDX          GPIO2_IDX
-#define PERIPHERAL_GPIO_TMS_MI_PIN          4
-#define PERIPHERAL_GPIO_TMS_MI_AF           IO_FUNC_4
+#define PERIPHERAL_GPIO_TMS_MO_IDX          GPIO0_IDX
+#define PERIPHERAL_GPIO_TMS_MO_PIN          7
+#define PERIPHERAL_GPIO_TMS_MO_AF           IO_FUNC_5
+#define PERIPHERAL_GPIO_TMS_MI_IDX          GPIO0_IDX
+#define PERIPHERAL_GPIO_TMS_MI_PIN          6
+#define PERIPHERAL_GPIO_TMS_MI_AF           IO_FUNC_5
 #define PERIPHERAL_GPIO_TCK_SWD_IDX         GPIO1_IDX
 #define PERIPHERAL_GPIO_TCK_SWD_PIN         0
 #define PERIPHERAL_GPIO_TCK_SWD_AF          IO_FUNC_1
@@ -63,11 +63,11 @@
 #define PERIPHERAL_GPIO_TCK_JTAG_PIN        PERIPHERAL_GPIO_TCK_SWD_PIN
 #define PERIPHERAL_GPIO_TCK_JTAG_AF         PERIPHERAL_GPIO_TCK_SWD_AF
 #define PERIPHERAL_GPIO_SRST_IDX            GPIO0_IDX
-#define PERIPHERAL_GPIO_SRST_PIN            6
+#define PERIPHERAL_GPIO_SRST_PIN            1
 #define PERIPHERAL_GPIO_TDO_IDX             GPIO1_IDX
 #define PERIPHERAL_GPIO_TDO_PIN             7
 #define PERIPHERAL_GPIO_TRST_IDX            GPIO0_IDX
-#define PERIPHERAL_GPIO_TRST_PIN            5
+#define PERIPHERAL_GPIO_TRST_PIN            2
 #define PERIPHERAL_GPIO_TX0_IDX             GPIO0_IDX
 #define PERIPHERAL_GPIO_TX0_PIN             5
 #define PERIPHERAL_GPIO_RX0_IDX             GPIO0_IDX

@@ -68,12 +68,12 @@ typedef struct
                                                 IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN, PERIPHERAL_GPIO_TMS_MI_AF);\
                                                 IO_CON_CONFIG(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN, PERIPHERAL_GPIO_TCK_SWD_AF);} while (0);
 
-#define SWDIO_MO_TO_IN()                    (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT))
-#define SWDIO_MO_TO_OUTPP()                 (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN, IO_OUTPUT))
+#define SWDIO_MO_TO_IN()                    (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT), GPIOBANK0->DIR_CLR = (0x1ul << (PERIPHERAL_GPIO_TMS_MO_IDX * 8 + PERIPHERAL_GPIO_TMS_MO_PIN)))
+#define SWDIO_MO_TO_OUTPP()                 (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN, IO_OUTPUT), GPIOBANK0->DIR_SET = (0x1ul << (PERIPHERAL_GPIO_TMS_MO_IDX * 8 + PERIPHERAL_GPIO_TMS_MO_PIN)))
 #define SWDIO_MO_TO_AFPP()                  (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN, PERIPHERAL_GPIO_TMS_MO_AF))
 #define SWDIO_MI_TO_IN()                    (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_FLOAT))
 #define SWDIO_MI_TO_AFIN()                  (IO_CON_CONFIG(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN, PERIPHERAL_GPIO_TMS_MI_AF))
-#define SWCLK_TO_OUTPP()                    (IO_CON_CONFIG(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN, IO_OUTPUT))
+#define SWCLK_TO_OUTPP()                    (IO_CON_CONFIG(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN, IO_OUTPUT), GPIOBANK0->DIR_SET = (0x1ul << (PERIPHERAL_GPIO_TCK_SWD_IDX * 8 + PERIPHERAL_GPIO_TCK_SWD_PIN)))
 #define SWCLK_TO_AFPP()                     (IO_CON_CONFIG(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN, PERIPHERAL_GPIO_TCK_SWD_AF))
 
 #define SWD_SPI_CR0_DEFAULT         (SPI_CR0_SPO | SPI_CR0_SPH | (0x1 << 8))
@@ -112,6 +112,48 @@ static void swd_write_io_slow(uint8_t *data, uint32_t bits);
 
 void vsfhal_swd_init(int32_t int_priority)
 {
+#if 0
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_FLOAT);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);
+    
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_FLOAT);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);
+    
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_PULL_DOWN);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_PULL_DOWN);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_PULL_DOWN);
+    
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_PULL_UP);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_PULL_UP);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_PULL_UP);
+
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_PULL_DOWN);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_PULL_DOWN);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_PULL_DOWN);
+    
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_PULL_UP);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_PULL_UP);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_PULL_UP);
+    
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_INPUT_FLOAT);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MI_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MI_PIN, IO_INPUT_FLOAT);
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_INPUT_FLOAT);
+    
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TMS_MO_IDX, 0x1 << PERIPHERAL_GPIO_TMS_MO_PIN, IO_OUTPUT);
+    vsfhal_gpio_set(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);
+    vsfhal_gpio_clear(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);
+    vsfhal_gpio_set(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);
+    vsfhal_gpio_clear(PERIPHERAL_GPIO_TMS_MO_IDX, 1 << PERIPHERAL_GPIO_TMS_MO_PIN);
+
+    vsfhal_gpio_config(PERIPHERAL_GPIO_TCK_SWD_IDX, 0x1 << PERIPHERAL_GPIO_TCK_SWD_PIN, IO_OUTPUT);
+    vsfhal_gpio_set(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);
+    vsfhal_gpio_clear(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);
+    vsfhal_gpio_set(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);
+    vsfhal_gpio_clear(PERIPHERAL_GPIO_TCK_SWD_IDX, 1 << PERIPHERAL_GPIO_TCK_SWD_PIN);
+#endif
+
     PERIPHERAL_GPIO_TMS_INIT();
     PERIPHERAL_GPIO_TCK_INIT();
     PERIPHERAL_GPIO_SRST_INIT();
@@ -534,6 +576,8 @@ SYNC_READ_RESTART:
                 //if (swd_control.swd_delay)
                 //    swd_control.swd_delay(swd_control.delay_tick);
             }
+            
+            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         if ((temp == SWD_ACK_WAIT) && (retry++ < swd_control.retry_limit))
@@ -693,6 +737,8 @@ SYNC_READ_RESTART:
                 if (swd_control.swd_delay)
                     swd_control.swd_delay(swd_control.delay_tick);
             }
+            
+            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         if ((temp == SWD_ACK_WAIT) && (retry++ < swd_control.retry_limit))
@@ -780,6 +826,7 @@ SYNC_READ_RESTART:
         }
 
         // Data:[W]*32
+        SWDIO_MO_TO_AFPP();
         SWCLK_TO_AFPP();
         SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = lsb2msb[w_data[0]];
@@ -863,6 +910,8 @@ SYNC_READ_RESTART:
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             //if (swd_control.swd_delay)
             //    swd_control.swd_delay(swd_control.delay_tick);
+        } else {
+            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         SWDIO_MO_TO_IN();
@@ -1039,6 +1088,8 @@ SYNC_READ_RESTART:
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
+        } else {
+            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         SWDIO_MO_TO_IN();
@@ -1112,8 +1163,6 @@ static void swd_write_io_quick(uint8_t *data, uint32_t bits)
 {
     uint_fast32_t byte = data[0];
 
-    SWDIO_MO_TO_OUTPP();
-    
     while (bits) {
         if (byte & 0x1)
             IO_SET(PERIPHERAL_GPIO_TMS_MO_IDX, PERIPHERAL_GPIO_TMS_MO_PIN);
@@ -1124,8 +1173,6 @@ static void swd_write_io_quick(uint8_t *data, uint32_t bits)
         bits--;
         IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     }
-
-    SWDIO_MO_TO_IN();
 }
 
 static void swd_write_io_slow(uint8_t *data, uint32_t bits)
