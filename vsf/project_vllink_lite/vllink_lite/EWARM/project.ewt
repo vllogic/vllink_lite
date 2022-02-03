@@ -3620,9 +3620,6 @@
             <configuration>
                 <name>VllinkLite_GD32E103</name>
             </configuration>
-            <configuration>
-                <name>VllinkLite_MT006</name>
-            </configuration>
         </group>
         <group>
             <name>daphost</name>
@@ -4222,6 +4219,9 @@
                 <file>
                     <name>$PROJ_DIR$\..\..\..\vsf\component\usb\vsf_usb_cfg.h</name>
                 </file>
+                <configuration>
+                    <name>VllinkLite_MT006</name>
+                </configuration>
             </group>
             <file>
                 <name>$PROJ_DIR$\..\..\..\vsf\component\vsf_component.c</name>
@@ -5488,6 +5488,9 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\MIC\MT006\jtag.c</name>
+                            <configuration>
+                                <name>VllinkLite_MT006</name>
+                            </configuration>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\MIC\MT006\jtag.h</name>
@@ -5497,6 +5500,9 @@
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\MIC\MT006\swd.c</name>
+                            <configuration>
+                                <name>VllinkLite_MT006</name>
+                            </configuration>
                         </file>
                         <file>
                             <name>$PROJ_DIR$\..\..\..\vsf_private\hal\driver\MIC\MT006\swd.h</name>

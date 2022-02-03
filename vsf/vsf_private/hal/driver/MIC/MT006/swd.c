@@ -408,36 +408,52 @@ SYNC_READ_RESTART:
     SPI0->DR = lsb2msb[buffer];
     if (!r_data)
         r_data = (uint8_t *)&buffer;
-    bits = swd_control.trn - 1;
+    bits = swd_control.trn;
     while (SPI0->SR & SPI_SR_BSY);
     buffer = SPI0->DR;
     
-    // TRN:[C]*(trn - 1)
-    if (bits) {
-        SWCLK_TO_OUTPP();
-        while (bits) {
-            IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            if (swd_control.swd_delay)
-                swd_control.swd_delay(swd_control.delay_tick);
-            IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            //if (swd_control.swd_delay)
-            //    swd_control.swd_delay(swd_control.delay_tick);
-            bits--;
-        }
-        SWCLK_TO_AFPP();
+    // TRN:[C]*trn
+    SWDIO_MO_TO_IN();
+    SWCLK_TO_OUTPP();
+    while (bits) {
+        IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        if (swd_control.swd_delay)
+            swd_control.swd_delay(swd_control.delay_tick);
+        IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        //if (swd_control.swd_delay)
+        //    swd_control.swd_delay(swd_control.delay_tick);
+        bits--;
     }
 
-    // TRN + ACK:[R]*3
+    // ACK:[R]*3
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN);
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 1;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 2;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+
     SWDIO_MI_TO_AFIN();
-    SWDIO_MO_TO_IN();
-    SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_4BIT;
-    SPI0->DR = 0xff;
-    while (SPI0->SR & SPI_SR_BSY);
-    temp = lsb2msb_3bit[SPI0->DR & 0x7];
+    SWCLK_TO_AFPP();
 
     if (temp == SWD_ACK_OK) {
         // Data:[R]*32
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
@@ -487,7 +503,7 @@ SYNC_READ_RESTART:
         }
     } else if ((temp == SWD_ACK_WAIT) || (temp == SWD_ACK_FAULT)) {
         if (swd_control.data_force) {        // Data:[R]*32
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
@@ -525,7 +541,7 @@ SYNC_READ_RESTART:
                 //    swd_control.swd_delay(swd_control.delay_tick);
             }
             
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         if ((temp == SWD_ACK_WAIT) && (retry++ < swd_control.retry_limit))
@@ -534,7 +550,7 @@ SYNC_READ_RESTART:
             return temp;
     } else {
         // Data:[C]*32
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
@@ -573,36 +589,52 @@ SYNC_READ_RESTART:
     SPI0->DR = lsb2msb[buffer];
     if (!r_data)
         r_data = (uint8_t *)&buffer;
-    bits = swd_control.trn - 1;
+    bits = swd_control.trn;
     while (SPI0->SR & SPI_SR_BSY);
     buffer = SPI0->DR;
 
-    // TRN:[C]*(trn - 1)
-    if (bits) {
-        SWCLK_TO_OUTPP();
-        while (bits) {
-            IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            if (swd_control.swd_delay)
-                swd_control.swd_delay(swd_control.delay_tick);
-            IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            if (swd_control.swd_delay)
-                swd_control.swd_delay(swd_control.delay_tick);
-            bits--;
-        }
-        SWCLK_TO_AFPP();
+    // TRN:[C]*trn
+    SWDIO_MO_TO_IN();
+    SWCLK_TO_OUTPP();
+    while (bits) {
+        IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        if (swd_control.swd_delay)
+            swd_control.swd_delay(swd_control.delay_tick);
+        IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        if (swd_control.swd_delay)
+            swd_control.swd_delay(swd_control.delay_tick);
+        bits--;
     }
     
-    // TRN + ACK:[R]*3
+    // ACK:[R]*3
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN);
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 1;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 2;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+
     SWDIO_MI_TO_AFIN();
-    SWDIO_MO_TO_IN();
-    SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_4BIT;
-    SPI0->DR = 0xff;
-    while (SPI0->SR & SPI_SR_BSY);
-    temp = lsb2msb_3bit[SPI0->DR & 0x7];
+    SWCLK_TO_AFPP();
 
     if (temp == SWD_ACK_OK) {
         // Data:[R]*32
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
@@ -652,7 +684,7 @@ SYNC_READ_RESTART:
         }
     } else if ((temp == SWD_ACK_WAIT) || (temp == SWD_ACK_FAULT)) {
         if (swd_control.data_force) {        // Data:[R]*32
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
@@ -690,7 +722,7 @@ SYNC_READ_RESTART:
                     swd_control.swd_delay(swd_control.delay_tick);
             }
             
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         if ((temp == SWD_ACK_WAIT) && (retry++ < swd_control.retry_limit))
@@ -699,7 +731,7 @@ SYNC_READ_RESTART:
             return temp;
     } else {
         // Data:[C]*32
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
@@ -736,51 +768,63 @@ SYNC_READ_RESTART:
     SWDIO_MO_TO_AFPP();
     SWCLK_TO_AFPP();
     SPI0->DR = lsb2msb[buffer];
-    bits = swd_control.trn - 1;
+    bits = swd_control.trn;
     while (SPI0->SR & SPI_SR_BSY);
     buffer = SPI0->DR;
 
-    // TRN:[C]*(trn - 1)
-    if (bits) {
-        SWCLK_TO_OUTPP();
-        while (bits--) {
-            IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            if (swd_control.swd_delay)
-                swd_control.swd_delay(swd_control.delay_tick);
-            IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            //if (swd_control.swd_delay)
-            //    swd_control.swd_delay(swd_control.delay_tick);
-            bits--;
-        }
-        SWCLK_TO_AFPP();
+    // TRN:[C]*trn
+    SWDIO_MO_TO_IN();
+    SWCLK_TO_OUTPP();
+    while (bits) {
+        IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        if (swd_control.swd_delay)
+            swd_control.swd_delay(swd_control.delay_tick);
+        IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        //if (swd_control.swd_delay)
+        //    swd_control.swd_delay(swd_control.delay_tick);
+        bits--;
     }
 
-    // TRN + ACK:[R]*3
-    SWDIO_MI_TO_AFIN();
-    SWDIO_MO_TO_IN();
-    SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_4BIT;
-    SPI0->DR = 0xff;
-    while (SPI0->SR & SPI_SR_BSY);
-    temp = lsb2msb_3bit[SPI0->DR & 0x7];
+    // ACK:[R]*3
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN);
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 1;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 2;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    //if (swd_control.swd_delay)
+    //    swd_control.swd_delay(swd_control.delay_tick);
 
     if (temp == SWD_ACK_OK) {
         // TRN:[C]*trn
         bits = swd_control.trn;
-        SWCLK_TO_OUTPP();
         while (bits) {
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
+            bits--;
             IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             //if (swd_control.swd_delay)
             //    swd_control.swd_delay(swd_control.delay_tick);
-            bits--;
         }
 
         // Data:[W]*32
         SWDIO_MO_TO_AFPP();
         SWCLK_TO_AFPP();
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = lsb2msb[w_data[0]];
         SPI0->DR = lsb2msb[w_data[1]];
         SPI0->DR = lsb2msb[w_data[2]];
@@ -841,7 +885,7 @@ SYNC_READ_RESTART:
         if (swd_control.data_force) {
             // Data:[C]*32
             SWCLK_TO_AFPP();
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
@@ -862,7 +906,7 @@ SYNC_READ_RESTART:
             //if (swd_control.swd_delay)
             //    swd_control.swd_delay(swd_control.delay_tick);
         } else {
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         SWDIO_MO_TO_IN();
@@ -874,7 +918,7 @@ SYNC_READ_RESTART:
     } else {
         // Data:[C]*32
         SWCLK_TO_AFPP();
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
@@ -918,28 +962,42 @@ SYNC_READ_RESTART:
     while (SPI0->SR & SPI_SR_BSY);
     buffer = SPI0->DR;
 
-    // TRN:[C]*(trn - 1)
-    if (bits) {
-        SWCLK_TO_OUTPP();
-        while (bits--) {
-            IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            if (swd_control.swd_delay)
-                swd_control.swd_delay(swd_control.delay_tick);
-            IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
-            if (swd_control.swd_delay)
-                swd_control.swd_delay(swd_control.delay_tick);
-            bits--;
-        }
-        SWCLK_TO_AFPP();
-    }
-
-    // TRN + ACK:[R]*3
-    SWDIO_MI_TO_AFIN();
+    // TRN:[C]*trn
     SWDIO_MO_TO_IN();
-    SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_4BIT;
-    SPI0->DR = 0xff;
-    while (SPI0->SR & SPI_SR_BSY);
-    temp = lsb2msb_3bit[SPI0->DR & 0x7];
+    SWCLK_TO_OUTPP();
+    while (bits) {
+        IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        if (swd_control.swd_delay)
+            swd_control.swd_delay(swd_control.delay_tick);
+        IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+        if (swd_control.swd_delay)
+            swd_control.swd_delay(swd_control.delay_tick);
+        bits--;
+    }
+    SWCLK_TO_AFPP();
+
+    // ACK:[R]*3
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    temp = IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN);
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 1;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
+    temp |= IO_GET(PERIPHERAL_GPIO_TMS_MI_IDX, PERIPHERAL_GPIO_TMS_MI_PIN) << 2;
+    IO_SET(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
+    if (swd_control.swd_delay)
+        swd_control.swd_delay(swd_control.delay_tick);
 
     if (temp == SWD_ACK_OK) {
         // TRN:[C]*trn
@@ -956,8 +1014,9 @@ SYNC_READ_RESTART:
         }
 
         // Data:[W]*32
+        SWDIO_MO_TO_AFPP();
         SWCLK_TO_AFPP();
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = lsb2msb[w_data[0]];
         SPI0->DR = lsb2msb[w_data[1]];
         SPI0->DR = lsb2msb[w_data[2]];
@@ -1019,7 +1078,7 @@ SYNC_READ_RESTART:
         if (swd_control.data_force) {
             // Data:[C]*32
             SWCLK_TO_AFPP();
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
             SPI0->DR = 0xff;
@@ -1040,7 +1099,7 @@ SYNC_READ_RESTART:
             if (swd_control.swd_delay)
                 swd_control.swd_delay(swd_control.delay_tick);
         } else {
-            SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+            //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         }
 
         SWDIO_MO_TO_IN();
@@ -1052,7 +1111,7 @@ SYNC_READ_RESTART:
     } else {
         // Data:[C]*32
         SWCLK_TO_AFPP();
-        SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
+        //SPI0->CR0 = SWD_SPI_CR0_DEFAULT | SPI_CR0_DSS_8BIT;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
         SPI0->DR = 0xff;
