@@ -238,9 +238,6 @@ static uint32_t inline get_parity_32bit(uint32_t data)
 */
 
 const static uint16_t spi_khz_and_cpsdvr_table_list[][2] = {
-    {16000, 3},
-    {12000, 4},
-    {9600, 5},
     {8000, 6},
     {6000, 8},
     {4000, 12},

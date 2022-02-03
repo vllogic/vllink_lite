@@ -3620,6 +3620,9 @@
             <configuration>
                 <name>VllinkLite_GD32E103</name>
             </configuration>
+            <configuration>
+                <name>VllinkLite_MT006</name>
+            </configuration>
         </group>
         <group>
             <name>daphost</name>
