@@ -589,7 +589,7 @@ SYNC_READ_RESTART:
     bits = swd_control.trn;
     while (SPI0->SR & SPI_SR_BSY);
     buffer = SPI0->DR;
-
+    
     // TRN:[C]*trn
     SWDIO_MO_TO_IN();
     SWCLK_TO_OUTPP();
@@ -602,7 +602,7 @@ SYNC_READ_RESTART:
             swd_control.swd_delay(swd_control.delay_tick);
         bits--;
     }
-    
+
     // ACK:[R]*3
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
     if (swd_control.swd_delay)
@@ -955,7 +955,7 @@ SYNC_READ_RESTART:
     SWDIO_MO_TO_AFPP();
     SWCLK_TO_AFPP();
     SPI0->DR = lsb2msb[buffer];
-    bits = swd_control.trn - 1;
+    bits = swd_control.trn;
     while (SPI0->SR & SPI_SR_BSY);
     buffer = SPI0->DR;
 
@@ -971,7 +971,6 @@ SYNC_READ_RESTART:
             swd_control.swd_delay(swd_control.delay_tick);
         bits--;
     }
-    SWCLK_TO_AFPP();
 
     // ACK:[R]*3
     IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
@@ -999,7 +998,6 @@ SYNC_READ_RESTART:
     if (temp == SWD_ACK_OK) {
         // TRN:[C]*trn
         bits = swd_control.trn;
-        SWCLK_TO_OUTPP();
         while (bits) {
             IO_CLEAR(PERIPHERAL_GPIO_TCK_SWD_IDX, PERIPHERAL_GPIO_TCK_SWD_PIN);
             if (swd_control.swd_delay)
@@ -1020,10 +1018,9 @@ SYNC_READ_RESTART:
         SPI0->DR = lsb2msb[w_data[3]];
         temp = get_parity_32bit(get_unaligned_le32(w_data));
         bits = swd_control.idle;
-        while (SPI0->SR & SPI_SR_BSY);
-        buffer = SPI0->DR;
-        buffer = SPI0->DR;
-        buffer = SPI0->DR;
+        while (SPI0->SR & SPI_SR_BSY) {
+            buffer = SPI0->DR;
+        }
         buffer = SPI0->DR;
 
         // Parity:[W]*1
