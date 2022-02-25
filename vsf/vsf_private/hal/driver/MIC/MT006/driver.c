@@ -50,7 +50,7 @@ static void vsfhal_tickcnt_init(void)
     ST->LOADCOUNT1 = 1000 - 1;
     ST->CONTROLREG1 = ST_CTRL_MODE;
     ST->CONTROLREG1 |= ST_CTRL_ENABLE;
-    //NVIC_EnableIRQ(STIMER_IRQn);
+    NVIC_EnableIRQ(STIMER_IRQn);
     NVIC_SetPriority(STIMER_IRQn, vsf_arch_prio_highest);
 }
 
