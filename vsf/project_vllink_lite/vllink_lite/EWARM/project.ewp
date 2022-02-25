@@ -4064,6 +4064,9 @@
             <name>$PROJ_DIR$\..\main.c</name>
         </file>
         <file>
+            <name>$PROJ_DIR$\MT006_full.icf</name>
+        </file>
+        <file>
             <name>$PROJ_DIR$\..\usrapp_usbd_common.c</name>
             <excluded>
                 <configuration>VllinkLite_GD32F350</configuration>

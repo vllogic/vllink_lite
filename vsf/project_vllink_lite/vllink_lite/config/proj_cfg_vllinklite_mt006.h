@@ -135,7 +135,7 @@
 #else
 #   define DAP_PACKET_SIZE                              DAP_HID_PACKET_SIZE
 #endif
-#define DAP_PACKET_COUNT                                4
+#define DAP_PACKET_COUNT                                3
 #define TIMESTAMP_CLOCK                                 1000000			// 1M
 #define SWO_UART                                        0
 #define SWO_STREAM                                      0
