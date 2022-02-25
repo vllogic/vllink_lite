@@ -29,7 +29,7 @@ static const vsfhal_clk_info_t vsfhal_clk_info = {
 };
 
 
-#if TICKCNT_ENABLE
+#if 1
 static uint64_t tickcnt_ms = 0;
 static void vsfhal_tickcnt_init(void)
 {
@@ -50,7 +50,7 @@ static void vsfhal_tickcnt_init(void)
     ST->LOADCOUNT1 = 1000 - 1;
     ST->CONTROLREG1 = ST_CTRL_MODE;
     ST->CONTROLREG1 |= ST_CTRL_ENABLE;
-    NVIC_EnableIRQ(STIMER_IRQn);
+    //NVIC_EnableIRQ(STIMER_IRQn);
     NVIC_SetPriority(STIMER_IRQn, vsf_arch_prio_highest);
 }
 
@@ -99,7 +99,26 @@ uint64_t vsfhal_tickcnt_get_ms_64(void)
 #else
 static void vsfhal_tickcnt_init(void)
 {
-    // NULL
+}
+
+uint64_t vsfhal_tickcnt_get_us_64(void)
+{
+    return 0;
+}
+
+uint32_t vsfhal_tickcnt_get_us(void)
+{
+    return 0;
+}
+
+uint32_t vsfhal_tickcnt_get_ms(void)
+{
+    return 0;
+}
+
+uint64_t vsfhal_tickcnt_get_ms_64(void)
+{
+    return 0;
 }
 #endif
 
@@ -132,7 +151,7 @@ static void clk_init(const vsfhal_clk_info_t *info)
         CRS->CFGR = 12000 | (0x22 << 16) | CRS_CFGR_SYNCDIV_1 | CRS_CFGR_SYNCSRC_SOF;
         CRS->CR |= CRS_CR_CEN;
     }
-    
+
     if (info->clken & MT006_CLKEN_LSE) {
         // TODO
     }
@@ -235,7 +254,7 @@ static void clk_init(const vsfhal_clk_info_t *info)
 #       error "Not Support!"
 #   endif
 #endif
-    
+
     vsfhal_tickcnt_init();
 }
 
