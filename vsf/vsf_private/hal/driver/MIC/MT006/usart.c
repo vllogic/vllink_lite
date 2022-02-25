@@ -105,9 +105,11 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
     if (mode == USART_GET_BAUD_ONLY) {
         // NULL
     } else if (mode == USART_RESET_BAUD_ONLY) {
+        uint_fast32_t LCRH = UART0->LCRH;
         UART0->CR &= ~UART_CR_UARTEN;
         UART0->IBRD = (baud & 0x3fffc0) >> 6;
         UART0->FBRD = (baud & 0x3f);
+        UART0->LCRH = LCRH;
         UART0->CR |= UART_CR_UARTEN;
     } else {
         UART0->CR = UART_CR_TXE | UART_CR_RXE;
