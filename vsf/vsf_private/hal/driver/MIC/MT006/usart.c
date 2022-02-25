@@ -276,6 +276,25 @@ ROOT void UART0_IRQHandler(void)
 }
 
 #ifdef USART_TX_IRQ_USE_TIMER
+#if TICKCNT_ENABLE
+bool usart_tx_callback(void)
+{
+    uint_fast32_t status;
+    usart_control_t *ctrl = &usart_control[USART0_IDX];
+    
+    if (!ctrl->ontx) {
+        return false;
+    }
+
+    ST->CONTROLREG1 &= ~ST_CTRL_ENABLE;
+    status = ST->EOI;
+    if (ctrl->ontx)
+        ctrl->ontx(ctrl->param);
+    else if (status)    // dummy read
+        NOP();
+    return true;
+}
+#else
 ROOT void STIMER_IRQHandler(void)
 {
     uint_fast32_t status;
@@ -287,6 +306,7 @@ ROOT void STIMER_IRQHandler(void)
     else if (status)    // dummy read
         NOP();
 }
+#endif
 
 #endif
 #endif

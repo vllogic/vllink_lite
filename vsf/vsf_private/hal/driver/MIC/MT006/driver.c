@@ -54,17 +54,25 @@ static void vsfhal_tickcnt_init(void)
     NVIC_SetPriority(STIMER_IRQn, vsf_arch_prio_highest);
 }
 
+WEAK(usart_tx_callback)
+bool usart_tx_callback(void) 
+{
+    return false;
+}
+
 ROOT void STIMER_IRQHandler(void)
 {
-    uint32_t status = ST->RAWINTSTATUS;
-    
-    if (status & STS_EOI_0) {
-        status = ST->EOI0;
-    }
-    
-    if (status & STS_EOI_1) {
-        status = ST->EOI1;
-        tickcnt_ms++;
+    if (usart_tx_callback() == false) {
+        uint32_t status = ST->RAWINTSTATUS;
+        
+        if (status & STS_EOI_0) {
+            status = ST->EOI0;
+        }
+        
+        if (status & STS_EOI_1) {
+            status = ST->EOI1;
+            tickcnt_ms++;
+        }
     }
 }
 
