@@ -27,7 +27,7 @@
 
 #define PERIPHERAL_JTAG_PRIORITY            vsf_arch_prio_2
 #define PERIPHERAL_SWD_PRIORITY             vsf_arch_prio_2
-#define PERIPHERAL_TIMESTAMP_PRIORITY       vsf_arch_prio_3
+#define PERIPHERAL_TIMESTAMP_PRIORITY       vsf_arch_prio_2
 
 // KEY
 #if 0

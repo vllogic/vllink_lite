@@ -46,7 +46,7 @@
 #   define VSF_USBD_CFG_USE_EDA                         ENABLED
 #   define VSF_USBD_USE_CDC                             ENABLED
 #   define VSF_USBD_USE_CDCACM                          ENABLED
-#   define VSF_USBD_CFG_HW_PRIORITY                     vsf_arch_prio_2
+#   define VSF_USBD_CFG_HW_PRIORITY                     vsf_arch_prio_3
 #   define VSF_USBD_CFG_EDA_PRIORITY                    vsf_prio_1
 #   define VSF_USBD_CFG_RAW_MODE                        DISABLED
 

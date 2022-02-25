@@ -132,7 +132,13 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
         UART0->CR |= UART_CR_UARTEN;
     }
     
-    ctrl->baudrate = baud;
+    #if CHIP_CLKEN & MT006_CLKEN_PLL
+    baudrate = CHIP_PLL_FREQ_HZ * 4 / baud;
+    #else
+    baudrate = (12 * 1000 * 1000) * 4 / baud;
+    #endif
+    
+    ctrl->baudrate = baudrate;
 
     #ifdef USART_TX_IRQ_USE_TIMER
     #if CHIP_CLKEN & MT006_CLKEN_PLL
@@ -151,15 +157,11 @@ uint32_t vsfhal_usart_config(enum usart_idx_t idx, uint32_t baudrate, uint32_t m
     ST->CONTROLREG1 = ST_CTRL_MODE;
     //ST->LOADCOUNT1 = 1000 - 1;
     //ST->CONTROLREG1 |= ST_CTRL_ENABLE;
-    ctrl->byte_ticks = 12000000 * 10 / baud;
-    ctrl->byte_ticks += ctrl->byte_ticks / 16;
+    ctrl->byte_ticks = 12000000 * 10 / baudrate;
+    //ctrl->byte_ticks += ctrl->byte_ticks / 16;
     #endif
     
-    #if CHIP_CLKEN & MT006_CLKEN_PLL
-    return CHIP_PLL_FREQ_HZ * 4 / baud;
-    #else
-    return (12 * 1000 * 1000) * 4 / baud;
-    #endif
+    return baudrate;
 }
 
 void vsfhal_usart_config_cb(enum usart_idx_t idx, int32_t int_priority, void *p, void (*ontx)(void *), void (*onrx)(void *))
@@ -197,9 +199,9 @@ uint16_t vsfhal_usart_tx_bytes(enum usart_idx_t idx, uint8_t *data, uint16_t siz
         uint16_t i;
         UART0->ICR = UART_ICR_TXIC;
         for (i = 0; i < size; i++) {
-            UART0->DR = data[i];
             if (UART0->TFR & UART_FR_TXFF)
                 break;
+            UART0->DR = data[i];
         }
         
 
