@@ -2769,7 +2769,7 @@
                 </option>
                 <option>
                     <name>OOCOutputFile</name>
-                    <state>vllink_lite_gd32f350xx_app.bin</state>
+                    <state>vllink_lite_mt006.bin</state>
                 </option>
                 <option>
                     <name>OOCCommandLineProducer</name>
