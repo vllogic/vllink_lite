@@ -29,7 +29,7 @@ static const vsfhal_clk_info_t vsfhal_clk_info = {
 };
 
 
-#if 1
+#if TICKCNT_ENABLE
 static uint64_t tickcnt_ms = 0;
 static void vsfhal_tickcnt_init(void)
 {
@@ -99,6 +99,7 @@ uint64_t vsfhal_tickcnt_get_ms_64(void)
 #else
 static void vsfhal_tickcnt_init(void)
 {
+    // NULL
 }
 
 uint64_t vsfhal_tickcnt_get_us_64(void)

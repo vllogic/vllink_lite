@@ -3,7 +3,7 @@
 
 #define VSF_SYSTIMER_FREQ           (CHIP_AHB_APB_FREQ_HZ)
 
-#define TICKCNT_ENABLE              0
+#define TICKCNT_ENABLE              1
 
 #define FLASH0_ENABLE               0
 
