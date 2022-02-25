@@ -405,6 +405,14 @@ void vsf_ptshell_init(vsf_ptshell_t *ptshell)
 
 int main(void)
 {
+#if 0
+    vsfhal_usart_init(PERIPHERAL_UART_EXT_IDX);
+    vsfhal_usart_config(PERIPHERAL_UART_EXT_IDX, 921600, USART_PARITY_NONE | USART_STOPBITS_1 | USART_BITLEN_8);
+    vsfhal_usart_config_cb(PERIPHERAL_UART_EXT_IDX, PERIPHERAL_UART_EXT_PRIORITY, NULL, NULL, NULL);
+    for (int i = 1; i <= 16; i++) {
+        vsfhal_usart_tx_bytes(PERIPHERAL_UART_EXT_IDX, "12345678901234567890", i);
+    }
+#endif
 #if 1
     #if VSF_USE_PTSHELL == ENABLED
     vsf_ptshell_init(&vsf_ptshell);

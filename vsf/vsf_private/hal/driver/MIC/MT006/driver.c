@@ -3,6 +3,11 @@
 #include "./driver.h"
 
 /*============================ MACROS ========================================*/
+
+#ifndef TICKCNT_ENABLE
+#   define TICKCNT_ENABLE               1
+#endif
+
 /*============================ MACROFIED FUNCTIONS ===========================*/
 /*============================ TYPES =========================================*/
 typedef void(*pFunc)(void);
@@ -24,6 +29,7 @@ static const vsfhal_clk_info_t vsfhal_clk_info = {
 };
 
 
+#if TICKCNT_ENABLE
 static uint64_t tickcnt_ms = 0;
 static void vsfhal_tickcnt_init(void)
 {
@@ -90,6 +96,12 @@ uint64_t vsfhal_tickcnt_get_ms_64(void)
 {
     return tickcnt_ms;
 }
+#else
+static void vsfhal_tickcnt_init(void)
+{
+    // NULL
+}
+#endif
 
 void vsfhal_core_delay(uint32_t t)
 {
