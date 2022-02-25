@@ -25,7 +25,7 @@
 #	define APP_CFG_CDCEXT_SUPPORT
 #       define APP_CFG_CDCEXT_EXT2USB_PKT_NUM           3
 #       define APP_CFG_CDCEXT_USB2EXT_PKT_NUM           2
-#       define APP_CFG_CDCEXT_PKT_SIZE                  2
+#       define APP_CFG_CDCEXT_PKT_SIZE                  64
 //#   define APP_CFG_CDCSHELL_SUPPORT
 #       define APP_CFG_CDCSHELL_EXT2USB_PKT_NUM         2
 #       define APP_CFG_CDCSHELL_USB2EXT_PKT_NUM         2
