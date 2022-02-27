@@ -297,4 +297,10 @@ const vsfhal_clk_info_t *vsfhal_clk_info_get(void)
     return &vsfhal_clk_info;
 }
 
+void vsf_arch_sleep(uint32_t mode)
+{
+    UNUSED_PARAM(mode);
+    //__WFE();
+}
+
 /* EOF */
