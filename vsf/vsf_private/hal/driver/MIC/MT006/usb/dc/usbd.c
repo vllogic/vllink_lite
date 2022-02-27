@@ -34,6 +34,12 @@ extern void __mt006_usb_irq(mt006_usb_t *usb);
 
 /*============================ IMPLEMENTATION ================================*/
 
+static void delay(uint32_t n)
+{
+    for (uint32_t i = 0; i < n; i++)
+        NOP();
+}
+
 vsf_err_t mt006_usbd_init(mt006_usb_t *dc, usb_dc_ip_cfg_t *cfg)
 {
 #if VSF_HAL_USE_USBH == ENABLED
@@ -45,6 +51,10 @@ vsf_err_t mt006_usbd_init(mt006_usb_t *dc, usb_dc_ip_cfg_t *cfg)
 
     RCC->PDRUNCFG &= ~RCC_PDRUNCFG_USB;
     RCC->AHBCLKCTRL0_SET = RCC_AHBCLKCTRL_USB;
+    
+    RCC->PRESETCTRL0_CLR = RCC_AHBCLKCTRL_USB;
+    delay(50000);
+    RCC->PRESETCTRL0_SET = RCC_AHBCLKCTRL_USB;
 
     __mt006_usb_init_interrupt(dc, cfg->priority);
     return VSF_ERR_NONE;
