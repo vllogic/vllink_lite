@@ -23,7 +23,7 @@
 #	define APP_CFG_CMSIS_DAP_V2_SUPPORT
 #	define APP_CFG_WEBUSB_SUPPORT
 #	define APP_CFG_CDCEXT_SUPPORT
-#       define APP_CFG_CDCEXT_EXT2USB_PKT_NUM           3
+#       define APP_CFG_CDCEXT_EXT2USB_PKT_NUM           2
 #       define APP_CFG_CDCEXT_USB2EXT_PKT_NUM           2
 #       define APP_CFG_CDCEXT_PKT_SIZE                  64
 //#   define APP_CFG_CDCSHELL_SUPPORT
