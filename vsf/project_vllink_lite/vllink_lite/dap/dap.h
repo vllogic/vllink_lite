@@ -182,9 +182,11 @@ extern "C" {
 declare_vsf_task(dap_task_t);
 
 typedef struct dap_param_t {
+#if VENDOR_UART || SWO_UART
     uint16_t (*get_serial)(uint8_t *serial);
     void (*config_usart)(enum usart_idx_t idx, uint32_t *mode, uint32_t *baudrate, vsf_stream_t *tx, vsf_stream_t *rx, bool return_actual_baud);
     uint32_t (*get_usart_baud)(enum usart_idx_t idx, uint32_t baudrate);
+#endif
 
 #if VENDOR_UART
     vsf_fifo_stream_t ext_tx;

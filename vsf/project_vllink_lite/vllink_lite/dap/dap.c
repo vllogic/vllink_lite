@@ -101,9 +101,11 @@ static uint8_t get_dap_info(dap_param_t* param, uint8_t id, uint8_t* info, uint1
 #endif
         break;
     case DAP_ID_SER_NUM:
+        #if VENDOR_UART || SWO_UART
         if (param->get_serial)
             length = param->get_serial(info);
         else
+        #endif
             length = 0;
         break;
     case DAP_ID_FW_VER:

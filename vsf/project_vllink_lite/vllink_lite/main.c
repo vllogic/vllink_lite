@@ -31,12 +31,14 @@ typedef struct usrapp_t {
 
     uint32_t usart_ext_mode;
     uint32_t usart_ext_baud;
-    uint32_t usart_swo_mode;
-    uint32_t usart_swo_baud;
-    uint32_t cdc_shell_usart_mode;
-    uint32_t cdc_shell_usart_baud;
+    #if SWO_UART
+    //uint32_t usart_swo_mode;
+    //uint32_t usart_swo_baud;
+    #endif
 
     #ifdef APP_CFG_CDCSHELL_SUPPORT
+    uint32_t cdc_shell_usart_mode;
+    uint32_t cdc_shell_usart_baud;
     #endif
 } usrapp_t;
 
@@ -45,9 +47,11 @@ typedef struct usrapp_t {
 
 usrapp_t usrapp                 = {
     .dap.dap_param              = {
+        #if VENDOR_UART || SWO_UART
         .get_serial             = usrapp_get_serial,
         .config_usart           = usrapp_config_usart,
         .get_usart_baud         = usrapp_get_usart_baud,
+        #endif
         #if VENDOR_UART
         .ext_tx = {
             .op                 = &vsf_fifo_stream_op,
@@ -72,6 +76,7 @@ usrapp_t usrapp                 = {
             .size               = sizeof(usrapp.dap.dap_param.swo_rx_buf),
         },
         #endif
+        .do_abort               = false,
     },
 };
 
