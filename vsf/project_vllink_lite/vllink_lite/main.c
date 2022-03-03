@@ -47,8 +47,8 @@ typedef struct usrapp_t {
 
 usrapp_t usrapp                 = {
     .dap.dap_param              = {
-        #if VENDOR_UART || SWO_UART
         .get_serial             = usrapp_get_serial,
+        #if VENDOR_UART || SWO_UART
         .config_usart           = usrapp_config_usart,
         .get_usart_baud         = usrapp_get_usart_baud,
         #endif

@@ -199,9 +199,9 @@ static void clk_init(const vsfhal_clk_info_t *info)
     else
         RCC->SYSAHBCLKDIV = 1;
 
-    if (info->ahb_apb_freq_hz == 96 * 1000 * 1000)
+    if (info->pll_freq_hz == 96 * 1000 * 1000)
         RCC->USBCLKDIV = 2;
-    else if (info->ahb_apb_freq_hz == 48 * 1000 * 1000)
+    else if (info->pll_freq_hz == 48 * 1000 * 1000)
         RCC->USBCLKDIV = 1;
     else
         RCC->USBCLKDIV = 0;
