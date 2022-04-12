@@ -32,8 +32,8 @@ typedef struct usrapp_t {
     uint32_t usart_ext_mode;
     uint32_t usart_ext_baud;
     #if SWO_UART
-    //uint32_t usart_swo_mode;
-    //uint32_t usart_swo_baud;
+    uint32_t usart_swo_mode;
+    uint32_t usart_swo_baud;
     #endif
 
     #ifdef APP_CFG_CDCSHELL_SUPPORT
