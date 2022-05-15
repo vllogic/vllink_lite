@@ -3,6 +3,9 @@
 #include "dap_swo.h"
 #include "dap_vendor.h"
 
+WEAK(dap_srst_clear_attach_handler)
+void dap_srst_clear_attach_handler(void) {}
+
 #ifdef DAP_VENDOR
 const char DAP_Vendor[] = DAP_VENDOR;
 #endif
@@ -367,8 +370,10 @@ static uint16_t request_handler(dap_param_t* param, uint8_t* request,
                 if (select & (0x1 << DAP_SWJ_nRESET)) {
                     if (value & (0x1 << DAP_SWJ_nRESET))
                         PERIPHERAL_GPIO_SRST_SET();
-                    else
+                    else {
+                        dap_srst_clear_attach_handler();
                         PERIPHERAL_GPIO_SRST_CLEAR();
+                    }
                     PERIPHERAL_GPIO_SRST_SET_OUTPUT();
                 }
                 if (param->port == DAP_PORT_JTAG) {

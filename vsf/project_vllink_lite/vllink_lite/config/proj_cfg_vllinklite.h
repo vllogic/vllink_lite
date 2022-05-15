@@ -177,5 +177,6 @@
 #define VENDOR_UART                                     0
 #define VENDOR_UART_BUFFER_SIZE                         256
 
+#define DAP_SRST_CLEAR_ATTACH_SYSRESETREQ               1
 
 #endif // __PROJ_CFG_LVL2_H__
