@@ -70,4 +70,4 @@ GD32F350G8淘宝零售价格已低于￥3.8，SOF校准免晶振，适合作为�
 
 ## 其他
 
-* [CMSIS-DAP V2在Windows 7下使用](https://arm-software.github.io/CMSIS_5/DAP/html/group__DAP__ConfigUSB__gr.html)
+* [CMSIS-DAP V2在Windows 7下使用](http://vllogic.com/software/windows7_driver.html)
