@@ -31,14 +31,12 @@ typedef struct usrapp_t {
 
     uint32_t usart_ext_mode;
     uint32_t usart_ext_baud;
-    #if SWO_UART
     uint32_t usart_swo_mode;
     uint32_t usart_swo_baud;
-    #endif
-
-    #ifdef APP_CFG_CDCSHELL_SUPPORT
     uint32_t cdc_shell_usart_mode;
     uint32_t cdc_shell_usart_baud;
+
+    #ifdef APP_CFG_CDCSHELL_SUPPORT
     #endif
 } usrapp_t;
 
@@ -48,10 +46,8 @@ typedef struct usrapp_t {
 usrapp_t usrapp                 = {
     .dap.dap_param              = {
         .get_serial             = usrapp_get_serial,
-        #if VENDOR_UART || SWO_UART
         .config_usart           = usrapp_config_usart,
         .get_usart_baud         = usrapp_get_usart_baud,
-        #endif
         #if VENDOR_UART
         .ext_tx = {
             .op                 = &vsf_fifo_stream_op,
@@ -76,7 +72,6 @@ usrapp_t usrapp                 = {
             .size               = sizeof(usrapp.dap.dap_param.swo_rx_buf),
         },
         #endif
-        .do_abort               = false,
     },
 };
 
@@ -86,7 +81,6 @@ usrapp_t usrapp                 = {
 #include "usrapp_usbd_common.c"
 #include "usrapp_usbd_vllinklite.c"
 
-#ifdef APP_CFG_SERIAL_ATTACH_UUID
 static void usrapp_init_serial(uint8_t *serial, uint16_t size)
 {
     ASSERT(size > (2 + APP_CFG_SERIAL_HEADER_STR_LENGTH));
@@ -115,7 +109,6 @@ static void usrapp_init_serial(uint8_t *serial, uint16_t size)
         serial += 2;
     }
 }
-#endif
 
 static uint16_t usrapp_get_serial(uint8_t *serial)
 {
@@ -157,7 +150,6 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
             vsfhal_usart_fini(PERIPHERAL_UART_EXT_IDX);
         }
         break;
-    #if SWO_UART
     case PERIPHERAL_UART_SWO_IDX:
         if ((mode && *mode != usrapp.usart_swo_mode) || (usrapp.usart_swo_baud == 0)) {
             if (mode)
@@ -185,13 +177,15 @@ static void usrapp_config_usart(enum usart_idx_t idx, uint32_t *mode, uint32_t *
             vsfhal_usart_fini(PERIPHERAL_UART_SWO_IDX);
         }
         break;
-    #endif
     }
 }
 
 static uint32_t usrapp_get_usart_baud(enum usart_idx_t idx, uint32_t baudrate)
 {
-    return vsfhal_usart_config(idx, baudrate, USART_GET_BAUD_ONLY);
+    struct vsfhal_clk_info_t *info = vsfhal_clk_info_get();
+    uint32_t apb = info->apb1_freq_hz;
+    uint32_t div = (apb + baudrate - 1) / baudrate;
+    return apb / div;
 }
 
 static vsf_callback_timer_t cb_timer;
@@ -232,7 +226,6 @@ static void connect_usbd(vsf_callback_timer_t *timer)
 #endif
 }
 
-#ifdef APP_CFG_CDCEXT_SUPPORT
 // USB_CDCACM_REQ_SET_LINE_CODING
 static vsf_err_t usrapp_cdcext_set_line_coding(usb_cdcacm_line_coding_t *line_coding)
 {
@@ -309,7 +302,6 @@ static vsf_err_t usrapp_cdcext_set_control_line(uint8_t control_line)
     #endif
     return VSF_ERR_NONE;
 }
-#endif
 
 #ifdef APP_CFG_CDCSHELL_SUPPORT
 static vsf_err_t usrapp_cdcshell_set_line_coding(usb_cdcacm_line_coding_t *line_coding)
@@ -410,14 +402,11 @@ void vsf_ptshell_init(vsf_ptshell_t *ptshell)
 
 int main(void)
 {
-#if 1
     #if VSF_USE_PTSHELL == ENABLED
     vsf_ptshell_init(&vsf_ptshell);
     #endif
     
-    #ifdef APP_CFG_SERIAL_ATTACH_UUID
     usrapp_init_serial(__usrapp_usbd_vllinklite_nonconst.usbd.str_serial, sizeof(__usrapp_usbd_vllinklite_nonconst.usbd.str_serial));
-    #endif
 
     PERIPHERAL_LED_RED_INIT();
     PERIPHERAL_LED_GREEN_INIT();
@@ -464,117 +453,7 @@ int main(void)
 
     #ifdef APP_CFG_CDCSHELL_SUPPORT
     #endif
-#endif
     return 0;
 }
-
-#if DAP_SRST_CLEAR_ATTACH_SYSRESETREQ
-#define APBANKSEL      0x000000F0  // APBANKSEL Mask
-
-// SWD register access
-#define SWD_REG_AP        (1)
-#define SWD_REG_DP        (0)
-#define SWD_REG_R         (1<<1)
-#define SWD_REG_W         (0<<1)
-#define SWD_REG_ADR(a)    (a & 0x0c)
-
-#define AP_CSW         0x00        // Control and Status Word
-
-// AP Control and Status Word definitions
-#define CSW_SIZE       0x00000007  // Access Size: Selection Mask
-#define CSW_SIZE8      0x00000000  // Access Size: 8-bit
-#define CSW_SIZE16     0x00000001  // Access Size: 16-bit
-#define CSW_SIZE32     0x00000002  // Access Size: 32-bit
-#define CSW_ADDRINC    0x00000030  // Auto Address Increment Mask
-#define CSW_NADDRINC   0x00000000  // No Address Increment
-#define CSW_SADDRINC   0x00000010  // Single Address Increment
-#define CSW_PADDRINC   0x00000020  // Packed Address Increment
-#define CSW_DBGSTAT    0x00000040  // Debug Status
-#define CSW_TINPROG    0x00000080  // Transfer in progress
-#define CSW_HPROT      0x02000000  // User/Privilege Control
-#define CSW_MSTRTYPE   0x20000000  // Master Type Mask
-#define CSW_MSTRCORE   0x00000000  // Master Type: Core
-#define CSW_MSTRDBG    0x20000000  // Master Type: Debug
-#define CSW_RESERVED   0x01000000  // Reserved Value
-
-#define CSW_VALUE (CSW_RESERVED | CSW_MSTRDBG | CSW_HPROT | CSW_DBGSTAT | CSW_SADDRINC)
-
-static uint32_t SWD_Transfer(uint32_t request, uint32_t *data)
-{
-    if (request & DAP_TRANSFER_RnW) {
-        return vsfhal_swd_read(request, (uint8_t *)data);
-    } else {
-        return vsfhal_swd_write(request, (uint8_t *)data);
-    }
-}
-
-// Write debug port register
-static uint8_t swd_write_dp(uint8_t adr, uint32_t val)
-{
-    uint32_t req;
-    uint8_t ack;
-
-    //check if the right bank is already selected
-    if (adr == DP_SELECT) {
-        return 1;
-    }
-
-    req = SWD_REG_DP | SWD_REG_W | SWD_REG_ADR(adr);
-    ack = SWD_Transfer(req, (uint32_t *)&val);
-    return (ack == 0x01);
-}
-
-// Write access port register
-static uint8_t swd_write_ap(uint32_t adr, uint32_t val)
-{
-    uint8_t req, ack;
-    uint32_t apsel = adr & 0xff000000;
-    uint32_t bank_sel = adr & APBANKSEL;
-
-    if (!swd_write_dp(DP_SELECT, apsel | bank_sel)) {
-        return 0;
-    }
-
-    req = SWD_REG_AP | SWD_REG_W | SWD_REG_ADR(adr);
-    if (SWD_Transfer(req, (uint32_t *)&val) != 0x01) {
-        return 0;
-    }
-
-    req = SWD_REG_DP | SWD_REG_R | SWD_REG_ADR(DP_RDBUFF);
-    ack = SWD_Transfer(req, NULL);
-    return (ack == 0x01);
-}
-
-// Write target memory.
-static uint8_t swd_write_data(uint32_t address, uint32_t data)
-{
-    uint8_t req, ack;
-    
-    req = SWD_REG_AP | SWD_REG_W | (1 << 2);
-    if (SWD_Transfer(req, &address) != 0x01) {
-        return 0;
-    }
-
-    // write data
-    req = SWD_REG_AP | SWD_REG_W | (3 << 2);
-    if (SWD_Transfer(req, &data) != 0x01) {
-        return 0;
-    }
-
-    // dummy read
-    req = SWD_REG_DP | SWD_REG_R | SWD_REG_ADR(DP_RDBUFF);
-    ack = SWD_Transfer(req, NULL);
-    return (ack == 0x01) ? 1 : 0;
-}
-
-void dap_srst_clear_attach_handler(void)
-{
-    uint32_t addr = (uint32_t)&SCB->AIRCR;
-    uint32_t val = (0x5FAul << SCB_AIRCR_VECTKEY_Pos) | SCB_AIRCR_SYSRESETREQ_Msk;
-
-    swd_write_ap(AP_CSW, CSW_VALUE | CSW_SIZE32);
-    swd_write_data(addr, val);
-}
-#endif
 
 /* EOF */

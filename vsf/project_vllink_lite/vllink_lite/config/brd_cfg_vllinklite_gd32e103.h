@@ -1,8 +1,6 @@
 #ifndef __BOARD_CFG_LVL2_H__
 #define __BOARD_CFG_LVL2_H__
 
-#define VSF_SYSTIMER_FREQ       (CHIP_AHB_FREQ_HZ)
-
 #define DMA0_ENABLE             1
 #define DMA1_ENABLE             0
 
